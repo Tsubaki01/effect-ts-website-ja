@@ -1,19 +1,19 @@
 ---
-title: Coming From ZIO
-excerpt: Key differences between Effect and ZIO explained, covering the representation of the environment, removal of `Has`, and the absence of predefined type aliases like `UIO`, `URIO`, `RIO`, `Task`, or `IO` in Effect.
+title: ZIOからの移行
+excerpt: EffectとZIOの主な違いを説明し、環境の表現、`Has`の削除、およびEffectにおける`UIO`、`URIO`、`RIO`、`Task`、`IO`のような事前定義された型エイリアスの欠如をカバーします。
 bottomNavigation: pagination
 ---
 
-If you are coming to Effect from ZIO, there are a few differences to be aware of.
+ZIOからEffectに移行する場合、いくつかの違いに注意する必要があります。
 
-## Environment
+## 環境
 
-In Effect, we represent the environment required to run an `Effect` workflow as a union of services:
+Effectでは、`Effect`ワークフローを実行するために必要な環境をサービスのユニオンとして表現します。
 
 ```ts twoslash
 import { Effect } from "effect"
 
-//                                                          v---------v---- `R` is a union of Console | Logger
+//                                                          v---------v---- `R` は Console | Logger のユニオンです
 type Http = Effect.Effect<Response, IOError | HttpError, Console | Logger>
 
 type Response = Record<string, string>
@@ -35,17 +35,17 @@ interface Logger {
 }
 ```
 
-This may be confusing to folks coming from ZIO, where the environment is represented as an intersection of services:
+ZIOから来た人々にとって、環境がサービスのインターセクションとして表現されることは混乱を招くかもしれません。
 
 ```scala
 type Http = ZIO[Console with Logger, IOError, Response]
 ```
 
-## Rationale
+## 理由
 
-The rationale for using a union to represent the environment required by an `Effect` workflow boils down to our desire to remove `Has` as a wrapper for services in the environment (similar to what was achieved in ZIO 2.0).
+`Effect`ワークフローに必要な環境をユニオンで表現する理由は、環境内のサービスのラッパーとしての`Has`を削除したいという私たちの願望に起因します（これはZIO 2.0で達成されたことと似ています）。
 
-To be able to remove `Has` from Effect, we had to think a bit more structurally given that TypeScript is a structural type system. In TypeScript, if you have a type `A & B` where there is a structural conflict between `A` and `B`, the type `A & B` will reduce to `never`.
+TypeScriptが構造的な型システムであるため、Effectから`Has`を削除するためには、もう少し構造的に考える必要がありました。TypeScriptでは、`A & B`という型があり、`A`と`B`の間に構造的な衝突がある場合、その型`A & B`は`never`に縮小されます。
 
 ```ts twoslash
 // @errors: 2322
@@ -62,13 +62,13 @@ const ab: A & B = {
 }
 ```
 
-In previous versions of Effect, intersections were used for representing an environment with multiple services. The problem with using intersections (i.e. `A & B`) is that there could be multiple services in the environment that have functions and properties named in the same way. To remedy this, we wrapped services in the `Has` type (similar to ZIO 1.0), so you would have `Has<A> & Has<B>` in your environment.
+以前のバージョンのEffectでは、複数のサービスを持つ環境を表現するためにインターセクションが使用されていました。インターセクション（つまり `A & B`）を使用する問題は、環境内に同じ名前の関数やプロパティを持つ複数のサービスが存在する可能性があることです。これを解決するために、サービスを `Has` 型でラップしました（ZIO 1.0と似ています）。そのため、環境には `Has<A> & Has<B>` が存在していました。
 
-In ZIO 2.0, the _contravariant_ `R` type parameter of the `ZIO` type (representing the environment) became fully phantom, thus allowing for removal of the `Has` type. This significantly improved the clarity of type signatures as well as removing another "stumbling block" for new users.
+ZIO 2.0では、`ZIO` 型の _反変_ `R` 型パラメータ（環境を表す）が完全にファントムになり、`Has` 型を削除することが可能になりました。これにより、型シグネチャの明確さが大幅に向上し、新しいユーザーにとっての「つまずきの石」を取り除くことができました。
 
-To facilitate removal of `Has` in Effect, we had to consider how types in the environment compose. By the rule of composition, contravariant parameters composed as an intersection (i.e. with `&`) are equivalent to covariant parameters composed together as a union (i.e. with `|`) for purposes of assignability. Based upon this fact, we decided to diverge from ZIO and make the `R` type parameter _covariant_ given `A | B` does not reduce to `never` if `A` and `B` have conflicts.
+Effectで `Has` を削除するためには、環境内の型がどのように構成されるかを考慮する必要がありました。構成のルールにより、インターセクション（つまり `&`）として構成された反変パラメータは、割り当て可能性の目的でユニオン（つまり `|`）として一緒に構成された共変パラメータと同等です。この事実に基づいて、ZIOとは異なり、`A | B` が `never` に縮小されない場合、`R` 型パラメータを _共変_ にすることに決めました。
 
-From our example above:
+上記の例から：
 
 ```ts twoslash
 export interface A {
@@ -84,12 +84,12 @@ const ab: A | B = {
 }
 ```
 
-Representing `R` as a covariant type parameter containing the union of services required by an `Effect` workflow allowed us to remove the requirement for `Has`.
+`Effect`ワークフローに必要なサービスのユニオンを含む共変型パラメータとして`R`を表現することで、`Has`の必要性を取り除くことができました。
 
-## Type Aliases
+## 型エイリアス
 
-In Effect, there are no predefined type aliases such as `UIO`, `URIO`, `RIO`, `Task`, or `IO` like in ZIO.
+Effectには、ZIOのような`UIO`、`URIO`、`RIO`、`Task`、`IO`といった事前定義された型エイリアスは存在しません。
 
-The reason for this is that type aliases are lost as soon as you compose them, which renders them somewhat useless unless you maintain **multiple** signatures for **every** function. In Effect, we have chosen not to go down this path. Instead, we utilize the `never` type to indicate unused types.
+その理由は、型エイリアスは一度コンポーズすると失われてしまい、すべての関数に対して**複数の**シグネチャを維持しない限り、ほとんど役に立たないからです。Effectでは、この道を選ばず、未使用の型を示すために`never`型を利用しています。
 
-It's worth mentioning that the perception of type aliases being quicker to understand is often just an illusion. In Effect, the explicit notation `Effect<A>` clearly communicates that only type `A` is being used. On the other hand, when using a type alias like `RIO<R, A>`, questions arise about the type `E`. Is it `unknown`? `never`? Remembering such details becomes challenging.
+型エイリアスが理解しやすいという認識は、しばしば錯覚に過ぎないことも言及しておく価値があります。Effectでは、明示的な表記`Effect<A>`が、型`A`のみが使用されていることを明確に伝えます。一方、`RIO<R, A>`のような型エイリアスを使用すると、型`E`についての疑問が生じます。それは`unknown`なのか？`never`なのか？そのような詳細を覚えておくのは困難です。

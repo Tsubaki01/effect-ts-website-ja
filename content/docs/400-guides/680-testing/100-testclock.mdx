@@ -1,24 +1,24 @@
 ---
 title: TestClock
-excerpt: Utilize Effect's `TestClock` to control time during testing. Learn how to simulate the passage of time and efficiently test time-related functionality. Examples include testing `Effect.timeout`, recurring effects, `Clock`, and `Deferred`.
+excerpt: Effectの`TestClock`を利用してテスト中の時間を制御します。時間の経過をシミュレートし、時間に関連する機能を効率的にテストする方法を学びます。例として、`Effect.timeout`、繰り返し効果、`Clock`、および`Deferred`のテストが含まれます。
 bottomNavigation: pagination
 ---
 
-In most cases, we want our unit tests to run as quickly as possible. Waiting for real time to pass can slow down our tests significantly. Effect provides a handy tool called `TestClock` that allows us to **control time during testing**. This means we can efficiently and predictably test code that involves time without having to wait for the actual time to pass.
+ほとんどの場合、ユニットテストはできるだけ早く実行したいものです。実際の時間が経過するのを待つと、テストが大幅に遅くなることがあります。Effectは、テスト中に時間を制御できる便利なツールである`TestClock`を提供します。これにより、実際の時間が経過するのを待たずに、時間に関連するコードを効率的かつ予測可能にテストすることができます。
 
-The `TestClock` in Effect allows us to control time for testing purposes. It lets us schedule effects to run at specific times, making it ideal for testing time-related functionality.
+Effectの`TestClock`は、テスト目的で時間を制御することを可能にします。特定の時間に効果を実行するようにスケジュールできるため、時間に関連する機能のテストに最適です。
 
-Instead of waiting for real time to pass, we use the `TestClock` to set the clock time to a specific point. Any effects scheduled to run at or before that time will be executed in order.
+実際の時間が経過するのを待つ代わりに、`TestClock`を使用して時計の時間を特定のポイントに設定します。その時間またはそれ以前に実行されるようにスケジュールされた効果は順番に実行されます。
 
-## How TestClock Works
+## TestClockの仕組み
 
-Imagine `TestClock` as a wall clock, but with a twist—it doesn't tick on its own. Instead, it only changes when we manually adjust it using the `TestClock.adjust` and `TestClock.setTime` functions. The clock time never progresses on its own.
+`TestClock`を壁時計のように想像してください。ただし、ひねりがあります。それは自動的には動きません。代わりに、`TestClock.adjust`および`TestClock.setTime`関数を使用して手動で調整するたびにのみ変わります。時計の時間は自動的には進行しません。
 
-When we adjust the clock time, any effects scheduled to run at or before the new time will be executed. This allows us to simulate the passage of time in our tests without waiting for real time.
+時計の時間を調整すると、新しい時間に実行されるようにスケジュールされた効果が実行されます。これにより、実際の時間を待たずにテストで時間の経過をシミュレートすることができます。
 
-Let's look at an example of how to test `Effect.timeout` using the `TestClock`:
+`TestClock`を使用して`Effect.timeout`をテストする方法の例を見てみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genの使用", "pipeの使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -27,7 +27,7 @@ import { Effect, TestClock, Fiber, Option, TestContext } from "effect"
 import * as assert from "node:assert"
 
 const test = Effect.gen(function* () {
-  // Create a fiber that sleeps for 5 minutes and then times out after 1 minute
+  // 5分間スリープし、その後1分後にタイムアウトするfiberを作成
   const fiber = yield* Effect.sleep("5 minutes").pipe(
     Effect.timeoutTo({
       duration: "1 minute",
@@ -37,13 +37,13 @@ const test = Effect.gen(function* () {
     Effect.fork
   )
 
-  // Adjust the TestClock by 1 minute to simulate the passage of time
+  // TestClockを1分進めて時間の経過をシミュレートする
   yield* TestClock.adjust("1 minute")
 
-  // Get the result of the fiber
+  // fiberの結果を取得する
   const result = yield* Fiber.join(fiber)
 
-  // Check if the result is None, indicating a timeout
+  // 結果がNoneであるかを確認し、タイムアウトを示す
   assert.ok(Option.isNone(result))
 }).pipe(Effect.provide(TestContext.TestContext))
 
@@ -67,15 +67,15 @@ const test = pipe(
   }),
   Effect.fork,
   Effect.tap(() =>
-    // Adjust the TestClock by 1 minute to simulate the passage of time
+    // TestClockを1分進めて時間の経過をシミュレートする
     TestClock.adjust("1 minute")
   ),
   Effect.andThen((fiber) =>
-    // Get the result of the fiber
+    // fiberの結果を取得する
     Fiber.join(fiber)
   ),
   Effect.andThen((result) => {
-    // Check if the result is None, indicating a timeout
+    // 結果がNoneであるかを確認し、タイムアウトを示す
     assert.ok(Option.isNone(result))
   }),
   Effect.provide(TestContext.TestContext)
@@ -87,23 +87,22 @@ Effect.runPromise(test)
 </Tab>
 </Tabs>
 
-In this example, we create a test scenario involving a fiber that sleeps for 5 minutes and then times out after 1 minute. Instead of waiting for the full 5 minutes to elapse in real time, we utilize the `TestClock` to instantly advance time by 1 minute.
+この例では、5分間スリープし、その後1分でタイムアウトするfiberを含むテストシナリオを作成します。実際に5分が経過するのを待つ代わりに、`TestClock`を利用して時間を1分進めます。
 
-A critical point to note is the forking of the fiber where `Effect.sleep` is invoked. Calls to `Effect.sleep` and related methods wait until the clock time matches or surpasses the scheduled time for their execution. By forking the fiber, we ensure that we have control over the clock time adjustment.
+重要なポイントは、`Effect.sleep`が呼び出されるfiberのフォークです。`Effect.sleep`や関連メソッドの呼び出しは、クロック時間が予定された時間に達するか、それを超えるまで待機します。fiberをフォークすることで、クロック時間の調整を制御できるようにします。
 
 <Idea>
-  The recommended pattern when using the `TestClock` involves forking the
-  effect being tested, adjusting the clock time as needed, and then verifying
-  that the expected effects have occurred.
+  `TestClock`を使用する際の推奨パターンは、テストされるエフェクトをフォークし、
+  必要に応じてクロック時間を調整し、その後期待されるエフェクトが発生したことを確認することです。
 </Idea>
 
-## More Examples
+## さらなる例
 
-### Testing Recurring Effects
+### 繰り返しエフェクトのテスト
 
-Let's explore an example demonstrating how to test an effect that runs at fixed intervals using the `TestClock`:
+固定間隔で実行されるエフェクトを`TestClock`を使用してテストする方法を示す例を見てみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -115,32 +114,32 @@ const test = Effect.gen(function* () {
   const q = yield* Queue.unbounded()
 
   yield* Queue.offer(q, undefined).pipe(
-    // Delay the effect for 60 minutes and repeat it forever
+    // エフェクトを60分遅延させ、それを永遠に繰り返す
     Effect.delay("60 minutes"),
     Effect.forever,
     Effect.fork
   )
 
-  // Check if no effect is performed before the recurrence period
+  // 繰り返し期間の前にエフェクトが実行されていないことを確認する
   const a = yield* Queue.poll(q).pipe(Effect.andThen(Option.isNone))
 
-  // Adjust the TestClock by 60 minutes to simulate the passage of time
+  // 時間の経過をシミュレートするためにTestClockを60分調整する
   yield* TestClock.adjust("60 minutes")
 
-  // Check if an effect is performed after the recurrence period
+  // 繰り返し期間の後にエフェクトが実行されることを確認する
   const b = yield* Queue.take(q).pipe(Effect.as(true))
 
-  // Check if the effect is performed exactly once
+  // エフェクトが正確に一度だけ実行されることを確認する
   const c = yield* Queue.poll(q).pipe(Effect.andThen(Option.isNone))
 
-  // Adjust the TestClock by another 60 minutes
+  // TestClockをさらに60分調整する
   yield* TestClock.adjust("60 minutes")
 
-  // Check if another effect is performed
+  // 別のエフェクトが実行されることを確認する
   const d = yield* Queue.take(q).pipe(Effect.as(true))
   const e = yield* Queue.poll(q).pipe(Effect.andThen(Option.isNone))
 
-  // Ensure that all conditions are met
+  // すべての条件が満たされていることを確認する
   assert.ok(a && b && c && d && e)
 }).pipe(Effect.provide(TestContext.TestContext))
 
@@ -160,28 +159,28 @@ const test = pipe(
   Effect.andThen((q) =>
     pipe(
       Queue.offer(q, undefined),
-      // Delay the effect for 60 minutes and repeat it forever
+      // エフェクトを60分遅延させ、それを永遠に繰り返す
       Effect.delay("60 minutes"),
       Effect.forever,
       Effect.fork,
       Effect.andThen(
         pipe(
           Effect.Do,
-          // Check if no effect is performed before the recurrence period
+          // 繰り返し期間の前にエフェクトが実行されていないことを確認する
           Effect.bind("a", () =>
             pipe(Queue.poll(q), Effect.andThen(Option.isNone))
           ),
-          // Adjust the TestClock by 60 minutes to simulate the passage of time
+          // 時間の経過をシミュレートするためにTestClockを60分調整する
           Effect.tap(() => TestClock.adjust("60 minutes")),
-          // Check if an effect is performed after the recurrence period
+          // 繰り返し期間の後にエフェクトが実行されることを確認する
           Effect.bind("b", () => pipe(Queue.take(q), Effect.as(true))),
-          // Check if the effect is performed exactly once
+          // エフェクトが正確に一度だけ実行されることを確認する
           Effect.bind("c", () =>
             pipe(Queue.poll(q), Effect.andThen(Option.isNone))
           ),
-          // Adjust the TestClock by another 60 minutes
+          // TestClockをさらに60分調整する
           Effect.tap(() => TestClock.adjust("60 minutes")),
-          // Check if another effect is performed
+          // 別のエフェクトが実行されることを確認する
           Effect.bind("d", () => pipe(Queue.take(q), Effect.as(true))),
           Effect.bind("e", () =>
             pipe(Queue.poll(q), Effect.andThen(Option.isNone))
@@ -189,7 +188,7 @@ const test = pipe(
         )
       ),
       Effect.andThen(({ a, b, c, d, e }) => {
-        // Ensure that all conditions are met
+        // すべての条件が満たされていることを確認する
         assert.ok(a && b && c && d && e)
       })
     )
@@ -203,19 +202,19 @@ Effect.runPromise(test)
 </Tab>
 </Tabs>
 
-In this example, we aim to test an effect that runs at regular intervals. We use an unbounded queue to manage the effects. We verify that:
+この例では、定期的に実行されるエフェクトをテストすることを目指しています。エフェクトを管理するために無制限のキューを使用します。以下を確認します：
 
-1. No effect is performed before the specified recurrence period.
-2. An effect is performed after the recurrence period.
-3. The effect is executed exactly once.
+1. 指定された再発期間の前にエフェクトが実行されないこと。
+2. 再発期間の後にエフェクトが実行されること。
+3. エフェクトが正確に一度だけ実行されること。
 
-It's crucial to note that after each recurrence, the next occurrence is scheduled to happen at the appropriate time in the future. When we adjust the clock by 60 minutes, precisely one value is placed in the queue, and when we adjust the clock by another 60 minutes, another value is added to the queue.
+重要なのは、各再発の後、次の発生が将来の適切な時間にスケジュールされることです。時計を60分調整すると、正確に1つの値がキューに配置され、さらに60分調整すると、別の値がキューに追加されます。
 
 ### Testing Clock
 
-Let's explore an example that demonstrates how to test the behavior of the `Clock` using the `TestClock`:
+`Clock`の動作を`TestClock`を使用してテストする方法を示す例を見てみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -224,16 +223,16 @@ import { Effect, Clock, TestClock, TestContext } from "effect"
 import * as assert from "node:assert"
 
 const test = Effect.gen(function* () {
-  // Get the current time using the Clock
+  // Clockを使用して現在の時刻を取得
   const startTime = yield* Clock.currentTimeMillis
 
-  // Adjust the TestClock by 1 minute to simulate the passage of time
+  // 時間の経過をシミュレートするためにTestClockを1分調整
   yield* TestClock.adjust("1 minute")
 
-  // Get the current time again
+  // 再度現在の時刻を取得
   const endTime = yield* Clock.currentTimeMillis
 
-  // Check if the time difference is at least 60,000 milliseconds (1 minute)
+  // 時間差が少なくとも60,000ミリ秒（1分）であることを確認
   assert.ok(endTime - startTime >= 60_000)
 }).pipe(Effect.provide(TestContext.TestContext))
 
@@ -249,15 +248,15 @@ import { Effect, Clock, TestClock, TestContext, pipe } from "effect"
 import * as assert from "node:assert"
 
 const test = pipe(
-  // Get the current time using the Clock
+  // Clockを使用して現在の時刻を取得
   Clock.currentTimeMillis,
   Effect.andThen((startTime) =>
-    // Adjust the TestClock by 1 minute to simulate the passage of time
+    // 時間の経過をシミュレートするためにTestClockを1分調整
     TestClock.adjust("1 minute").pipe(
-      // Get the current time again
+      // 再度現在の時刻を取得
       Effect.andThen(Clock.currentTimeMillis),
       Effect.andThen((endTime) => {
-        // Check if the time difference is at least 60,000 milliseconds (1 minute)
+        // 時間差が少なくとも60,000ミリ秒（1分）であることを確認
         assert.ok(endTime - startTime >= 60_000)
       })
     )
@@ -271,11 +270,11 @@ Effect.runPromise(test)
 </Tab>
 </Tabs>
 
-### Testing Deferred
+### Deferredのテスト
 
-`TestClock` also affects asynchronous code scheduled to run after a certain time:
+`TestClock`は、特定の時間後に実行される非同期コードにも影響を与えます:
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -284,19 +283,19 @@ import { Effect, Deferred, TestClock, TestContext } from "effect"
 import * as assert from "node:assert"
 
 const test = Effect.gen(function* () {
-  // Create a deferred value
+  // Deferred値を作成
   const deferred = yield* Deferred.make<number, void>()
 
-  // Run two effects concurrently: sleep for 10 seconds and succeed the deferred with a value of 1
+  // 2つのエフェクトを同時に実行: 10秒間スリープし、Deferredに1の値を設定
   yield* Effect.all(
     [Effect.sleep("10 seconds"), Deferred.succeed(deferred, 1)],
     { concurrency: "unbounded" }
   ).pipe(Effect.fork)
 
-  // Adjust the TestClock by 10 seconds
+  // TestClockを10秒調整
   yield* TestClock.adjust("10 seconds")
 
-  // Await the value from the deferred
+  // Deferredから値を待機
   const readRef = yield* Deferred.await(deferred)
 
   assert.ok(1 === readRef)
@@ -314,10 +313,10 @@ import { Effect, Deferred, TestClock, TestContext, pipe } from "effect"
 import * as assert from "node:assert"
 
 const test = pipe(
-  // Create a deferred value
+  // Deferred値を作成
   Deferred.make<number, void>(),
   Effect.tap((deferred) =>
-    // Run two effects concurrently: sleep for 10 seconds and succeed the deferred with a value of 1
+    // 2つのエフェクトを同時に実行: 10秒間スリープし、Deferredに1の値を設定
     Effect.fork(
       Effect.all(
         [Effect.sleep("10 seconds"), Deferred.succeed(deferred, 1)],
@@ -327,9 +326,9 @@ const test = pipe(
       )
     )
   ),
-  // Adjust the TestClock by 10 seconds
+  // TestClockを10秒調整
   Effect.tap(() => TestClock.adjust("10 seconds")),
-  // Await the value from the deferred
+  // Deferredから値を待機
   Effect.andThen((deferred) => Deferred.await(deferred)),
   Effect.andThen((readRef) => {
     assert.ok(1 === readRef)
@@ -343,4 +342,4 @@ Effect.runPromise(test)
 </Tab>
 </Tabs>
 
-In this code, we create a scenario where a value is set in a `Deferred` after 10 seconds asynchronously. We use `Effect.fork` to run this asynchronously. By adjusting the `TestClock` by 10 seconds, we can simulate the passage of time and test the code without waiting for the actual 10 seconds to elapse.
+このコードでは、10秒後に非同期で`Deferred`に値を設定するシナリオを作成します。これを非同期で実行するために`Effect.fork`を使用します。`TestClock`を10秒調整することで、実際に10秒待つことなく時間の経過をシミュレートしてコードをテストすることができます。

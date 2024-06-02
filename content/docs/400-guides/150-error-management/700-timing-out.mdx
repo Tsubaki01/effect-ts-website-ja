@@ -1,21 +1,21 @@
 ---
-title: Timing out
-excerpt: Learn how to set time constraints on operations with `Effect.timeout`. Discover how to handle scenarios where tasks need to complete within a specified timeframe. Explore variations like `timeoutTo`, `timeoutFail`, and `timeoutFailCause` to customize behavior when a timeout occurs, providing more control and flexibility in managing time-sensitive operations.
+title: タイムアウト
+excerpt: `Effect.timeout`を使用して操作に時間制限を設定する方法を学びます。タスクが指定された時間内に完了する必要があるシナリオの処理方法を発見します。タイムアウトが発生したときの動作をカスタマイズするための`timeoutTo`、`timeoutFail`、および`timeoutFailCause`のようなバリエーションを探求し、時間に敏感な操作を管理する際の制御と柔軟性を向上させます。
 bottomNavigation: pagination
 ---
 
-In the world of programming, we often deal with tasks that take some time to complete. Sometimes, we want to set a limit on how long we are willing to wait for a task to finish. This is where the `Effect.timeout` function comes into play. It allows us to put a time constraint on an operation, ensuring that it doesn't run indefinitely. In this guide, we'll explore how to use `Effect.timeout` effectively.
+プログラミングの世界では、完了するのに時間がかかるタスクを扱うことがよくあります。時には、タスクが完了するまでに待つ時間に制限を設けたいことがあります。ここで`Effect.timeout`関数が役立ちます。これにより、操作に時間制限を設定し、無期限に実行されないようにすることができます。このガイドでは、`Effect.timeout`を効果的に使用する方法を探ります。
 
 ## timeout
 
-Effect lets us timeout any effect using the `Effect.timeout` function. It returns a new effect with the following characteristics:
+Effectは`Effect.timeout`関数を使用して任意のエフェクトにタイムアウトを設定することができます。これにより、次の特性を持つ新しいエフェクトが返されます：
 
-- If an error is returned, it signifies that the timeout expired before the completion of the effect's execution.
-- If successful, it indicates that the effect finished within the specified timeout, and the result of the effect is included.
+- エラーが返された場合、それはエフェクトの実行が完了する前にタイムアウトが発生したことを示します。
+- 成功した場合、それはエフェクトが指定されたタイムアウト内に完了し、その結果が含まれていることを示します。
 
-If an effect times out, then instead of continuing to execute in the background, it will be interrupted so no resources will be wasted.
+エフェクトがタイムアウトした場合、バックグラウンドで実行を続けるのではなく、中断されるため、リソースが無駄になりません。
 
-Suppose we have the following effect:
+次のようなエフェクトがあるとします：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -30,9 +30,9 @@ const program = Effect.gen(function* () {
 const main = program.pipe(Effect.timeout("3 seconds"))
 ```
 
-When we apply `Effect.timeout` to `program`, it behaves in one of the following ways:
+`Effect.timeout`を`program`に適用すると、次のいずれかの方法で動作します：
 
-1. If the original effect (`program` in this case) completes before the timeout elapses, it returns the produced value by the original effect. Here's an example:
+1. 元のエフェクト（この場合は`program`）がタイムアウトが経過する前に完了した場合、元のエフェクトによって生成された値を返します。以下はその例です：
 
    ```ts twoslash
    import { Effect } from "effect"
@@ -48,14 +48,14 @@ When we apply `Effect.timeout` to `program`, it behaves in one of the following 
 
    Effect.runPromise(main).then(console.log, console.error)
    /*
-   Output:
+   出力:
    start doing something...
    my job is finished!
    some result
    */
    ```
 
-2. If the timeout elapses before the original effect completes, and the effect is interruptible, it will be immediately interrupted, and the timeout operation produces a `TimeoutException` error. Here's an example:
+2. タイムアウトが元のエフェクトの完了前に経過し、エフェクトが中断可能である場合、即座に中断され、タイムアウト操作は`TimeoutException`エラーを生成します。以下はその例です：
 
    ```ts twoslash
    import { Effect } from "effect"
@@ -71,13 +71,13 @@ When we apply `Effect.timeout` to `program`, it behaves in one of the following 
 
    Effect.runPromise(main).then(console.log, console.error)
    /*
-   Output:
+   出力:
    (FiberFailure) TimeoutException
       ... stack trace ...
    */
    ```
 
-3. If the effect is uninterruptible, it will be blocked until the original effect safely finishes its work, and then the timeout operator produces a `TimeoutException` error. Here's an example:
+3. エフェクトが中断不可能な場合、元のエフェクトが安全に作業を完了するまでブロックされ、その後タイムアウト操作は`TimeoutException`エラーを生成します。以下はその例です：
 
    ```ts twoslash
    import { Effect } from "effect"
@@ -96,7 +96,7 @@ When we apply `Effect.timeout` to `program`, it behaves in one of the following 
 
    Effect.runPromise(main).then(console.log, console.error)
    /*
-   Output:
+   出力:
    start doing something...
    my job is finished!
    (FiberFailure) TimeoutException
@@ -104,7 +104,7 @@ When we apply `Effect.timeout` to `program`, it behaves in one of the following 
    */
    ```
 
-   If we want to return early after the timeout has passed and before an underlying effect has been interrupted, we can use `Effect.disconnect`. This technique allows the original effect to be interrupted in the background. Here's an example:
+   タイムアウトが経過した後、基礎となるエフェクトが中断される前に早期に戻りたい場合は、`Effect.disconnect`を使用できます。この技法により、元のエフェクトはバックグラウンドで中断されることが可能です。以下はその例です：
 
    ```ts twoslash
    import { Effect } from "effect"
@@ -124,7 +124,7 @@ When we apply `Effect.timeout` to `program`, it behaves in one of the following 
 
    Effect.runPromise(main).then(console.log, console.error)
    /*
-   Output:
+   出力:
    start doing something...
    (FiberFailure) TimeoutException
       ... stack trace ...
@@ -132,13 +132,13 @@ When we apply `Effect.timeout` to `program`, it behaves in one of the following 
    */
    ```
 
-## Customizing Timeout Behavior
+## タイムアウト動作のカスタマイズ
 
-In addition to the basic `Effect.timeout` function, there are variations available that allow you to customize the behavior when a timeout occurs.
+基本的な`Effect.timeout`関数に加えて、タイムアウトが発生したときの動作をカスタマイズできるバリエーションがあります。
 
 ### timeoutTo
 
-The `timeoutTo` function is similar to `Effect.timeout`, but it provides more control over the final result type. It allows you to specify what should be returned in case of a timeout. Here's an example:
+`timeoutTo`関数は`Effect.timeout`に似ていますが、最終的な結果の型をより細かく制御できます。タイムアウトが発生した場合に返すべき内容を指定することができます。以下はその例です：
 
 ```ts twoslash
 import { Effect, Either } from "effect"
@@ -153,7 +153,7 @@ const program = Effect.gen(function* () {
 const main = program.pipe(
   Effect.timeoutTo({
     duration: "1 second",
-    // let's return an Either
+    // Eitherを返しましょう
     onSuccess: (result): Either.Either<string, string> =>
       Either.right(result),
     onTimeout: (): Either.Either<string, string> => Either.left("timeout!")
@@ -162,7 +162,7 @@ const main = program.pipe(
 
 Effect.runPromise(main).then(console.log)
 /*
-Output:
+出力:
 start doing something...
 {
   _id: "Either",
@@ -174,7 +174,7 @@ start doing something...
 
 ### timeoutFail
 
-The `timeoutFail` function allows you to produce a specific error when a timeout happens. This can be helpful for signaling timeout errors in your code. Here's an example:
+`timeoutFail`関数は、タイムアウトが発生したときに特定のエラーを生成することができます。これは、コード内でタイムアウトエラーを通知するのに役立ちます。以下はその例です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -195,7 +195,7 @@ const main = program.pipe(
 
 Effect.runPromise(main).then(console.log, console.error)
 /*
-Output:
+出力:
 start doing something...
 (FiberFailure) Error: timeout
 */
@@ -203,7 +203,7 @@ start doing something...
 
 ### timeoutFailCause
 
-The `timeoutFailCause` function allows you to produce a specific defect when a timeout occurs. This is useful when you need to handle timeouts as exceptional cases in your code. Here's an example:
+`timeoutFailCause`関数は、タイムアウトが発生したときに特定の欠陥を生成することができます。これは、コード内でタイムアウトを例外的なケースとして処理するのに役立ちます。以下はその例です：
 
 ```ts twoslash
 import { Effect, Cause } from "effect"
@@ -224,7 +224,7 @@ const main = program.pipe(
 
 Effect.runPromiseExit(main).then(console.log)
 /*
-Output:
+出力:
 start doing something...
 {
   _id: 'Exit',

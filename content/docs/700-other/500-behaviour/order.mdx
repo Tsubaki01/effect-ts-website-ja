@@ -1,14 +1,14 @@
 ---
 title: Order
-excerpt: Explore the Order module in Effect, which provides a powerful interface for comparing and sorting values. Learn about built-in comparators for common data types, sorting arrays, deriving custom orders, combining orders, and additional useful functions for comparisons, finding minimum/maximum, clamping values, and checking value range.
+excerpt: EffectのOrderモジュールを探索し、値を比較およびソートするための強力なインターフェースを提供します。一般的なデータ型の組み込みコンパレータ、配列のソート、カスタムオーダーの派生、オーダーの組み合わせ、比較、最小/最大の検索、値のクランプ、値の範囲チェックのための追加の便利な関数について学びます。
 bottomNavigation: pagination
 ---
 
-The Order module provides a way to compare values and determine their order.
-It defines an interface `Order<A>` which represents a single function for comparing two values of type `A`.
-The function returns `-1`, `0`, or `1`, indicating whether the first value is less than, equal to, or greater than the second value.
+Orderモジュールは、値を比較してその順序を決定する方法を提供します。
+これは、型`A`の2つの値を比較するための単一の関数を表すインターフェース`Order<A>`を定義します。
+この関数は、最初の値が2番目の値より小さい、等しい、または大きいかを示すために`-1`、`0`、または`1`を返します。
 
-Here's the basic structure of an `Order`:
+`Order`の基本構造は次のとおりです：
 
 ```ts
 interface Order<A> {
@@ -16,32 +16,32 @@ interface Order<A> {
 }
 ```
 
-## Using the Built-in Orders
+## 組み込みのOrderの使用
 
-The Order module comes with several built-in comparators for common data types:
+Orderモジュールには、一般的なデータ型のためのいくつかの組み込みコンパレータが含まれています：
 
-- `string`: Used for comparing strings.
-- `number`: Used for comparing numbers.
-- `bigint`: Used for comparing big integers.
-- `Date`: Used for comparing `Date`s.
+- `string`: 文字列を比較するために使用されます。
+- `number`: 数値を比較するために使用されます。
+- `bigint`: 大きな整数を比較するために使用されます。
+- `Date`: `Date`を比較するために使用されます。
 
-Here's how you can use these comparators:
+これらのコンパレータを使用する方法は次のとおりです：
 
 ```ts twoslash
 // @target: ES2020
 import { Order } from "effect"
 
 console.log(Order.string("apple", "banana"))
-// Output: -1, as "apple" < "banana"
+// 出力: -1, as "apple" < "banana"
 console.log(Order.number(1, 1))
-// Output: 0, as 1 = 1
+// 出力: 0, as 1 = 1
 console.log(Order.bigint(2n, 1n))
-// Output: 1, as 2n > 1n
+// 出力: 1, as 2n > 1n
 ```
 
-## Sorting Arrays
+## 配列のソート
 
-Once you have your comparators, you can sort arrays. The Array module provides a handy function called `sort` that allows you to sort arrays without modifying the original array. Here's an example:
+コンパレータを用意したら、配列をソートすることができます。Arrayモジュールには、元の配列を変更せずに配列をソートするための便利な関数`sort`が用意されています。以下はその例です：
 
 ```ts twoslash
 import { Order, Array } from "effect"
@@ -53,13 +53,13 @@ const result = Array.sort(strings, Order.string)
 console.log(strings)
 console.log(result)
 /*
-Output:
+出力:
 [ 'b', 'a', 'd', 'c' ]
 [ 'a', 'b', 'c', 'd' ]
 */
 ```
 
-You can even use an `Order` as a comparator in JavaScript's native `Array.sort` method:
+`Order`をJavaScriptのネイティブな`Array.sort`メソッドのコンパレータとして使用することもできます：
 
 ```ts twoslash
 import { Order } from "effect"
@@ -69,43 +69,43 @@ const strings = ["b", "a", "d", "c"]
 strings.sort(Order.string)
 
 console.log(strings)
-// Output: [ 'a', 'b', 'c', 'd' ]
+// 出力: [ 'a', 'b', 'c', 'd' ]
 ```
 
-Please note that when using `Array#sort`, you modify the original array. So, be cautious if you want to keep the original order. If you don't want to alter the original array, consider using `Array.sort` as shown earlier.
+`Array#sort`を使用すると、元の配列が変更されることに注意してください。元の順序を保持したい場合は注意が必要です。元の配列を変更したくない場合は、先に示したように`Array.sort`を使用することを検討してください。
 
-## Deriving Orders
+## Orderの派生
 
-Sometimes, when working with more complex data structures, you may need to create custom sorting rules.
-The `Order` module allows you to do this by deriving a new `Order` from an existing one using the `Order.mapInput` function.
+複雑なデータ構造を扱う場合、カスタムのソートルールを作成する必要があることがあります。
+`Order`モジュールは、`Order.mapInput`関数を使用して既存の`Order`から新しい`Order`を派生させることができます。
 
-Imagine you have a list of `Person` objects, and you want to sort them by their names in ascending order.
-To achieve this, you can create a custom `Order`.
+例えば、`Person`オブジェクトのリストがあり、それらを名前の昇順でソートしたいとします。
+これを達成するために、カスタムの`Order`を作成することができます。
 
-Here's how you can do it:
+以下はその方法です：
 
 ```ts twoslash
 import { Order, Array } from "effect"
 
-// Define the Person interface
+// Personインターフェースを定義する
 interface Person {
   readonly name: string
   readonly age: number
 }
 
-// Create a custom sorting rule to sort Persons by their names in ascending order
+// Personの名前を昇順でソートするためのカスタムソートルールを作成する
 const byName = Order.mapInput(Order.string, (person: Person) => person.name)
 ```
 
-In this example, we first import the necessary modules and define the `Person` interface, representing our data structure.
-Next, we create a custom sorting rule called `byName` using the `mapInput` function.
+この例では、まず必要なモジュールをインポートし、データ構造を表す`Person`インターフェースを定義します。
+次に、`mapInput`関数を使用して`byName`というカスタムソートルールを作成します。
 
-The `mapInput` function takes two arguments:
+`mapInput`関数は2つの引数を取ります：
 
-1. The existing sorting rule you want to use as a base (`Order.string` in this case, for comparing strings).
-2. A function that extracts the value you want to use for sorting from your data structure (`person.name` in this case).
+1. 基本として使用したい既存のソートルール（この場合は文字列を比較するための`Order.string`）。
+2. データ構造からソートに使用したい値を抽出する関数（この場合は`person.name`）。
 
-Once you have defined your custom sorting rule, you can apply it to sort a list of `Person` objects:
+カスタムソートルールを定義したら、それを使用して`Person`オブジェクトのリストをソートすることができます：
 
 ```ts twoslash
 import { Order, Array } from "effect"
@@ -124,12 +124,12 @@ const persons: ReadonlyArray<Person> = [
   { name: "Bob", age: 30 }
 ]
 
-// Use your custom sorting rule to sort the persons array
+// カスタムソートルールを使用してpersons配列をソートする
 const sortedPersons = Array.sort(persons, byName)
 
 console.log(sortedPersons)
 /*
-Output:
+出力:
 [
   { name: 'Alice', age: 25 },
   { name: 'Bob', age: 30 },
@@ -138,32 +138,32 @@ Output:
 */
 ```
 
-## Combining Orders
+## Orderの結合
 
-The Order module not only handles basic comparisons but also empowers you to create intricate sorting rules. This is especially valuable when you need to sort data based on multiple criteria or properties.
+Orderモジュールは基本的な比較を処理するだけでなく、複雑なソートルールを作成することも可能にします。これは、複数の基準やプロパティに基づいてデータをソートする必要がある場合に特に有用です。
 
-The `combine*` functions in the Order module enables you to merge two or more `Order` instances, resulting in a new `Order` that incorporates the combined sorting logic. Let's walk through an example to illustrate this concept.
+Orderモジュールの`combine*`関数を使用すると、2つ以上の`Order`インスタンスを結合し、結合されたソートロジックを組み込んだ新しい`Order`を作成することができます。この概念を説明するために、例を見てみましょう。
 
-Imagine you have a list of people, each represented by an object with a `name` and an `age`. You want to sort this list first by name and then, for individuals with the same name, by age.
+名前と年齢を持つオブジェクトで表される人々のリストがあると想像してください。このリストをまず名前でソートし、次に同じ名前の人々を年齢でソートしたいとします。
 
-Here's how you can achieve this using the Order module:
+これをOrderモジュールを使用してどのように実現するかを見てみましょう。
 
 ```ts twoslash
 import { Order, Array } from "effect"
 
-// Define the structure of a person
+// Personの構造を定義する
 interface Person {
   readonly name: string
   readonly age: number
 }
 
-// Create an Order to sort people by their names
+// 名前で人々をソートするためのOrderを作成する
 const byName = Order.mapInput(Order.string, (person: Person) => person.name)
 
-// Create an Order to sort people by their ages
+// 年齢で人々をソートするためのOrderを作成する
 const byAge = Order.mapInput(Order.number, (person: Person) => person.age)
 
-// Combine the two Orders to create a complex sorting logic
+// 2つのOrderを結合して複雑なソートロジックを作成する
 const byNameAge = Order.combine(byName, byAge)
 
 const result = Array.sort(
@@ -177,7 +177,7 @@ const result = Array.sort(
 
 console.log(result)
 /*
-Output:
+出力:
 [
   { name: 'Alice', age: 18 }, <-- by name
   { name: 'Bob', age: 18 },   <-- by age
@@ -186,19 +186,19 @@ Output:
 */
 ```
 
-In the code above, we first create two separate `Order` instances: `byName` and `byAge`. These orders individually sort people by their names and ages, respectively.
+上記のコードでは、まず2つの別々の`Order`インスタンス、`byName`と`byAge`を作成します。これらのOrderはそれぞれ、人々を名前と年齢でソートします。
 
-Next, we use the `combine` function to merge these two orders into a single `byNameAge` order. This combined order first sorts people by name and then, for those with the same name, by age.
+次に、`combine`関数を使用してこれら2つのOrderを1つの`byNameAge` Orderに結合します。この結合されたOrderは、まず名前で人々をソートし、次に同じ名前の人々を年齢でソートします。
 
-Finally, we apply this combined order to the array of people using `Array.sort`. The result is an array of people sorted according to the specified criteria.
+最後に、この結合されたOrderを`Array.sort`を使用して人々の配列に適用します。結果は、指定された基準に従ってソートされた人々の配列です。
 
-## Additional Useful Functions
+## 追加の便利な関数
 
-The Order module extends its functionality by providing additional functions for common operations. These functions make it easier to work with ordered values and perform various comparisons. Let's explore each of them:
+Orderモジュールは、一般的な操作のための追加の関数を提供することで、その機能を拡張します。これらの関数は、順序付けられた値を扱いやすくし、さまざまな比較を行うのに役立ちます。それぞれの関数を見てみましょう。
 
-### Reversing Order
+### Orderの反転
 
-The `Order.reverse` function does exactly what its name suggests; it reverses the order of comparison. If you have an `Order` that sorts values in ascending order, applying `reverse` will sort them in descending order.
+`Order.reverse`関数はその名前が示す通り、比較の順序を反転させます。昇順で値をソートする`Order`がある場合、`reverse`を適用すると降順でソートされます。
 
 ```ts twoslash
 import { Order } from "effect"
@@ -207,49 +207,49 @@ const ascendingOrder = Order.number
 const descendingOrder = Order.reverse(ascendingOrder)
 
 console.log(ascendingOrder(1, 3))
-// Output: -1 (1 < 3 in ascending order)
+// 出力: -1 (1 < 3 in ascending order)
 console.log(descendingOrder(1, 3))
-// Output: 1 (1 > 3 in descending order)
+// 出力: 1 (1 > 3 in descending order)
 ```
 
-### Comparing Values
+### 値の比較
 
-These functions allow you to perform simple comparisons between values:
+これらの関数は、値同士の簡単な比較を行うことができます:
 
-- `lessThan`: Checks if one value is strictly less than another.
-- `greaterThan`: Checks if one value is strictly greater than another.
-- `lessThanOrEqualTo`: Checks if one value is less than or equal to another.
-- `greaterThanOrEqualTo`: Checks if one value is greater than or equal to another.
+- `lessThan`: ある値が別の値よりも厳密に小さいかどうかをチェックします。
+- `greaterThan`: ある値が別の値よりも厳密に大きいかどうかをチェックします。
+- `lessThanOrEqualTo`: ある値が別の値以下かどうかをチェックします。
+- `greaterThanOrEqualTo`: ある値が別の値以上かどうかをチェックします。
 
 ```ts twoslash
 import { Order } from "effect"
 
 console.log(Order.lessThan(Order.number)(1, 2))
-// Output: true (1 < 2)
+// 出力: true (1 < 2)
 console.log(Order.greaterThan(Order.number)(5, 3))
-// Output: true (5 > 3)
+// 出力: true (5 > 3)
 console.log(Order.lessThanOrEqualTo(Order.number)(2, 2))
-// Output: true (2 <= 2)
+// 出力: true (2 <= 2)
 console.log(Order.greaterThanOrEqualTo(Order.number)(4, 4))
-// Output: true (4 >= 4)
+// 出力: true (4 >= 4)
 ```
 
-### Finding Minimum and Maximum
+### 最小値と最大値の取得
 
-The `min` and `max` functions return the minimum or maximum value between two values, considering the order. These functions are particularly useful when you want to determine the smallest or largest value among multiple options.
+`min`関数と`max`関数は、順序を考慮して2つの値の間の最小値または最大値を返します。これらの関数は、複数の選択肢の中で最小または最大の値を決定したい場合に特に便利です。
 
 ```ts twoslash
 import { Order } from "effect"
 
 console.log(Order.min(Order.number)(3, 1))
-// Output: 1 (1 is the minimum)
+// 出力: 1 (1 is the minimum)
 console.log(Order.max(Order.number)(5, 8))
-// Output: 8 (8 is the maximum)
+// 出力: 8 (8 is the maximum)
 ```
 
-### Clamping Values
+### 値のクランプ
 
-The `clamp` function ensures that a value stays within a specified range. It takes three arguments: the value you want to clamp, the minimum bound, and the maximum bound. If the value falls outside the range, it's adjusted to the nearest bound.
+`clamp`関数は、値が指定された範囲内に収まるようにします。この関数は3つの引数を取ります: クランプしたい値、最小境界、最大境界です。値が範囲外にある場合、最も近い境界に調整されます。
 
 ```ts twoslash
 import { Order } from "effect"
@@ -260,18 +260,18 @@ const clampedValue = Order.clamp(Order.number)(10, {
 })
 
 console.log(clampedValue)
-// Output: 20 (10 is clamped to the nearest bound, which is 20)
+// 出力: 20 (10 is clamped to the nearest bound, which is 20)
 ```
 
-### Checking Value Range
+### 値の範囲チェック
 
-The `between` function checks if a value falls within a specified range, inclusively. It takes three arguments: the value you want to check, the minimum bound, and the maximum bound.
+`between`関数は、値が指定された範囲内に収まるかどうかをチェックします（範囲は包括的です）。この関数は3つの引数を取ります: チェックしたい値、最小境界、最大境界です。
 
 ```ts twoslash
 import { Order } from "effect"
 
 console.log(Order.between(Order.number)(15, { minimum: 10, maximum: 20 }))
-// Output: true (15 is within the range [10, 20])
+// 出力: true (15 is within the range [10, 20])
 console.log(Order.between(Order.number)(5, { minimum: 10, maximum: 20 }))
-// Output: false (5 is outside the range [10, 20])
+// 出力: false (5 is outside the range [10, 20])
 ```

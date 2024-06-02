@@ -1,28 +1,28 @@
 ---
 title: Equal
-excerpt: The Equal module provides a solution for value-based equality checks, addressing issues with JavaScript's native reference-based equality operators. Developers can define custom equality checks, ensuring data integrity and promoting predictable behavior. To implement custom equality, developers can either implement the `Equal` interface or leverage the simpler solution offered by the [Data](../data-types/data) module, which automatically generates default implementations for both `Equal` and `Hash`. This excerpt also explores working with collections like `HashSet` and `HashMap` to handle value-based equality checks effectively.
+excerpt: Equalモジュールは、JavaScriptのネイティブな参照ベースの等価演算子に関する問題に対処するための、値ベースの等価チェックのソリューションを提供します。開発者はカスタム等価チェックを定義することで、データの整合性を確保し、予測可能な動作を促進できます。カスタム等価を実装するには、開発者は`Equal`インターフェースを実装するか、`Equal`と`Hash`の両方のデフォルト実装を自動生成する[Data](../data-types/data)モジュールが提供するより簡単なソリューションを活用できます。この抜粋では、`HashSet`や`HashMap`のようなコレクションを使用して、値ベースの等価チェックを効果的に処理する方法も探ります。
 bottomNavigation: pagination
 ---
 
-The Equal module provides a simple and convenient way to define and check for equality between two values in TypeScript.
+Equalモジュールは、TypeScriptで2つの値の間の等価性を定義およびチェックするためのシンプルで便利な方法を提供します。
 
-Here are some key reasons why Effect exports an Equal module:
+EffectがEqualモジュールをエクスポートする主な理由は次のとおりです：
 
-1. **Value-Based Equality**: JavaScript's native equality operators (`===` and `==`) check for equality by reference, meaning they compare objects based on their memory addresses rather than their content. This behavior can be problematic when you want to compare objects with the same values but different references. The Equal module offers a solution by allowing developers to define custom equality checks based on the values of objects.
+1. **値ベースの等価性**: JavaScriptのネイティブな等価演算子（`===`および`==`）は参照による等価性をチェックします。つまり、オブジェクトの内容ではなくメモリアドレスに基づいてオブジェクトを比較します。この動作は、同じ値を持つが異なる参照を持つオブジェクトを比較したい場合に問題となることがあります。Equalモジュールは、オブジェクトの値に基づいてカスタム等価チェックを定義できるようにすることで、この問題を解決します。
 
-2. **Custom Equality**: The Equal module enables developers to implement custom equality checks for their data types and classes. This is crucial when you have specific requirements for determining when two objects should be considered equal. By implementing the `Equal` interface, developers can define their own equality logic.
+2. **カスタム等価性**: Equalモジュールは、開発者がデータ型やクラスのためにカスタム等価チェックを実装できるようにします。これは、2つのオブジェクトが等しいと見なされるべき特定の要件がある場合に重要です。`Equal`インターフェースを実装することで、開発者は独自の等価ロジックを定義できます。
 
-3. **Data Integrity**: In some applications, maintaining data integrity is crucial. The ability to perform value-based equality checks ensures that identical data is not duplicated within collections like sets or maps. This can lead to more efficient memory usage and more predictable behavior.
+3. **データの整合性**: 一部のアプリケーションでは、データの整合性を維持することが重要です。値ベースの等価チェックを実行する能力は、セットやマップのようなコレクション内で同一のデータが重複しないことを保証します。これにより、より効率的なメモリ使用と予測可能な動作が実現します。
 
-4. **Predictable Behavior**: The Equal module promotes more predictable behavior when comparing objects. By explicitly defining equality criteria, developers can avoid unexpected results that may occur with JavaScript's default reference-based equality checks.
+4. **予測可能な動作**: Equalモジュールは、オブジェクトを比較する際の予測可能な動作を促進します。等価基準を明示的に定義することで、JavaScriptのデフォルトの参照ベースの等価チェックで発生する可能性のある予期しない結果を回避できます。
 
-## How to Perform Equality Checking in Effect
+## Effectでの等価チェックの方法
 
-In Effect it's advisable to **stop using** JavaScript's `===` and `==` operators and instead rely on the `Equal.equals` function.
-This function can work with any data type that implements the `Equal` trait.
-Some examples of such data types include [Option](../data-types/option), [Either](../data-types/either), [HashSet](https://effect-ts.github.io/effect/effect/HashSet.ts.html), and [HashMap](https://effect-ts.github.io/effect/effect/HashMap.ts.html).
+Effectでは、JavaScriptの`===`および`==`演算子の使用を**停止し**、代わりに`Equal.equals`関数を使用することをお勧めします。
+この関数は、`Equal`トレイトを実装している任意のデータ型で動作します。
+そのようなデータ型の例としては、[Option](../data-types/option)、[Either](../data-types/either)、[HashSet](https://effect-ts.github.io/effect/effect/HashSet.ts.html)、および[HashMap](https://effect-ts.github.io/effect/effect/HashMap.ts.html)があります。
 
-When you use `Equal.equals` and your objects do not implement the `Equal` trait, it defaults to using the `===` operator for object comparison:
+`Equal.equals`を使用し、オブジェクトが`Equal`トレイトを実装していない場合、それはオブジェクト比較のためにデフォルトで`===`演算子を使用します。
 
 ```ts twoslash
 import { Equal } from "effect"
@@ -30,24 +30,24 @@ import { Equal } from "effect"
 const a = { name: "Alice", age: 30 }
 const b = { name: "Alice", age: 30 }
 
-console.log(Equal.equals(a, b)) // Output: false
+console.log(Equal.equals(a, b)) // 出力: false
 ```
 
-In this example, `a` and `b` are two separate objects with the same contents. However, `===` considers them different because they occupy different memory locations. This behavior can lead to unexpected results when you want to compare values based on their content.
+In this example, `a` と `b` は同じ内容を持つ2つの別々のオブジェクトです。しかし、`===` はそれらが異なるメモリ位置を占有しているため、異なるものと見なします。この動作は、内容に基づいて値を比較したい場合に予期しない結果をもたらすことがあります。
 
-However, you can configure your models to ensure that `Equal.equals` behaves consistently with your custom equality checks. There are two alternative approaches:
+しかし、モデルを設定して、`Equal.equals` がカスタム等価チェックと一貫して動作するようにすることができます。これには2つのアプローチがあります：
 
-1. **Implementing the `Equal` Interface**: This method is useful when you need to define your custom equality check.
+1. **`Equal` インターフェースの実装**: カスタム等価チェックを定義する必要がある場合に有用です。
 
-2. **Using the Data Module**: For simple value equality, the [Data](../data-types/data) module provides a more straightforward solution by automatically generating default implementations for `Equal`.
+2. **Data モジュールの使用**: 単純な値の等価性のために、[Data](../data-types/data) モジュールは `Equal` のデフォルト実装を自動生成するより簡単なソリューションを提供します。
 
-Let's delve into both solutions.
+これらのソリューションについて詳しく見ていきましょう。
 
-### Implementing the Equal Interface
+### `Equal` インターフェースの実装
 
-To create custom equality behavior, you can implement the `Equal` interface in your models. This interface extends the `Hash` interface from the [Hash](hash) module.
+カスタム等価性の動作を作成するには、モデルに `Equal` インターフェースを実装することができます。このインターフェースは [Hash](hash) モジュールの `Hash` インターフェースを拡張します。
 
-Here's an example of implementing the `Equal` interface for a `Person` class:
+以下は、`Person` クラスに `Equal` インターフェースを実装する例です：
 
 ```twoslash include Person
 import { Equal, Hash } from "effect"
@@ -74,9 +74,9 @@ export class Person implements Equal.Equal {
 // @include: Person
 ```
 
-In the above code, we define a custom equality function `[Equal.symbol]` and a hash function `[Hash.symbol]` for the `Person` class. The `Hash` interface optimizes equality checks by comparing hash values instead of the objects themselves. When you use the `Equal.equals` function to compare two objects, it first checks if their hash values are equal. If not, it quickly determines that the objects are not equal, avoiding the need for a detailed property-by-property comparison.
+上記のコードでは、`Person` クラスに対してカスタム等価関数 `[Equal.symbol]` とハッシュ関数 `[Hash.symbol]` を定義しています。`Hash` インターフェースは、オブジェクト自体ではなくハッシュ値を比較することで等価チェックを最適化します。`Equal.equals` 関数を使用して2つのオブジェクトを比較する際、まずハッシュ値が等しいかどうかを確認します。もし等しくない場合、詳細なプロパティごとの比較を避けて、オブジェクトが等しくないことを迅速に判断します。
 
-Once you've implemented the `Equal` interface, you can utilize the `Equal.equals` function to check for equality using your custom logic. Here's an example using the `Person` class:
+`Equal` インターフェースを実装したら、カスタムロジックを使用して `Equal.equals` 関数を利用して等価性をチェックすることができます。以下は `Person` クラスを使用した例です：
 
 ```ts twoslash
 // @filename: Person.ts
@@ -90,19 +90,19 @@ import { Person } from "./Person"
 const alice = new Person("Alice", 30)
 const bob = new Person("Bob", 40)
 
-console.log(Equal.equals(alice, alice)) // Output: true
-console.log(Equal.equals(alice, new Person("Alice", 30))) // Output: true
+console.log(Equal.equals(alice, alice)) // 出力: true
+console.log(Equal.equals(alice, new Person("Alice", 30))) // 出力: true
 
-console.log(Equal.equals(alice, bob)) // Output: false
+console.log(Equal.equals(alice, bob)) // 出力: false
 ```
 
-In this code, the equality check returns `true` when comparing `alice` to a new `Person` object with identical property values and `false` when comparing `alice` to `bob` due to their differing property values.
+このコードでは、`alice` を同じプロパティ値を持つ新しい `Person` オブジェクトと比較すると等価チェックは `true` を返し、`alice` を `bob` と比較するとプロパティ値が異なるため `false` を返します。
 
-### Simplifying Equality with the Data Module
+### Data モジュールを使った等価性の簡素化
 
-Implementing both `Equal` and `Hash` can become cumbersome when all you need is straightforward value equality checks. Luckily, the [Data](../data-types/data) module provides a simpler solution. It offers APIs that automatically generate default implementations for both `Equal` and `Hash`.
+単純な値の等価チェックが必要な場合、`Equal` と `Hash` の両方を実装するのは面倒になることがあります。幸いなことに、[Data](../data-types/data) モジュールはより簡単な解決策を提供します。このモジュールは、`Equal` と `Hash` の両方のデフォルト実装を自動的に生成するAPIを提供します。
 
-Let's see how it works:
+どのように機能するか見てみましょう：
 
 ```ts twoslash
 import { Equal, Data } from "effect"
@@ -111,20 +111,20 @@ const alice = Data.struct({ name: "Alice", age: 30 })
 
 const bob = Data.struct({ name: "Bob", age: 40 })
 
-console.log(Equal.equals(alice, alice)) // Output: true
-console.log(Equal.equals(alice, Data.struct({ name: "Alice", age: 30 }))) // Output: true
+console.log(Equal.equals(alice, alice)) // 出力: true
+console.log(Equal.equals(alice, Data.struct({ name: "Alice", age: 30 }))) // 出力: true
 
-console.log(Equal.equals(alice, { name: "Alice", age: 30 })) // Output: false
-console.log(Equal.equals(alice, bob)) // Output: false
+console.log(Equal.equals(alice, { name: "Alice", age: 30 })) // 出力: false
+console.log(Equal.equals(alice, bob)) // 出力: false
 ```
 
-In this example, we use the `Data.struct` function to create structured data objects and check their equality using `Equal.equals`. The [Data](../data-types/data) module simplifies the process by providing a default implementation for both `Equal` and `Hash`, allowing you to focus on comparing values without the need for explicit implementations.
+この例では、`Data.struct` 関数を使用して構造化データオブジェクトを作成し、`Equal.equals` を使用してその等価性をチェックします。[Data](../data-types/data) モジュールは、`Equal` と `Hash` の両方のデフォルト実装を提供することで、このプロセスを簡素化し、明示的な実装なしで値の比較に集中できるようにします。
 
-The Data module isn't limited to just structs. It can handle various data types, including tuples, arrays, and records. If you're curious about how to leverage its full range of features, you can explore the [Data module documentation](../data-types/data).
+Data モジュールは構造体に限定されません。タプル、配列、レコードなど、さまざまなデータ型を扱うことができます。その全機能を活用する方法に興味がある場合は、[Data モジュールのドキュメント](../data-types/data)を参照してください。
 
-## Working with Collections
+## コレクションの操作
 
-JavaScript's built-in `Set` and `Map` can be a bit tricky when it comes to checking equality:
+JavaScript の組み込み `Set` と `Map` は、等価性のチェックに関して少し厄介なことがあります。
 
 ```ts twoslash
 export const set = new Set()
@@ -132,14 +132,14 @@ export const set = new Set()
 set.add({ name: "Alice", age: 30 })
 set.add({ name: "Alice", age: 30 })
 
-console.log(set.size) // Output: 2
+console.log(set.size) // 出力: 2
 ```
 
-Even though the two elements in the set have the same values, the set contains two elements. Why? JavaScript's `Set` checks for equality by reference, not by values.
+セット内の2つの要素が同じ値を持っていても、セットには2つの要素が含まれています。なぜでしょうか？JavaScriptの`Set`は値ではなく、参照によって等価性をチェックするからです。
 
-To perform value-based equality checks, you'll need to use the `Hash*` collection types available in the `effect` package. These collection types, such as [HashSet](https://effect-ts.github.io/effect/effect/HashSet.ts.html) and [HashMap](https://effect-ts.github.io/effect/effect/HashMap.ts.html), provide support for the `Equal` trait.
+値に基づく等価性チェックを行うには、`effect`パッケージで利用可能な`Hash*`コレクションタイプを使用する必要があります。これらのコレクションタイプ、例えば[HashSet](https://effect-ts.github.io/effect/effect/HashSet.ts.html)や[HashMap](https://effect-ts.github.io/effect/effect/HashMap.ts.html)は、`Equal`トレイトをサポートしています。
 
-Let's take a closer look at how to use `HashSet` for value-based equality checks:
+値に基づく等価性チェックを行うために`HashSet`をどのように使用するか、詳しく見てみましょう：
 
 ```ts twoslash
 import { HashSet, Data } from "effect"
@@ -149,12 +149,12 @@ const set = HashSet.empty().pipe(
   HashSet.add(Data.struct({ name: "Alice", age: 30 }))
 )
 
-console.log(HashSet.size(set)) // Output: 1
+console.log(HashSet.size(set)) // 出力: 1
 ```
 
-When you use the `HashSet`, it correctly handles value-based equality checks. In this example, even though you're adding two objects with the same values, the `HashSet` treats them as a single element.
+`HashSet`を使用すると、値に基づく等価性チェックが正しく処理されます。この例では、同じ値を持つ2つのオブジェクトを追加しても、`HashSet`はそれらを単一の要素として扱います。
 
-**Note**: It's crucial to use elements that implement the `Equal` trait, either by implementing custom equality checks or by using the Data module. This ensures proper functionality when working with `HashSet`. Without this, you'll encounter the same behavior as the native `Set` data type:
+**注意**: `Equal`トレイトを実装する要素を使用することが重要です。これは、カスタムの等価性チェックを実装するか、Dataモジュールを使用することで実現できます。これにより、`HashSet`を使用する際の機能が確実に動作します。これを行わないと、ネイティブの`Set`データ型と同じ動作に遭遇することになります。
 
 ```ts twoslash
 import { HashSet } from "effect"
@@ -164,14 +164,14 @@ const set = HashSet.empty().pipe(
   HashSet.add({ name: "Alice", age: 30 })
 )
 
-console.log(HashSet.size(set)) // Output: 2
+console.log(HashSet.size(set)) // 出力: 2
 ```
 
-In this case, without using the Data module alongside `HashSet`, you'll experience the same behavior as the native `Set` data type. The set contains two elements because it checks for equality by reference, not by values.
+この場合、`HashSet`と一緒にDataモジュールを使用しないと、ネイティブの`Set`データ型と同じ動作を経験することになります。セットには2つの要素が含まれていますが、それは値ではなく参照によって等価性をチェックするためです。
 
-When working with the `HashMap`, you have the advantage of comparing keys by their values instead of their references. This is particularly helpful in scenarios where you want to associate values with keys based on their content.
+`HashMap`を使用する場合、キーを参照ではなく値で比較する利点があります。これは、キーの内容に基づいて値を関連付けたいシナリオで特に役立ちます。
 
-Let's explore this concept with a practical example:
+この概念を実際の例で見てみましょう：
 
 ```ts twoslash
 import { HashMap, Data } from "effect"
@@ -181,11 +181,11 @@ const map = HashMap.empty().pipe(
   HashMap.set(Data.struct({ name: "Alice", age: 30 }), 2)
 )
 
-console.log(HashMap.size(map)) // Output: 1
+console.log(HashMap.size(map)) // 出力: 1
 
 console.log(HashMap.get(map, Data.struct({ name: "Alice", age: 30 })))
 /*
-Output:
+出力:
 {
   _id: "Option",
   _tag: "Some",
@@ -194,8 +194,8 @@ Output:
 */
 ```
 
-In this code snippet, we use the `HashMap` data structure to create a map where keys are objects created using `Data.struct`. These objects have the same values, which would typically result in multiple entries in a traditional JavaScript map.
+このコードスニペットでは、`HashMap`データ構造を使用して、キーが`Data.struct`を使って作成されたオブジェクトであるマップを作成します。これらのオブジェクトは同じ値を持っているため、通常のJavaScriptのマップでは複数のエントリが生成されることになります。
 
-However, with `HashMap`, the keys are compared by their values rather than their memory references. As a result, even though we add two objects with identical content as keys, the map correctly handles them as a single key-value pair.
+しかし、`HashMap`では、キーはメモリ参照ではなくその値によって比較されます。その結果、同じ内容を持つ2つのオブジェクトをキーとして追加しても、マップはそれらを単一のキー-バリューペアとして正しく処理します。
 
-To retrieve a value associated with a specific key, we can use `HashMap.get`. In this example, when we query the map with an object having the same values as the key, it returns the associated value, which is `2`.
+特定のキーに関連付けられた値を取得するには、`HashMap.get`を使用できます。この例では、キーと同じ値を持つオブジェクトでマップをクエリすると、関連付けられた値である`2`が返されます。

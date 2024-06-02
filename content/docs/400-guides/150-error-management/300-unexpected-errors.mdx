@@ -1,26 +1,26 @@
 ---
-title: Unexpected Errors
-excerpt: Learn how Effect handles unrecoverable errors, such as defects, providing functions like `die`, `dieMessage`, `orDie`, and `orDieWith`. Explore techniques to terminate effect execution, handle unexpected errors, and recover from defects. Discover the use of `catchAllDefect` and `catchSomeDefect` to manage and selectively recover from specific defects.
+title: 予期しないエラー
+excerpt: Effectが`die`、`dieMessage`、`orDie`、`orDieWith`などの関数を提供し、回復不能なエラー（欠陥）をどのように処理するかを学びます。エフェクトの実行を終了し、予期しないエラーを処理し、欠陥から回復するための技術を探ります。`catchAllDefect`および`catchSomeDefect`を使用して、特定の欠陥を管理し、選択的に回復する方法を発見します。
 bottomNavigation: pagination
 ---
 
-There are situations where you may encounter unexpected errors, and you need to decide how to handle them. Effect provides functions to help you deal with such scenarios, allowing you to take appropriate actions when errors occur during the execution of your effects.
+予期しないエラーに遭遇する状況があり、それらをどのように処理するかを決定する必要があります。Effectはそのようなシナリオに対処するための関数を提供し、エフェクトの実行中にエラーが発生した場合に適切なアクションを取ることができます。
 
-## Creating Unrecoverable Errors
+## 回復不能なエラーの作成
 
-In the same way it is possible to leverage combinators such as `fail` to create values of type `Effect<never, E, never>` the Effect library provides tools to create defects.
+`fail`のようなコンビネータを利用して`Effect<never, E, never>`型の値を作成するのと同じように、Effectライブラリは欠陥を作成するためのツールを提供します。
 
-Creating defects is a common necessity when dealing with errors from which it is not possible to recover from a business logic perspective, such as attempting to establish a connection that is refused after multiple retries.
+ビジネスロジックの観点から回復不可能なエラー、例えば複数回の再試行後に接続が拒否される場合などに対処する際に、欠陥を作成することは一般的な必要性です。
 
-In those cases terminating the execution of the effect and moving into reporting, through an output such as stdout or some external monitoring service, might be the best solution.
+そのような場合、エフェクトの実行を終了し、stdoutや外部の監視サービスなどの出力を通じて報告に移行することが最良の解決策となるかもしれません。
 
-The following functions and combinators allow for termination of the effect and are often used to convert values of type `Effect<A, E, R>` into values of type `Effect<A, never, R>` allowing the programmer an escape hatch from having to handle and recover from errors for which there is no sensible way to recover.
+以下の関数とコンビネータはエフェクトの終了を可能にし、`Effect<A, E, R>`型の値を`Effect<A, never, R>`型の値に変換するために使用されることが多く、プログラマーが回復不可能なエラーを処理し回復する必要がない逃げ道を提供します。
 
 ### die / dieMessage
 
-The `Effect.die` function returns an effect that throws a specified error, while `Effect.dieMessage` throws a `RuntimeException` with a specified text message. These functions are useful for terminating a fiber when a defect, a critical and unexpected error, is detected in the code.
+`Effect.die`関数は指定されたエラーをスローするエフェクトを返し、`Effect.dieMessage`は指定されたテキストメッセージを持つ`RuntimeException`をスローします。これらの関数は、コード内で重大で予期しないエラー（欠陥）が検出されたときにファイバーを終了するのに役立ちます。
 
-Example using `die`:
+`die`を使用した例：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -30,10 +30,10 @@ const divide = (a: number, b: number): Effect.Effect<number> =>
     ? Effect.die(new Error("Cannot divide by zero"))
     : Effect.succeed(a / b)
 
-Effect.runSync(divide(1, 0)) // throws Error: Cannot divide by zero
+Effect.runSync(divide(1, 0)) // エラーをスロー: ゼロで割ることはできません
 ```
 
-Example using `dieMessage`:
+`dieMessage`を使用した例:
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -41,12 +41,12 @@ import { Effect } from "effect"
 const divide = (a: number, b: number): Effect.Effect<number> =>
   b === 0 ? Effect.dieMessage("Cannot divide by zero") : Effect.succeed(a / b)
 
-Effect.runSync(divide(1, 0)) // throws RuntimeException: Cannot divide by zero
+Effect.runSync(divide(1, 0)) // ランタイム例外をスロー: ゼロで割ることはできません
 ```
 
 ### orDie
 
-The `Effect.orDie` function transforms an effect's failure into a termination of the fiber, making all failures unchecked and not part of the type of the effect. It can be used to handle errors that you do not wish to recover from.
+`Effect.orDie`関数は、エフェクトの失敗をファイバーの終了に変換し、すべての失敗をチェックされないものにし、エフェクトの型の一部ではなくします。回復したくないエラーを処理するために使用できます。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -58,14 +58,14 @@ const divide = (a: number, b: number): Effect.Effect<number, Error> =>
 
 const program = Effect.orDie(divide(1, 0))
 
-Effect.runSync(program) // throws Error: Cannot divide by zero
+Effect.runSync(program) // エラーをスロー: ゼロで割ることはできません
 ```
 
-After using `Effect.orDie`, the error channel type of the `program` is `never`, indicating that all failures are unchecked, and the effect is expected to terminate the fiber when an error occurs.
+`Effect.orDie`を使用した後、`program`のエラーチャネルの型は`never`となり、すべての失敗がチェックされず、エフェクトがエラー発生時にファイバーを終了することが期待されます。
 
 ### orDieWith
 
-Similar to `Effect.orDie`, the `Effect.orDieWith` function transforms an effect's failure into a termination of the fiber using a specified mapping function. It allows you to customize the error message before terminating the fiber.
+`Effect.orDie`と同様に、`Effect.orDieWith`関数は指定されたマッピング関数を使用してエフェクトの失敗をファイバーの終了に変換します。これにより、ファイバーを終了する前にエラーメッセージをカスタマイズすることができます。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -80,31 +80,30 @@ const program = Effect.orDieWith(
   (error) => new Error(`defect: ${error.message}`)
 )
 
-Effect.runSync(program) // throws Error: defect: Cannot divide by zero
+Effect.runSync(program) // エラーをスロー: 欠陥: ゼロで割ることはできません
 ```
 
-After using `Effect.orDieWith`, the error channel type of the `program` is `never`, just like with `Effect.orDie`.
+`Effect.orDieWith`を使用した後、`program`のエラーチャネルの型は`Effect.orDie`と同様に`never`となります。
 
-## Catching
+## キャッチング
 
-Effect provides two functions that allow you to handle unexpected errors that may occur during the execution of your effects.
+Effectは、エフェクトの実行中に発生する予期しないエラーを処理するための2つの関数を提供します。
 
 <Warning>
-  There is no sensible way to recover from defects. The functions we're about
-  to discuss should be used only at the boundary between Effect and an
-  external system, to transmit information on a defect for diagnostic or
-  explanatory purposes.
+  欠陥から回復するための合理的な方法はありません。
+  これから説明する関数は、Effectと外部システムの境界でのみ使用し、
+  診断や説明のために欠陥に関する情報を伝達するために使用するべきです。
 </Warning>
 
 ### catchAllDefect
 
-The `Effect.catchAllDefect` function allows you to recover from all defects using a provided function. Here's an example:
+`Effect.catchAllDefect`関数は、提供された関数を使用してすべての欠陥から回復することを可能にします。以下はその例です：
 
 ```ts twoslash
 import { Effect, Cause, Console } from "effect"
 
 const program = Effect.catchAllDefect(
-  Effect.dieMessage("Boom!"), // Simulating a runtime error
+  Effect.dieMessage("Boom!"), // ランタイムエラーをシミュレート
   (defect) => {
     if (Cause.isRuntimeException(defect)) {
       return Console.log(`RuntimeException defect caught: ${defect.message}`)
@@ -113,11 +112,11 @@ const program = Effect.catchAllDefect(
   }
 )
 
-// We get an Exit.Success because we caught all defects
+// すべての欠陥をキャッチしたため、Exit.Successを取得します
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
-RuntimeException defect caught: Boom!
+出力:
+ランタイム例外の欠陥をキャッチしました: Boom!
 {
   _id: "Exit",
   _tag: "Success",
@@ -126,21 +125,21 @@ RuntimeException defect caught: Boom!
 */
 ```
 
-It's important to understand that `catchAllDefect` can only handle defects, not expected errors (such as those caused by `Effect.fail`) or interruptions in execution (such as when using `Effect.interrupt`).
+`catchAllDefect`は欠陥のみを処理でき、予期されたエラー（例えば`Effect.fail`によって引き起こされるもの）や実行の中断（例えば`Effect.interrupt`を使用する場合）を処理できないことを理解することが重要です。
 
-A defect refers to an error that cannot be anticipated in advance, and there is no reliable way to respond to it. As a general rule, it's recommended to let defects crash the application, as they often indicate serious issues that need to be addressed.
+欠陥とは、事前に予測できず、信頼できる対応方法がないエラーを指します。一般的なルールとして、欠陥はアプリケーションをクラッシュさせることが推奨されます。なぜなら、それらはしばしば対処が必要な重大な問題を示しているからです。
 
-However, in some specific cases, such as when dealing with dynamically loaded plugins, a controlled recovery approach might be necessary. For example, if our application supports runtime loading of plugins and a defect occurs within a plugin, we may choose to log the defect and then reload only the affected plugin instead of crashing the entire application. This allows for a more resilient and uninterrupted operation of the application.
+しかし、動的にロードされるプラグインを扱う場合など、特定のケースでは制御された回復アプローチが必要になることがあります。例えば、アプリケーションがプラグインのランタイムロードをサポートしており、プラグイン内で欠陥が発生した場合、アプリケーション全体をクラッシュさせるのではなく、欠陥をログに記録し、影響を受けたプラグインのみをリロードすることを選択するかもしれません。これにより、アプリケーションのより堅牢で中断のない運用が可能になります。
 
 ### catchSomeDefect
 
-The `Effect.catchSomeDefect` function in Effect allows you to recover from specific defects using a provided partial function. Let's take a look at an example:
+`Effect.catchSomeDefect`関数は、提供された部分関数を使用して特定の欠陥から回復することを可能にします。例を見てみましょう：
 
 ```ts twoslash
 import { Effect, Cause, Option, Console } from "effect"
 
 const program = Effect.catchSomeDefect(
-  Effect.dieMessage("Boom!"), // Simulating a runtime error
+  Effect.dieMessage("ドカン！"), // ランタイムエラーをシミュレート
   (defect) => {
     if (Cause.isIllegalArgumentException(defect)) {
       return Option.some(
@@ -153,8 +152,8 @@ const program = Effect.catchSomeDefect(
   }
 )
 
-// Since we are only catching IllegalArgumentException
-// we will get an Exit.Failure because we simulated a runtime error.
+// IllegalArgumentExceptionのみをキャッチしているため
+// ランタイムエラーをシミュレートした結果、Exit.Failureを取得します。
 Effect.runPromiseExit(program).then(console.log)
 /*
 Output:
@@ -175,4 +174,4 @@ Output:
 */
 ```
 
-It's important to understand that `catchSomeDefect` can only handle defects, not [expected errors](expected-errors) (such as those caused by `Effect.fail`) or [interruptions](../concurrency/interruption-model) in execution (such as when using `Effect.interrupt`).
+`catchSomeDefect`は欠陥のみを処理でき、[予期されたエラー](expected-errors)（例えば`Effect.fail`によって引き起こされるもの）や実行の中断（例えば`Effect.interrupt`を使用する場合）を処理できないことを理解することが重要です。

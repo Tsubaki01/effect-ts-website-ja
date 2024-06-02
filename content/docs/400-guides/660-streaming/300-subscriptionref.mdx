@@ -1,26 +1,25 @@
 ---
 title: SubscriptionRef
-excerpt: Explore the capabilities of `SubscriptionRef` in Effect, a specialized form of `SynchronizedRef`. Learn how it allows you to subscribe and receive updates on the current value and any changes made to that value. Understand the power of the `changes` stream, which facilitates observing the value and subsequent changes. Dive into practical examples demonstrating the use of `SubscriptionRef` in modeling shared state, especially in scenarios where multiple observers need to react to every change. Witness the seamless integration of `SubscriptionRef` with asynchronous tasks and discover how it enhances efficient state management in your programs.
+excerpt: Effectの`SubscriptionRef`の機能を探る。これは`SynchronizedRef`の特殊な形式です。これにより、現在の値とその値に加えられた変更を購読して更新を受け取ることができます。値とその後の変更を観察するための`changes`ストリームの力を理解する。特に複数のオブザーバーがすべての変更に反応する必要があるシナリオで、共有状態のモデリングにおける`SubscriptionRef`の使用を示す実用的な例に飛び込む。非同期タスクとのシームレスな統合を目の当たりにし、プログラムの効率的な状態管理をどのように強化するかを発見する。
 bottomNavigation: pagination
 ---
 
-A `SubscriptionRef<A>` is a specialized form of a [SynchronizedRef](../state-management/synchronizedref). It allows us to subscribe and receive updates on the current value and any changes made to that value.
+`SubscriptionRef<A>`は、[SynchronizedRef](../state-management/synchronizedref)の特殊な形式です。これにより、現在の値とその値に加えられた変更を購読して更新を受け取ることができます。
 
 ```ts
 export interface SubscriptionRef<A> extends Synchronized.SynchronizedRef<A> {
   /**
-   * A stream containing the current value of the `Ref` as well as all changes
-   * to that value.
+   * 現在の`Ref`の値とその値に加えられたすべての変更を含むストリーム。
    */
   readonly changes: Stream<A>
 }
 ```
 
-You can perform all the usual operations on a `SubscriptionRef`, such as `get`, `set`, or `modify` to work with the current value.
+`SubscriptionRef`では、`get`、`set`、または`modify`などの通常の操作を行って現在の値を操作することができます。
 
-The `changes` stream is where the magic happens. It lets you observe the current value and all subsequent changes. Each time you run this stream, you'll get the current value as of that moment and any changes that occurred afterward.
+`changes`ストリームは魔法が起こる場所です。これにより、現在の値とその後のすべての変更を観察することができます。このストリームを実行するたびに、その時点での現在の値とその後に発生した変更を取得できます。
 
-To create a `SubscriptionRef`, you can use the `make` constructor, specifying the initial value:
+`SubscriptionRef`を作成するには、初期値を指定して`make`コンストラクタを使用できます。
 
 ```ts twoslash
 import { SubscriptionRef } from "effect"
@@ -28,9 +27,9 @@ import { SubscriptionRef } from "effect"
 const ref = SubscriptionRef.make(0)
 ```
 
-A `SubscriptionRef` can be invaluable when modeling shared state, especially when multiple observers need to react to every change in that shared state. For example, in a functional reactive programming context, the `SubscriptionRef` value might represent a part of the application state, and each observer could update various user interface elements based on changes to that state.
+`SubscriptionRef`は、特に複数のオブザーバーが共有状態のすべての変更に反応する必要がある場合に、共有状態をモデリングする際に非常に貴重です。例えば、関数型リアクティブプログラミングのコンテキストでは、`SubscriptionRef`の値がアプリケーション状態の一部を表し、各オブザーバーがその状態の変更に基づいてさまざまなユーザーインターフェース要素を更新することができます。
 
-To see how this works, let's create a simple example where a "server" repeatedly updates a value observed by multiple "clients":
+これがどのように機能するかを見るために、"server"が複数の"clients"によって観察される値を繰り返し更新する簡単な例を作成してみましょう：
 
 ```ts twoslash
 import { Ref, Effect } from "effect"
@@ -39,7 +38,7 @@ const server = (ref: Ref.Ref<number>) =>
   Ref.update(ref, (n) => n + 1).pipe(Effect.forever)
 ```
 
-Note that the `server` function operates on a regular `Ref` and doesn't need to know about `SubscriptionRef`. It simply updates a value.
+`server`関数は通常の`Ref`で動作し、`SubscriptionRef`について知る必要はありません。ただ単に値を更新するだけです。
 
 ```ts twoslash
 import { Ref, Effect, Stream, Random } from "effect"
@@ -55,9 +54,9 @@ const client = (changes: Stream.Stream<number>) =>
   })
 ```
 
-Similarly, the `client` function only works with a `Stream` of values and doesn't concern itself with the source of these values.
+同様に、`client`関数は値の`Stream`でのみ動作し、これらの値のソースについては気にしません。
 
-To tie everything together, we start the server, launch multiple client instances in parallel, and then shut down the server when we're finished. We also create the `SubscriptionRef` in this process.
+すべてをまとめるために、サーバーを起動し、複数のクライアントインスタンスを並行して起動し、終了時にサーバーをシャットダウンします。このプロセスで`SubscriptionRef`も作成します。
 
 ```ts twoslash
 import { Ref, Effect, Stream, Random, SubscriptionRef, Fiber } from "effect"
@@ -85,7 +84,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 2, 3, 4 ]
@@ -109,6 +108,6 @@ Output:
 */
 ```
 
-This setup ensures that each client observes the current value when it starts and receives all subsequent changes to the value.
+このセットアップにより、各クライアントは開始時に現在の値を観察し、その後のすべての変更を受け取ることが保証されます。
 
-Since the changes are represented as streams, you can easily build more complex programs using familiar stream operators. You can transform, filter, or merge these streams with other streams to achieve more sophisticated behavior.
+変更はStreamとして表現されているため、馴染みのあるStreamオペレーターを使用して、より複雑なプログラムを簡単に構築できます。これらのStreamを他のStreamと変換、フィルタリング、またはマージして、より高度な動作を実現できます。

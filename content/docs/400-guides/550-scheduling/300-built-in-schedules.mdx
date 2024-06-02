@@ -1,10 +1,10 @@
 ---
-title: Built-in Schedules
-excerpt: Unlock the power of scheduling in Effect with built-in schedules. Dive into various schedules like `forever`, `once`, and `recurs`, each offering unique recurrence patterns. Witness the behavior of `spaced` and `fixed` schedules, understanding how they space repetitions at specific intervals. Delve into advanced schedules like `exponential` and `fibonacci`, providing controlled recurrence with increasing delays. Master the art of scheduling for precise and efficient execution of effectful operations.
+title: 組み込みスケジュール
+excerpt: Effectの組み込みスケジュールでスケジューリングの力を解き放ちます。`forever`、`once`、`recurs`など、各々が独自の再発パターンを提供するさまざまなスケジュールを探求します。`spaced`や`fixed`スケジュールの動作を目の当たりにし、特定の間隔で繰り返しをどのように間隔を空けるかを理解します。`exponential`や`fibonacci`のような高度なスケジュールに入り、増加する遅延で制御された再発を提供します。効果的な操作の正確かつ効率的な実行のためのスケジューリングの技術を習得します。
 bottomNavigation: pagination
 ---
 
-To demonstrate the functionality of different schedules, we will be working with the following helper:
+さまざまなスケジュールの機能を示すために、次のヘルパーを使用します。
 
 ```twoslash include Delay
 import { Effect, Schedule, TestClock, Fiber, TestContext } from "effect"
@@ -56,11 +56,11 @@ declare const log: <A, Out>(
 
 </details>
 
-The `log` helper logs the time delay between each execution. We will use this helper to showcase the behavior of various built-in schedules.
+`log` ヘルパーは各実行間の遅延時間を記録します。このヘルパーを使用して、さまざまな組み込みスケジュールの動作を紹介します。
 
 ## forever
 
-A schedule that always recurs and produces number of recurrence at each run.
+常に再発し、各実行時に再発回数を生成するスケジュールです。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -75,7 +75,7 @@ const schedule = Schedule.forever
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 0 < forever
 #2 delay: 0
@@ -92,7 +92,7 @@ delay: 0
 
 ## once
 
-A schedule that recurs one time.
+1回だけ再発するスケジュールです。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -107,7 +107,7 @@ const schedule = Schedule.once
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 0 < once
 */
@@ -115,7 +115,7 @@ delay: 0
 
 ## recurs
 
-A schedule that only recurs the specified number of times.
+指定された回数だけ再発するスケジュールです。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -130,7 +130,7 @@ const schedule = Schedule.recurs(5)
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 0 < recurs
 #2 delay: 0
@@ -140,17 +140,17 @@ delay: 0
 */
 ```
 
-## Recurring at specific intervals
+## 一定間隔での再発
 
-In the context of scheduling, two commonly used schedules are `spaced` and `fixed`. While they both involve recurring at specific intervals, they have a fundamental difference in how they determine the timing of repetitions.
+スケジューリングの文脈では、よく使われるスケジュールに `spaced` と `fixed` があります。どちらも特定の間隔で再発しますが、繰り返しのタイミングの決定方法に根本的な違いがあります。
 
-The `spaced` schedule creates a recurring pattern where each repetition is spaced apart by a specified duration. This means that there is a delay between the completion of one repetition and the start of the next. The duration between repetitions remains constant, providing a consistent spacing pattern.
+`spaced` スケジュールは、各繰り返しが指定された期間だけ離れている再発パターンを作成します。これは、1回の繰り返しの完了と次の開始の間に遅延があることを意味します。繰り返しの間の期間は一定で、一貫した間隔パターンを提供します。
 
-On the other hand, the `fixed` schedule recurs on a fixed interval, regardless of the duration of the actions or the completion time of previous repetitions. It operates independently of the execution time, ensuring a regular recurrence at the specified interval.
+一方、`fixed` スケジュールは、アクションの期間や前回の繰り返しの完了時間に関係なく、固定された間隔で再発します。実行時間に依存せず、指定された間隔で定期的に再発します。
 
 ### spaced
 
-A schedule that recurs continuously, each repetition spaced the specified duration from the last run.
+各繰り返しが前回の実行から指定された期間だけ離れて再発するスケジュール。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -165,7 +165,7 @@ const schedule = Schedule.spaced("200 millis")
 const action = Effect.delay(Effect.void, "100 millis")
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 100
 #1 delay: 300 < spaced
 #2 delay: 300
@@ -180,11 +180,11 @@ delay: 100
 */
 ```
 
-The first delay is approximately 100 milliseconds, as the initial execution is not affected by the schedule. Subsequent delays are approximately 200 milliseconds apart, demonstrating the effect of the `spaced` schedule.
+最初の遅延は約100ミリ秒で、初回の実行はスケジュールの影響を受けません。次の遅延は約200ミリ秒間隔で発生し、`spaced` スケジュールの効果を示しています。
 
 ### fixed
 
-A schedule that recurs on a fixed interval. Returns the number of repetitions of the schedule so far.
+固定間隔で再発するスケジュール。これまでのスケジュールの繰り返し回数を返します。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -199,7 +199,7 @@ const schedule = Schedule.fixed("200 millis")
 const action = Effect.delay(Effect.void, "100 millis")
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 100
 #1 delay: 300 < fixed
 #2 delay: 200
@@ -214,11 +214,11 @@ delay: 100
 */
 ```
 
-The first delay is approximately 100 milliseconds, as the initial execution is not affected by the schedule. Subsequent delays are consistently around 200 milliseconds apart, demonstrating the effect of the `fixed` schedule.
+最初の遅延は約100ミリ秒で、初回の実行はスケジュールの影響を受けません。次の遅延は一貫して約200ミリ秒間隔で発生し、`fixed` スケジュールの効果を示しています。
 
 ## exponential
 
-A schedule that recurs using exponential backoff
+指数バックオフを使用して再発するスケジュール
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -233,7 +233,7 @@ const schedule = Schedule.exponential("10 millis")
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 10 < exponential
 #2 delay: 20
@@ -250,7 +250,7 @@ delay: 0
 
 ## fibonacci
 
-A schedule that always recurs, increasing delays by summing the preceding two delays (similar to the fibonacci sequence). Returns the current duration between recurrences.
+常に再発し、前の2つの遅延を合計することで遅延が増加するスケジュール（フィボナッチ数列に似ています）。再発間の現在の期間を返します。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -265,7 +265,7 @@ const schedule = Schedule.fibonacci("10 millis")
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 10 < fibonacci
 #2 delay: 10

@@ -1,15 +1,15 @@
 ---
-title: Error Handling in Streams
-navTitle: Error Handling
-excerpt: Effectively handle errors in streams using functions like `orElse` for seamless recovery, `catchAll` for advanced error handling, and `retry` to handle temporary failures. Learn to refine errors, set timeouts with various operators, and gracefully recover from defects, ensuring robust stream processing in your applications.
+title: Streamにおけるエラーハンドリング
+navTitle: エラーハンドリング
+excerpt: `orElse`のような関数を使用してシームレスにリカバリーし、`catchAll`で高度なエラーハンドリングを行い、一時的な失敗を処理するために`retry`を使用して、ストリーム内のエラーを効果的に処理します。エラーを洗練し、さまざまなオペレーターでタイムアウトを設定し、欠陥から優雅に回復する方法を学び、アプリケーションの堅牢なストリーム処理を確保します。
 bottomNavigation: pagination
 ---
 
-## Recovering from Failure
+## 障害からの回復
 
-When working with streams that may encounter errors, it's crucial to know how to handle these errors gracefully. The `Stream.orElse` function is a powerful tool for recovering from failures and switching to an alternative stream in case of an error.
+エラーが発生する可能性のあるストリームを扱う際には、これらのエラーを優雅に処理する方法を知ることが重要です。`Stream.orElse`関数は、失敗から回復し、エラーが発生した場合に代替ストリームに切り替えるための強力なツールです。
 
-Here's a practical example:
+ここに実用的な例があります：
 
 ```ts twoslash
 import { Stream, Effect } from "effect"
@@ -25,7 +25,7 @@ const stream = Stream.orElse(s1, () => s2)
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 1, 2, 3, "a", "b", "c" ]
@@ -33,9 +33,9 @@ Output:
 */
 ```
 
-In this example, `s1` encounters an error, but instead of terminating the stream, we gracefully switch to `s2` using `Stream.orElse`. This ensures that we can continue processing data even if one stream fails.
+この例では、`s1`がエラーに遭遇しますが、ストリームを終了する代わりに、`Stream.orElse`を使用して優雅に`s2`に切り替えます。これにより、1つのストリームが失敗してもデータの処理を続行することができます。
 
-There's also a variant called `Stream.orElseEither` that uses the [Either](../../../other/data-types/either) data type to distinguish elements from the two streams based on success or failure:
+また、成功か失敗かに基づいて2つのストリームの要素を区別するために[Either](../../../other/data-types/either)データ型を使用する`Stream.orElseEither`というバリアントもあります：
 
 ```ts twoslash
 import { Stream, Effect } from "effect"
@@ -51,7 +51,7 @@ const stream = Stream.orElseEither(s1, () => s2)
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [
@@ -85,7 +85,7 @@ Output:
 */
 ```
 
-The `Stream.catchAll` function provides advanced error handling capabilities compared to `Stream.orElse`. With `Stream.catchAll`, you can make decisions based on both the type and value of the encountered failure.
+`Stream.catchAll`関数は、`Stream.orElse`と比較して高度なエラーハンドリング機能を提供します。`Stream.catchAll`を使用すると、遭遇した失敗のタイプと値の両方に基づいて判断を下すことができます。
 
 ```ts twoslash
 import { Stream, Effect } from "effect"
@@ -114,7 +114,7 @@ const stream = Stream.catchAll(
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 1, 2, 3, "a", "b", "c" ]
@@ -122,13 +122,13 @@ Output:
 */
 ```
 
-In this example, we have a stream, `s1`, which may encounter two different types of errors. Instead of a straightforward switch to an alternative stream, as done with `Stream.orElse`, we employ `Stream.catchAll` to precisely determine how to handle each type of error. This level of control over error recovery enables you to choose different streams or actions based on the specific error conditions.
+この例では、`s1`というストリームがあり、2種類の異なるエラーに遭遇する可能性があります。`Stream.orElse`で行うような単純な代替ストリームへの切り替えの代わりに、`Stream.catchAll`を使用して各エラータイプの処理方法を正確に決定します。このレベルのエラー回復制御により、特定のエラー条件に基づいて異なるストリームやアクションを選択することができます。
 
-## Recovering from Defects
+## Defectsからの回復
 
-When working with streams, it's essential to be prepared for various failure scenarios, including defects that might occur during stream processing. To address this, the `Stream.catchAllCause` function provides a robust solution. It enables you to gracefully handle and recover from any type of failure that may arise.
+ストリームを扱う際には、ストリーム処理中に発生する可能性のあるDefectsを含むさまざまな失敗シナリオに備えることが重要です。これに対処するために、`Stream.catchAllCause`関数は堅牢なソリューションを提供します。これにより、発生する可能性のあるあらゆる種類の失敗を優雅に処理し、回復することができます。
 
-Here's an example to illustrate its usage:
+以下はその使用例を示しています：
 
 ```ts twoslash
 import { Stream, Effect } from "effect"
@@ -144,7 +144,7 @@ const stream = Stream.catchAllCause(s1, () => s2)
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 1, 2, 3, "a", "b", "c" ]
@@ -152,13 +152,13 @@ Output:
 */
 ```
 
-In this example, `s1` may encounter a defect, but instead of crashing the application, we use `Stream.catchAllCause` to gracefully switch to an alternative stream, `s2`. This ensures that your application remains robust and continues processing data even in the face of unexpected issues.
+この例では、`s1`が欠陥に遭遇する可能性がありますが、アプリケーションをクラッシュさせる代わりに、`Stream.catchAllCause`を使用して代替ストリームの`s2`に優雅に切り替えます。これにより、予期しない問題が発生してもアプリケーションが堅牢であり続け、データの処理を継続することができます。
 
-## Recovery from Some Errors
+## 一部のエラーからの回復
 
-In stream processing, there may be situations where you need to recover from specific types of failures. The `Stream.catchSome` and `Stream.catchSomeCause` functions come to the rescue, allowing you to handle and mitigate errors selectively.
+ストリーム処理では、特定の種類の失敗から回復する必要がある状況があるかもしれません。`Stream.catchSome`および`Stream.catchSomeCause`関数が役立ち、エラーを選択的に処理および軽減することができます。
 
-If you want to recover from a particular error, you can use `Stream.catchSome`:
+特定のエラーから回復したい場合は、`Stream.catchSome`を使用できます：
 
 ```ts twoslash
 import { Stream, Effect, Option } from "effect"
@@ -179,7 +179,7 @@ const stream = Stream.catchSome(s1, (error) => {
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 1, 2, 3, "a", "b", "c" ]
@@ -187,7 +187,7 @@ Output:
 */
 ```
 
-To recover from a specific cause, you can use the `Stream.catchSomeCause` function:
+特定の原因から回復するためには、`Stream.catchSomeCause`関数を使用できます：
 
 ```ts twoslash
 import { Stream, Effect, Option, Cause } from "effect"
@@ -208,7 +208,7 @@ const stream = Stream.catchSomeCause(s1, (cause) => {
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 1, 2, 3, "a", "b", "c" ]
@@ -216,9 +216,9 @@ Output:
 */
 ```
 
-## Recovering to Effect
+## Effectへのリカバリー
 
-In stream processing, it's crucial to handle errors gracefully and perform cleanup tasks when needed. The `Stream.onError` function allows us to do just that. If our stream encounters an error, we can specify a cleanup task to be executed.
+ストリーム処理において、エラーを優雅に処理し、必要に応じてクリーンアップタスクを実行することが重要です。`Stream.onError`関数を使用すると、それが可能になります。ストリームがエラーに遭遇した場合、クリーンアップタスクを指定して実行することができます。
 
 ```ts twoslash
 import { Stream, Console, Effect } from "effect"
@@ -235,17 +235,17 @@ const stream = Stream.make(1, 2, 3).pipe(
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 Stream application closed! We are doing some cleanup jobs.
 error: RuntimeException: Oh! Boom!
 */
 ```
 
-## Retry a Failing Stream
+## 失敗したストリームのリトライ
 
-Sometimes, streams may encounter failures that are temporary or recoverable. In such cases, the `Stream.retry` operator comes in handy. It allows you to specify a retry schedule, and the stream will be retried according to that schedule.
+時々、ストリームは一時的または回復可能な失敗に遭遇することがあります。そのような場合、`Stream.retry`オペレーターが役立ちます。これにより、リトライスケジュールを指定することができ、そのスケジュールに従ってストリームがリトライされます。
 
-Here's an example to illustrate how it works:
+以下はその動作を示す例です：
 
 ```ts twoslash
 // @types: node
@@ -269,7 +269,7 @@ const stream = Stream.make(1, 2, 3).pipe(
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 Enter a number: a
 Enter a number: b
 Enter a number: c
@@ -286,7 +286,7 @@ const readLine = (message: string): Effect.Effect<string> =>
       new Promise((resolve) => {
         const rl = NodeReadLine.createInterface({
           input: process.stdin,
-          output: process.stdout
+          出力: process.stdout
         })
         rl.question(message, (answer) => {
           rl.close()
@@ -296,13 +296,13 @@ const readLine = (message: string): Effect.Effect<string> =>
   )
 ```
 
-In this example, the stream asks the user to input a number, but if an invalid value is entered (e.g., "a," "b," "c"), it fails with "NaN." However, we use `Stream.retry` with an exponential backoff schedule, which means it will retry after a delay of increasing duration. This allows us to handle temporary errors and eventually collect valid input.
+この例では、ストリームがユーザーに数値を入力するように求めますが、無効な値（例："a"、"b"、"c"）が入力されると、"NaN"で失敗します。しかし、`Stream.retry`を指数バックオフスケジュールで使用するため、遅延時間が増加するごとに再試行します。これにより、一時的なエラーを処理し、最終的に有効な入力を収集することができます。
 
-## Refining Errors
+## エラーの精査
 
-When working with streams, there might be situations where you want to selectively keep certain errors and terminate the stream with the remaining errors. You can achieve this using the `Stream.refineOrDie` function.
+ストリームを扱う際に、特定のエラーを選択的に保持し、残りのエラーでストリームを終了させたい場合があります。これを実現するには、`Stream.refineOrDie`関数を使用できます。
 
-Here's an example to illustrate how it works:
+以下はその動作を示す例です。
 
 ```ts twoslash
 import { Stream, Option } from "effect"
@@ -317,15 +317,15 @@ const res = Stream.refineOrDie(stream, (error) => {
 })
 ```
 
-In this example, `stream` initially fails with a generic `Error`. However, we use `Stream.refineOrDie` to filter and keep only errors of type `SyntaxError`. Any other errors will be terminated, while `SyntaxErrors` will be retained in `refinedStream`.
+この例では、`stream`は最初に一般的な`Error`で失敗します。しかし、`Stream.refineOrDie`を使用して、`SyntaxError`タイプのエラーのみをフィルタリングして保持します。他のエラーは終了されますが、`SyntaxError`は`refinedStream`に保持されます。
 
-## Timing Out
+## タイムアウト
 
-When working with streams, there are scenarios where you may want to handle timeouts, such as terminating a stream if it doesn't produce a value within a certain duration. In this section, we'll explore how to manage timeouts using various operators.
+ストリームを扱う際に、特定の期間内に値を生成しない場合にストリームを終了させるなど、タイムアウトを処理したいシナリオがあります。このセクションでは、さまざまなオペレーターを使用してタイムアウトを管理する方法を探ります。
 
 ### timeout
 
-The `Stream.timeout` operator allows you to set a timeout on a stream. If the stream does not produce a value within the specified duration, it terminates.
+`Stream.timeout`オペレーターを使用すると、ストリームにタイムアウトを設定できます。ストリームが指定された期間内に値を生成しない場合、終了します。
 
 ```ts twoslash
 import { Stream, Effect } from "effect"
@@ -345,7 +345,7 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 
 ### timeoutFail
 
-The `Stream.timeoutFail` operator combines a timeout with a custom failure message. If the stream times out, it fails with the specified error message.
+`Stream.timeoutFail`オペレーターは、タイムアウトとカスタムエラーメッセージを組み合わせます。ストリームがタイムアウトすると、指定されたエラーメッセージで失敗します。
 
 ```ts twoslash
 import { Stream, Effect } from "effect"
@@ -356,7 +356,7 @@ const stream = Stream.fromEffect(Effect.never).pipe(
 
 Effect.runPromiseExit(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -367,7 +367,7 @@ Output:
 
 ### timeoutFailCause
 
-Similar to `Stream.timeoutFail`, `Stream.timeoutFailCause` combines a timeout with a custom failure cause. If the stream times out, it fails with the specified cause.
+`Stream.timeoutFail`と同様に、`Stream.timeoutFailCause`はタイムアウトとカスタム失敗原因を組み合わせます。ストリームがタイムアウトすると、指定された原因で失敗します。
 
 ```ts twoslash
 import { Stream, Effect, Cause } from "effect"
@@ -378,7 +378,7 @@ const stream = Stream.fromEffect(Effect.never).pipe(
 
 Effect.runPromiseExit(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -389,7 +389,7 @@ Output:
 
 ### timeoutTo
 
-The `Stream.timeoutTo` operator allows you to switch to another stream if the first stream does not produce a value within the specified duration.
+`Stream.timeoutTo`オペレーターは、最初のストリームが指定された期間内に値を生成しない場合に、別のストリームに切り替えることができます。
 
 ```ts twoslash
 import { Stream, Effect } from "effect"

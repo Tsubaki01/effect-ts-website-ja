@@ -1,19 +1,19 @@
 ---
 title: Exit
-excerpt: Explore the `Exit` data type in Effect, representing the result of executing an `Effect` workflow. Learn about success and failure states, matching with `Exit.match`, and the conceptual relationship between `Exit` and `Either`. Understand how `Exit` is a subtype of `Effect` and its role in handling results and errors.
+excerpt: `Effect`ワークフローを実行した結果を表す`Exit`データ型を探求します。成功と失敗の状態、`Exit.match`によるマッチング、`Exit`と`Either`の概念的な関係について学びます。`Exit`が`Effect`のサブタイプであり、結果とエラーの処理における役割を理解します。
 bottomNavigation: pagination
 ---
 
-An `Exit<A, E>` describes the result of executing an `Effect` workflow.
+`Exit<A, E>`は、`Effect`ワークフローを実行した結果を表します。
 
-There are two possible values for an `Exit<A, E>`:
+`Exit<A, E>`には2つの可能な値があります：
 
-- `Exit.Success` contains a success value of type `A`.
-- `Exit.Failure` contains a failure [Cause](cause) of type `E`.
+- `Exit.Success`は、型`A`の成功値を含みます。
+- `Exit.Failure`は、型`E`の失敗[Cause](cause)を含みます。
 
 ## Matching
 
-To handle the different outcomes of an `Exit`, we can use the `Exit.match` function:
+`Exit`の異なる結果を処理するために、`Exit.match`関数を使用できます。
 
 ```ts twoslash
 import { Effect, Exit } from "effect"
@@ -25,7 +25,7 @@ Exit.match(simulatedSuccess, {
     console.error(`Exited with failure state: ${cause._tag}`),
   onSuccess: (value) => console.log(`Exited with success value: ${value}`)
 })
-// Output: "Exited with success value: 1"
+// 出力: "Exited with success value: 1"
 
 const simulatedFailure = Effect.runSyncExit(Effect.fail("error"))
 
@@ -34,19 +34,19 @@ Exit.match(simulatedFailure, {
     console.error(`Exited with failure state: ${cause._tag}`),
   onSuccess: (value) => console.log(`Exited with success value: ${value}`)
 })
-// Output: "Exited with failure state: Fail"
+// 出力: "Exited with failure state: Fail"
 ```
 
-In this example, we first simulate a successful `Effect` execution using `Effect.runSyncExit` and `Effect.succeed`. We then handle the `Exit` using `Exit.match`, where the `onSuccess` callback prints the success value.
+この例では、まず`Effect.runSyncExit`と`Effect.succeed`を使用して成功した`Effect`の実行をシミュレートします。次に、`Exit.match`を使用して`Exit`を処理し、`onSuccess`コールバックで成功値を出力します。
 
-Next, we simulate a failure using `Effect.runSyncExit` and `Effect.fail`, and handle the `Exit` again using `Exit.match`, where the `onFailure` callback prints the failure state.
+次に、`Effect.runSyncExit`と`Effect.fail`を使用して失敗をシミュレートし、再度`Exit.match`を使用して`Exit`を処理し、`onFailure`コールバックで失敗状態を出力します。
 
 ## Exit vs Either
 
-An `Exit<A, E>` is conceptually an `Either<A, Cause<E>>`. However, it's important to note that [Cause](cause) encompasses more states than just the expected error type `E`. It also includes other states such as interruption and defects (unexpected errors), as well as the possibility of combining multiple `Cause` values together.
+`Exit<A, E>`は概念的には`Either<A, Cause<E>>`です。しかし、[Cause](cause)は期待されるエラータイプ`E`だけでなく、他の状態（中断や欠陥（予期しないエラー）など）も含むことに注意が必要です。また、複数の`Cause`値を組み合わせる可能性もあります。
 
 ## Exit vs Effect
 
-The `Exit` data type is a subtype of the `Effect` type, which means that an `Exit` is itself an `Effect`.
-The reason for this is that a result can be considered as a _constant computation_.
-Technically, `Effect.succeed` is an alias for `Exit.succeed`, and `Effect.fail` is an alias for `Exit.fail` (avoiding conversions between `Exit` and `Effect` is important for performance, as boxing and unboxing have a cost).
+`Exit`データ型は`Effect`型のサブタイプであり、つまり`Exit`自体が`Effect`です。
+その理由は、結果が*定数計算*と見なされるためです。
+技術的には、`Effect.succeed`は`Exit.succeed`のエイリアスであり、`Effect.fail`は`Exit.fail`のエイリアスです（`Exit`と`Effect`の間の変換を避けることは、ボクシングとアンボクシングにコストがかかるため、パフォーマンスのために重要です）。

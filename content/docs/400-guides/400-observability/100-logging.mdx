@@ -1,30 +1,30 @@
 ---
-title: Logging
-excerpt: Explore the power of logging in Effect for enhanced debugging and monitoring. Learn about dynamic log level control, custom logging output, fine-grained logging, environment-based logging, and additional features. Dive into specific logging utilities such as log, logDebug, logInfo, logWarning, logError, logFatal, and spans. Discover how to disable default logging and load log levels from configuration. Finally, explore the creation of custom loggers to tailor logging to your needs.
+title: ロギング
+excerpt: デバッグとモニタリングを強化するためのEffectのロギングの力を探求します。動的なログレベル制御、カスタムロギング出力、細かいロギング、環境ベースのロギング、および追加機能について学びます。log、logDebug、logInfo、logWarning、logError、logFatal、スパンなどの特定のロギングユーティリティについて詳しく説明します。デフォルトのロギングを無効にし、設定からログレベルを読み込む方法を発見します。最後に、ニーズに合わせたカスタムロガーの作成方法を探ります。
 bottomNavigation: pagination
 ---
 
-Logging is a crucial aspect of software development, especially when it comes to debugging and monitoring the behavior of your applications. In this section, we'll delve into Effect's logging utilities and explore their advantages over traditional methods like `console.log`.
+ロギングはソフトウェア開発において非常に重要な側面であり、特にアプリケーションの動作をデバッグおよびモニタリングする際に重要です。このセクションでは、Effectのロギングユーティリティに深く掘り下げ、`console.log`のような従来の方法に対する利点を探ります。
 
-## Advantages Over Traditional Logging
+## 従来のロギングに対する利点
 
-Effect's logging utilities offer several advantages over traditional logging methods like `console.log`:
+Effectのロギングユーティリティは、`console.log`のような従来のロギング方法に対していくつかの利点を提供します：
 
-1. **Dynamic Log Level Control**: With Effect's logging, you have the ability to change the log level dynamically. This means you can control which log messages get displayed based on their severity. For example, you can configure your application to log only warnings or errors, which can be extremely helpful in production environments to reduce noise.
+1. **動的なログレベル制御**: Effectのロギングを使用すると、ログレベルを動的に変更することができます。これにより、重大度に基づいて表示されるログメッセージを制御できます。たとえば、アプリケーションを警告やエラーのみをログするように構成することができ、これにより本番環境でのノイズを減らすことが非常に役立ちます。
 
-2. **Custom Logging Output**: Effect's logging utilities allow you to change how logs are handled. You can direct log messages to various destinations, such as a service or a file, using a [custom logger](#custom-loggers). This flexibility ensures that logs are stored and processed in a way that best suits your application's requirements.
+2. **カスタムロギング出力**: Effectのロギングユーティリティを使用すると、ログの処理方法を変更できます。ログメッセージをサービスやファイルなどのさまざまな宛先に送信することができます。[カスタムロガー](#custom-loggers)を使用することで、この柔軟性により、アプリケーションの要件に最適な方法でログを保存および処理できます。
 
-3. **Fine-Grained Logging**: Effect enables fine-grained control over logging on a per-part basis of your program. You can set different log levels for different parts of your application, tailoring the level of detail to each specific component. This can be invaluable for debugging and troubleshooting, as you can focus on the information that matters most.
+3. **細かいロギング**: Effectは、プログラムの各部分ごとに細かいロギング制御を可能にします。アプリケーションの異なる部分に対して異なるログレベルを設定し、各特定のコンポーネントに対して詳細度を調整できます。これにより、デバッグやトラブルシューティングの際に最も重要な情報に集中することができます。
 
-4. **Environment-Based Logging**: Effect's logging utilities can be combined with deployment environments to achieve granular logging strategies. For instance, during development, you might choose to log everything at a trace level and above for detailed debugging. In contrast, your production version could be configured to log only errors or critical issues, minimizing the impact on performance and noise in production logs.
+4. **環境ベースのロギング**: Effectのロギングユーティリティは、デプロイメント環境と組み合わせて詳細なロギング戦略を実現できます。たとえば、開発中は詳細なデバッグのためにトレースレベル以上のすべてをログすることを選択できます。対照的に、本番バージョンではエラーや重大な問題のみをログするように構成し、本番ログのパフォーマンスとノイズへの影響を最小限に抑えることができます。
 
-5. **Additional Features**: Effect's logging utilities come with additional features such as the ability to measure time spans, alter log levels on a per-effect basis, and integrate spans for performance monitoring.
+5. **追加機能**: Effectのロギングユーティリティには、時間の測定、エフェクトごとのログレベルの変更、パフォーマンスモニタリングのためのスパンの統合などの追加機能が備わっています。
 
-Now, let's dive into the specific logging utilities provided by Effect.
+それでは、Effectが提供する特定のロギングユーティリティについて詳しく見ていきましょう。
 
 ## log
 
-The `log` function is used to print a message at the current log level, which is `INFO` by default.
+`log` 関数は、現在のログレベル（デフォルトでは `INFO`）でメッセージを出力するために使用されます。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -33,20 +33,20 @@ const program = Effect.log("Application started")
 
 Effect.runSync(program)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message="Application started"
 */
 ```
 
-The log message contains the following information:
+ログメッセージには以下の情報が含まれます：
 
-- `timestamp`: The timestamp when the log message was generated.
-- `level`: The log level at which the message is logged.
-- `fiber`: The identifier of the [fiber](../concurrency/fibers.mdx#what-is-a-fiber) executing the program.
-- `message`: The content of the log message.
-- `span`: (Optional) The duration of the span in milliseconds.
+- `timestamp`: ログメッセージが生成されたタイムスタンプ。
+- `level`: メッセージがログされたログレベル。
+- `fiber`: プログラムを実行している[fiber](../concurrency/fibers.mdx#what-is-a-fiber)の識別子。
+- `message`: ログメッセージの内容。
+- `span`: （オプション）スパンの持続時間（ミリ秒単位）。
 
-Additionally, you can pass one or more [Cause](../../other/data-types/cause) instances after the main message. These will provide further context under an additional `cause` information:
+さらに、メインメッセージの後に1つ以上の[Cause](../../other/data-types/cause)インスタンスを渡すことができます。これにより、追加の`cause`情報としてさらにコンテキストが提供されます：
 
 ```ts twoslash
 import { Effect, Cause } from "effect"
@@ -59,23 +59,23 @@ const program = Effect.log(
 
 Effect.runSync(program)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message=message... cause="Error: Oh no!
 Error: Oh uh!"
 */
 ```
 
-## Log Levels
+## ログレベル
 
 ### logDebug
 
-By default, `DEBUG` messages are **not** printed.
+デフォルトでは、`DEBUG` メッセージは表示されません。
 
-However, you can configure the default logger to enable them using `Logger.withMinimumLogLevel` and setting the minimum log level to `LogLevel.Debug`.
+しかし、`Logger.withMinimumLogLevel` を使用してデフォルトのロガーを設定し、最小ログレベルを `LogLevel.Debug` に設定することで、これらを有効にすることができます。
 
-Here's an example that demonstrates how to enable `DEBUG` messages for a specific task (`task1`):
+以下は、特定のタスク（`task1`）に対して `DEBUG` メッセージを有効にする方法を示す例です：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -100,7 +100,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=INFO message=start
 ... level=DEBUG message="task1 done" <-- 2 seconds later
 ... level=INFO message=done <-- 1 second later
@@ -130,7 +130,7 @@ const program = Effect.log("start").pipe(
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=INFO message=start
 ... level=DEBUG message="task1 done" <-- 2 seconds later
 ... level=INFO message=done <-- 1 second later
@@ -140,15 +140,15 @@ Output:
 </Tab>
 </Tabs>
 
-In the above example, we enable `DEBUG` messages specifically for `task1` by using the `Logger.withMinimumLogLevel` function.
+上記の例では、`Logger.withMinimumLogLevel` 関数を使用して、特に `task1` に対して `DEBUG` メッセージを有効にしています。
 
-By using `Logger.withMinimumLogLevel(effect, level){:ts}`, you have the flexibility to selectively enable different log levels for specific effects in your program. This allows you to control the level of detail in your logs and focus on the information that is most relevant to your debugging and troubleshooting needs.
+`Logger.withMinimumLogLevel(effect, level){:ts}` を使用することで、プログラム内の特定のエフェクトに対して異なるログレベルを選択的に有効にする柔軟性が得られます。これにより、ログの詳細度を制御し、デバッグやトラブルシューティングに最も関連性の高い情報に集中することができます。
 
 ### logInfo
 
-By default, `INFO` messages are printed.
+デフォルトでは、`INFO` メッセージが出力されます。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -163,7 +163,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=INFO message=start
 ... level=INFO message=done <-- 3 seconds later
 */
@@ -183,7 +183,7 @@ const program = Effect.logInfo("start").pipe(
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=INFO message=start
 ... level=INFO message=done <-- 3 seconds later
 */
@@ -192,13 +192,13 @@ Output:
 </Tab>
 </Tabs>
 
-In the above example, the `Effect.log` function is used to log an `INFO` message with the content `"start"` and `"done"`. These messages will be printed during the execution of the program.
+上記の例では、`Effect.log` 関数を使用して、内容が `"start"` および `"done"` の `INFO` メッセージをログに記録しています。これらのメッセージはプログラムの実行中に出力されます。
 
 ### logWarning
 
-By default, `WARN` messages are printed.
+デフォルトでは、`WARN` メッセージが出力されます。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -218,7 +218,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=WARN fiber=#0 message="Oh uh!"
 */
 ```
@@ -237,7 +237,7 @@ const program = task.pipe(
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=WARN fiber=#0 message="Oh uh!"
 */
 ```
@@ -247,9 +247,9 @@ Output:
 
 ### logError
 
-By default, `ERROR` messages are printed.
+デフォルトでは、`ERROR` メッセージが表示されます。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -269,7 +269,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=ERROR fiber=#0 message="Oh uh!"
 */
 ```
@@ -288,7 +288,7 @@ const program = task.pipe(
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=ERROR fiber=#0 message="Oh uh!"
 */
 ```
@@ -298,9 +298,9 @@ Output:
 
 ### logFatal
 
-By default, `FATAL` messages are printed.
+デフォルトでは、`FATAL` メッセージが表示されます。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -320,7 +320,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=FATAL fiber=#0 message="Oh uh!"
 */
 ```
@@ -339,7 +339,7 @@ const program = task.pipe(
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=FATAL fiber=#0 message="Oh uh!"
 */
 ```
@@ -349,9 +349,9 @@ Output:
 
 ## Spans
 
-Effect also provides support for spans, allowing you to measure the duration of specific operations or tasks within your program.
+Effectはスパンのサポートも提供しており、プログラム内の特定の操作やタスクの実行時間を測定することができます。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -364,7 +364,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=INFO fiber=#0 message="The job is finished!" myspan=1011ms
 */
 ```
@@ -382,7 +382,7 @@ const program = Effect.sleep("1 second").pipe(
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 ... level=INFO fiber=#0 message="The job is finished!" myspan=1011ms
 */
 ```
@@ -390,15 +390,15 @@ Output:
 </Tab>
 </Tabs>
 
-In the above example, a span is created using the `Effect.withLogSpan` function. It measures the duration of the code block within the span and logs an `INFO` message with the content "The job is finished!" along with the span duration of 1011ms (`myspan=1011ms`).
+上記の例では、`Effect.withLogSpan`関数を使用してスパンが作成されています。これは、スパン内のコードブロックの実行時間を測定し、"The job is finished!"という内容の`INFO`メッセージと共に、スパンの実行時間1011ms（`myspan=1011ms`）をログに記録します。
 
-## Disabling Default Logging
+## デフォルトのロギングを無効にする
 
-If you ever find yourself needing to turn off default logging, perhaps during test execution, there are various ways to achieve this within the Effect framework. In this section, we'll explore different methods to disable default logging.
+テスト実行中などにデフォルトのロギングを無効にする必要がある場合、Effectフレームワーク内でこれを達成するためのさまざまな方法があります。このセクションでは、デフォルトのロギングを無効にするための異なる方法を探ります。
 
-**Using withMinimumLogLevel**
+**withMinimumLogLevelを使用する**
 
-Effect provides a convenient function called `withMinimumLogLevel` that allows you to set the minimum log level, effectively disabling logging:
+Effectは、最小ログレベルを設定してロギングを実質的に無効にする便利な関数`withMinimumLogLevel`を提供しています：
 
 ```ts twoslash
 import { Effect, Logger, LogLevel } from "effect"
@@ -412,24 +412,24 @@ const program = Effect.gen(function* () {
 // Logging enabled (default)
 Effect.runPromise(program)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message="Executing task..."
 task done
 */
 
-// Logging disabled using withMinimumLogLevel
+// withMinimumLogLevelを使用してロギングを無効にする
 Effect.runPromise(program.pipe(Logger.withMinimumLogLevel(LogLevel.None)))
 /*
-Output:
+出力:
 task done
 */
 ```
 
-By setting the log level to `LogLevel.None`, you effectively disable logging, and only the final result will be displayed.
+ログレベルを`LogLevel.None`に設定することで、ロギングを実質的に無効にし、最終結果のみが表示されます。
 
-**Using a Layer**
+**レイヤーを使用する**
 
-Another approach to disable logging is by creating a layer that sets the minimum log level to `LogLevel.None`, effectively turning off all logging:
+別の方法として、最小ログレベルを`LogLevel.None`に設定するレイヤーを作成することで、ロギングを実質的に無効にすることができます。
 
 ```ts twoslash
 import { Effect, Logger, LogLevel } from "effect"
@@ -445,14 +445,14 @@ const layer = Logger.minimumLogLevel(LogLevel.None)
 // Logging disabled using a layer
 Effect.runPromise(program.pipe(Effect.provide(layer)))
 /*
-Output:
+出力:
 task done
 */
 ```
 
-**Using a Custom Runtime**
+**カスタムランタイムの使用**
 
-You can also disable logging by creating a custom runtime that includes the configuration to turn off logging:
+ロギングを無効にする設定を含むカスタムランタイムを作成することでも、ロギングを無効にすることができます。
 
 ```ts twoslash
 import { Effect, Logger, LogLevel, Runtime, Layer } from "effect"
@@ -467,21 +467,21 @@ const customRuntime = Effect.runSync(
   Effect.scoped(Layer.toRuntime(Logger.minimumLogLevel(LogLevel.None)))
 )
 
-// Logging disabled using a custom runtime
+// カスタムランタイムを使用してロギングを無効にする
 const customRunPromise = Runtime.runPromise(customRuntime)
 
 customRunPromise(program)
 /*
-Output:
+出力:
 task done
 */
 ```
 
-In this approach, you create a custom runtime that incorporates the configuration to disable logging, and then you execute your program using this custom runtime.
+このアプローチでは、ロギングを無効にする設定を組み込んだカスタムランタイムを作成し、そのカスタムランタイムを使用してプログラムを実行します。
 
-## Loading the Log Level from Configuration
+## 設定からログレベルを読み込む
 
-To retrieve the log level from a [configuration](../configuration) and incorporate it into your program, utilize the layer produced by `Logger.minimumLogLevel`:
+[設定](../configuration)からログレベルを取得し、それをプログラムに組み込むには、`Logger.minimumLogLevel`によって生成されるレイヤーを利用します。
 
 ```ts twoslash
 import {
@@ -493,7 +493,7 @@ import {
   LogLevel
 } from "effect"
 
-// Simulate a program with logs
+// ログを含むプログラムをシミュレートする
 const program = Effect.gen(function* () {
   yield* Effect.logError("ERROR!")
   yield* Effect.logWarning("WARNING!")
@@ -501,16 +501,16 @@ const program = Effect.gen(function* () {
   yield* Effect.logDebug("DEBUG!")
 })
 
-// Load the log level from the configuration as a layer
+// 設定からログレベルをレイヤーとして読み込む
 const LogLevelLive = Config.logLevel("LOG_LEVEL").pipe(
   Effect.andThen((level) => Logger.minimumLogLevel(level)),
   Layer.unwrapEffect
 )
 
-// Configure the program with the loaded log level
+// 読み込んだログレベルでプログラムを設定する
 const configured = Effect.provide(program, LogLevelLive)
 
-// Test the configured program using ConfigProvider.fromMap
+// ConfigProvider.fromMapを使用して設定されたプログラムをテストする
 const test = Effect.provide(
   configured,
   Layer.setConfigProvider(
@@ -520,19 +520,19 @@ const test = Effect.provide(
 
 Effect.runPromise(test)
 /*
-Output:
+出力:
 ... level=ERROR fiber=#0 message=ERROR!
 ... level=WARN fiber=#0 message=WARNING!
 */
 ```
 
-To evaluate the configured program, you can utilize `ConfigProvider.fromMap` for testing (refer to [Testing Services](../configuration.mdx#testing-services) for more details).
+設定されたプログラムを評価するには、`ConfigProvider.fromMap`を利用してテストすることができます（詳細は[テストサービス](../configuration.mdx#testing-services)を参照してください）。
 
-## Custom loggers
+## カスタムロガー
 
-In this section, we will learn how to define a custom logger and set it as the default logger in our program.
+このセクションでは、カスタムロガーを定義し、それをプログラムのデフォルトロガーとして設定する方法を学びます。
 
-First, let's define our custom logger:
+まず、カスタムロガーを定義しましょう：
 
 ```twoslash include CustomLogger
 import { Logger } from "effect"
@@ -546,9 +546,9 @@ export const logger = Logger.make(({ logLevel, message }) => {
 // @include: CustomLogger
 ```
 
-Assuming we have defined the following program:
+次のプログラムが定義されていると仮定します：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```twoslash include program
@@ -600,7 +600,7 @@ export const program = Effect.log("start").pipe(
 </Tab>
 </Tabs>
 
-To replace the default logger, we simply need to create a specific layer using `Logger.replace` and provide it to our program using `Effect.provide` before executing it:
+デフォルトのロガーを置き換えるには、`Logger.replace`を使用して特定のレイヤーを作成し、それを`Effect.provide`を使ってプログラムに提供してから実行するだけです。
 
 ```ts filename="index.ts" twoslash
 // @filename: CustomLogger.ts
@@ -622,7 +622,7 @@ Effect.runPromise(
 )
 ```
 
-This is what we see printed on the console after executing the program:
+プログラムを実行した後、コンソールに表示される内容は次のとおりです：
 
 ```bash filename="Terminal"
 [INFO] start

@@ -1,35 +1,35 @@
 ---
-title: Introduction to Metrics in Effect
-navTitle: Metrics
-excerpt: Effect Metrics provides a powerful solution for monitoring and analyzing various metrics, offering support for counters, gauges, histograms, summaries, and frequencies. Learn how these metrics enhance visibility into your application's performance and behavior.
+title: Effectにおけるメトリクスの紹介
+navTitle: メトリクス
+excerpt: Effect Metricsは、カウンター、Gauge、Histogram、サマリー、頻度をサポートし、さまざまなメトリクスを監視および分析するための強力なソリューションを提供します。これらのメトリクスがアプリケーションのパフォーマンスと動作の可視性をどのように向上させるかを学びましょう。
 bottomNavigation: pagination
 ---
 
-In complex and highly concurrent applications, managing various interconnected components can be quite challenging. Ensuring that everything runs smoothly and avoiding application downtime becomes crucial in such setups.
+複雑で高度に並行したアプリケーションでは、さまざまな相互接続されたコンポーネントを管理することが非常に困難です。このような設定では、すべてがスムーズに動作し、アプリケーションのダウンタイムを回避することが重要です。
 
-Now, let's imagine we have a sophisticated infrastructure with numerous services. These services are replicated and distributed across our servers. However, we often lack insight into what's happening across these services, including error rates, response times, and service uptime. This lack of visibility can make it challenging to identify and address issues effectively. This is where Effect Metrics comes into play; it allows us to capture and analyze various metrics, providing valuable data for later investigation.
+さて、数多くのサービスを持つ洗練されたインフラストラクチャを想像してみましょう。これらのサービスはサーバー全体に複製され、分散されています。しかし、これらのサービス全体で何が起こっているのか、エラーレート、応答時間、サービスの稼働時間などについての洞察が不足していることがよくあります。この可視性の欠如は、問題を効果的に特定し対処するのを困難にします。ここでEffect Metricsが登場します。さまざまなメトリクスをキャプチャし分析することで、後の調査に役立つ貴重なデータを提供します。
 
-Effect Metrics offers support for five different types of metrics:
+Effect Metricsは、5種類のメトリクスをサポートしています：
 
-1. **Counter**: Counters are used to track values that increase over time, such as request counts. They help us keep tabs on how many times a specific event or action has occurred.
+1. **カウンター**: カウンターは、リクエスト数など、時間とともに増加する値を追跡するために使用されます。特定のイベントやアクションが何回発生したかを把握するのに役立ちます。
 
-2. **Gauge**: Gauges represent a single numerical value that can fluctuate up and down over time. They are often used to monitor metrics like memory usage, which can vary continuously.
+2. **Gauge**: Gaugeは、時間とともに上下する単一の数値を表します。メモリ使用量のように、継続的に変動するメトリクスを監視するためによく使用されます。
 
-3. **Histogram**: Histograms are useful for tracking the distribution of observed values across different buckets. They are commonly used for metrics like request latencies, allowing us to understand how response times are distributed.
+3. **Histogram**: Histogramは、観測された値の分布を異なるバケットにわたって追跡するのに役立ちます。リクエストの待ち時間などのメトリクスに一般的に使用され、応答時間の分布を理解するのに役立ちます。
 
-4. **Summary**: Summaries provide insight into a sliding window of a time series and offer metrics for specific percentiles of the time series, often referred to as quantiles. This is particularly helpful for understanding latency-related metrics, such as request response times.
+4. **サマリー**: サマリーは、時系列のスライディングウィンドウに関する洞察を提供し、時系列の特定のパーセンタイル（クォンタイルとも呼ばれる）のメトリクスを提供します。これは、リクエストの応答時間など、待ち時間に関連するメトリクスを理解するのに特に役立ちます。
 
-5. **Frequency**: Frequency metrics count the occurrences of distinct string values. They are useful when you want to keep track of how often different events or conditions are happening in your application.
+5. **頻度**: 頻度メトリクスは、異なる文字列値の出現回数をカウントします。アプリケーション内で異なるイベントや条件がどのくらい頻繁に発生しているかを追跡したい場合に役立ちます。
 
-## Counter
+## カウンター
 
-In the world of metrics, a Counter is a metric that represents a single numerical value that can be both incremented and decremented over time. Think of it like a tally that keeps track of changes, such as the number of a particular type of request received by your application, whether it's increasing or decreasing.
+メトリクスの世界では、カウンターは時間とともに増減する単一の数値を表すメトリクスです。これは、アプリケーションが受信した特定の種類のリクエストの数など、変化を追跡するための集計のようなものです。
 
-Unlike some other types of metrics (like gauges), where we're interested in the value at a specific moment, with counters, we care about the cumulative value over time. This means it provides a running total of changes, which can go up and down, reflecting the dynamic nature of certain metrics.
+他の種類のメトリクス（Gaugeなど）とは異なり、特定の瞬間の値に関心があるのではなく、カウンターでは累積値に関心があります。これは、変化の累積合計を提供し、上昇したり下降したりすることで、特定のメトリクスの動的な性質を反映します。
 
-### How to Create a Counter
+### カウンターの作成方法
 
-To create a counter, you can use the `Metric.counter` constructor in your code. You have the option to specify the type of the counter as either `number` or `bigint`. Here's how you can do it:
+カウンターを作成するには、コード内で`Metric.counter`コンストラクタを使用します。カウンターのタイプを`number`または`bigint`として指定するオプションがあります。以下はその方法です：
 
 ```ts twoslash
 import { Metric } from "effect"
@@ -44,7 +44,7 @@ const bigintCounter = Metric.counter("error_count", {
 })
 ```
 
-If you wish to create a counter that only increases its value, you can utilize the `incremental: true` option as follows:
+値が増加するだけのカウンターを作成したい場合は、次のように`incremental: true`オプションを利用できます：
 
 ```ts twoslash
 import { Metric } from "effect"
@@ -55,32 +55,30 @@ const incrementalCounter = Metric.counter("count", {
 })
 ```
 
-With this configuration, Effect ensures that non-incremental updates have no impact on the counter, making it exclusively suitable for counting upwards.
+この設定により、Effectは非増分更新がカウンターに影響を与えないようにし、カウンターが上向きにのみカウントするのに適していることを保証します。
 
-### When to Use Counters
+### カウンターを使用するタイミング
 
-Counters are incredibly useful when you need to keep track of cumulative values that can both increase and decrease over time. So, when should you use counters?
+カウンターは、時間とともに増加および減少する累積値を追跡する必要がある場合に非常に便利です。では、カウンターをいつ使用すべきでしょうか？
 
-1. **Tracking a Value Over Time**: If you need to monitor something that consistently increases over time, like the number of incoming requests, counters are your go-to choice.
+1. **時間経過に伴う値の追跡**: 例えば、受信リクエストの数のように、時間とともに一貫して増加するものを監視する必要がある場合、カウンターが最適です。
 
-2. **Measuring Growth Rates**: Counters are also handy when you want to measure how fast something is growing. For instance, you can use them to keep tabs on request rates.
+2. **成長率の測定**: カウンターは、何かがどれだけ速く成長しているかを測定する際にも便利です。例えば、リクエストレートを監視するために使用できます。
 
-Counters find application in various scenarios, including:
+カウンターはさまざまなシナリオで利用されます。例えば：
 
-- **Request Counts**: Monitoring the number of incoming requests to your server.
+- **リクエスト数**: サーバーへの受信リクエストの数を監視する。
+- **完了したタスク**: 成功裏に完了したタスクやプロセスの数を追跡する。
+- **エラー数**: アプリケーション内のエラー発生回数をカウントする。
 
-- **Completed Tasks**: Keeping track of how many tasks or processes have been successfully completed.
+### 例
 
-- **Error Counts**: Counting the occurrences of errors in your application.
-
-### Example
-
-Here's a practical example of creating and using a counter in your code:
+ここに、コード内でカウンターを作成し使用する実用的な例があります：
 
 ```ts twoslash
 import { Metric, Effect, Console } from "effect"
 
-// Create a counter named 'task_count' and increment it by 1 every time it's invoked
+// 'task_count'という名前のカウンターを作成し、呼び出されるたびに1ずつ増加させる
 const taskCount = Metric.counter("task_count").pipe(
   Metric.withConstantInput(1)
 )
@@ -100,7 +98,7 @@ Effect.runPromise(program.pipe(Effect.tap(() => showMetric))).then(
   console.log
 )
 /*
-Output:
+出力:
 CounterState {
   count: 2,
   ...
@@ -109,19 +107,19 @@ CounterState {
 */
 ```
 
-In this example, we create a counter called `taskCount`, which is incremented by 1 each time it's invoked. We then use it to monitor the number of times certain tasks are executed. The result provides valuable insights into the cumulative count of these tasks.
+この例では、`taskCount`という名前のカウンターを作成し、呼び出されるたびに1ずつ増加させます。これを使用して、特定のタスクが実行された回数を監視します。その結果、これらのタスクの累積カウントに関する貴重な洞察を提供します。
 
-It's worth noting that applying the `taskCount` metric to an effect doesn't change its type. So, if `task1` has a type of `Effect<number>`, then `taskCount(task1)` still has the same type, `Effect<number>`.
+`taskCount`メトリックをエフェクトに適用しても、その型は変わらないことに注意してください。例えば、`task1`の型が`Effect<number>`である場合、`taskCount(task1)`も同じ型、つまり`Effect<number>`のままです。
 
 ## Gauge
 
-In the world of metrics, a Gauge is a metric that represents a single numerical value that can be set or adjusted. Think of it as a dynamic variable that can change over time. One common use case for a gauge is to monitor something like the current memory usage of your application.
+メトリクスの世界では、Gaugeは設定または調整可能な単一の数値を表すメトリックです。時間とともに変化する動的な変数と考えてください。Gaugeの一般的な使用例の一つは、アプリケーションの現在のメモリ使用量を監視することです。
 
-Unlike counters, where we're interested in cumulative values over time, with gauges, our focus is on the current value at a specific point in time.
+カウンターとは異なり、累積値に関心があるのではなく、Gaugeでは特定の時点での現在の値に焦点を当てます。
 
-### How to Create a Gauge
+### Gaugeの作成方法
 
-To create a gauge, you can use the `Metric.gauge` constructor in your code. You can specify the type of the gauge as either `number` or `bigint`. Here's how you can do it:
+Gaugeを作成するには、コード内で`Metric.gauge`コンストラクタを使用できます。Gaugeの型を`number`または`bigint`として指定できます。以下はその方法です：
 
 ```ts twoslash
 import { Metric } from "effect"
@@ -136,21 +134,21 @@ const bigintGauge = Metric.gauge("cpu_load", {
 })
 ```
 
-### When to Use Gauges
+### Gaugeの使用タイミング
 
-Gauges are the best choice when you want to monitor values that can both increase and decrease, and you're not interested in tracking their rates of change. In other words, gauges help us measure things that have a specific value at a particular moment:
+Gaugeは、増減する可能性があり、その変化率を追跡する必要がない値を監視したい場合に最適です。言い換えれば、特定の瞬間に特定の値を測定するのに役立ちます：
 
-- **Memory Usage**: Keeping an eye on how much memory your application is using right now.
+- **メモリ使用量**: アプリケーションが現在使用しているメモリ量を監視します。
 
-- **Queue Size**: Monitoring the current size of a queue where tasks are waiting to be processed.
+- **キューサイズ**: 処理待ちのタスクが入っているキューの現在のサイズを監視します。
 
-- **In-Progress Request Counts**: Tracking the number of requests currently being handled by your server.
+- **進行中のリクエスト数**: サーバーが現在処理しているリクエストの数を追跡します。
 
-- **Temperature**: Measuring the current temperature, which can fluctuate up and down.
+- **温度**: 現在の温度を測定し、上下に変動する可能性があります。
 
-### Example
+### 例
 
-Let's look at a practical example of creating and using a gauge in your code:
+コード内でGaugeを作成して使用する実際の例を見てみましょう：
 
 ```ts twoslash
 import { Metric, Effect, Random, Console } from "effect"
@@ -177,7 +175,7 @@ Effect.runPromise(program.pipe(Effect.tap(() => showMetric))).then(
   console.log
 )
 /*
-Output:
+出力:
 variation: 6
 variation: -4
 variation: -9
@@ -193,39 +191,39 @@ GaugeState {
 
 A Histogram is a metric that helps us understand how a collection of numerical values is distributed over time. Instead of just focusing on the individual values, histograms organize these values into distinct intervals, called buckets, and record the frequency of values within each bucket.
 
-Histograms are valuable because they not only represent the actual values but also provide insights into their distribution. They are like a summary of a dataset, breaking down the data into buckets and showing how many data points fall into each one.
+Histogramは、数値の集合が時間とともにどのように分布しているかを理解するのに役立つメトリックです。個々の値に焦点を当てるのではなく、Histogramはこれらの値をバケットと呼ばれる異なる間隔に整理し、各バケット内の値の頻度を記録します。
 
-### How Histograms Work
+Histogramは、実際の値を表すだけでなく、その分布についての洞察も提供するため、非常に価値があります。データセットの要約のようなもので、データをバケットに分解し、各バケットにどれだけのデータポイントが入っているかを示します。
 
-In a histogram, each incoming sample is assigned to a predefined bucket. When a data point arrives, it increases the count for the corresponding bucket, and then the individual sample is discarded. This bucketed approach allows us to aggregate data across multiple instances. Histograms are especially useful for measuring percentiles, helping us estimate specific percentiles by looking at bucket counts.
+### Histogramの仕組み
 
-### Key Concepts
+Histogramでは、各サンプルが事前に定義されたバケットに割り当てられます。データポイントが到着すると、対応するバケットのカウントが増加し、その後、個々のサンプルは破棄されます。このバケット方式により、複数のインスタンスにわたってデータを集約することができます。Histogramは特にパーセンタイルを測定するのに役立ち、バケットのカウントを見て特定のパーセンタイルを推定することができます。
 
-- **Observing Values:** Histograms observe numerical values and count how many observations fall into specific buckets. Each bucket has an upper boundary, and the count for a bucket increases by 1 if an observed value is less than or equal to the bucket's upper boundary.
+### 主要な概念
 
-- **Overall Count:** A histogram also keeps track of the total count of observed values and the sum of all observed values.
+- **値の観察:** Histogramは数値を観察し、特定のバケットにどれだけの観察が入るかをカウントします。各バケットには上限があり、観察された値がバケットの上限以下であれば、そのバケットのカウントが1増加します。
 
-- **Inspired by Prometheus:** The concept of histograms is inspired by [Prometheus](https://prometheus.io/docs/concepts/metric_types/#histogram), a popular monitoring and alerting toolkit.
+- **全体のカウント:** Histogramは観察された値の総数と、観察された値の合計も追跡します。
 
-### When to Use Histograms
+- **Prometheusにインスパイアされた:** Histogramの概念は、人気のあるモニタリングおよびアラートツールキットである[Prometheus](https://prometheus.io/docs/concepts/metric_types/#histogram)にインスパイアされています。
 
-Histograms are widely used in software metrics for various purposes, especially in analyzing the performance of software systems. They are valuable for metrics such as response times, latencies, and throughput. By visualizing the distribution of these metrics in a histogram, developers can identify performance bottlenecks, outliers, or variations. This information helps in optimizing code, infrastructure, and system configurations to improve overall performance.
+### Histogramを使用するタイミング
 
-Histograms are the best choice in the following situations:
+Histogramは、ソフトウェアメトリクスのさまざまな目的で広く使用されており、特にソフトウェアシステムのパフォーマンスを分析する際に価値があります。応答時間、レイテンシ、スループットなどのメトリクスに対してHistogramを視覚化することで、開発者はパフォーマンスのボトルネック、異常値、または変動を特定できます。この情報は、コード、インフラストラクチャ、およびシステム構成を最適化し、全体的なパフォーマンスを向上させるのに役立ちます。
 
-- When you want to observe many values and later calculate percentiles of those observed values.
+Histogramが最適な選択となる状況は次のとおりです：
 
-- When you can estimate the range of values in advance, as histograms organize observations into predefined buckets.
+- 多くの値を観察し、後でそれらの観察値のパーセンタイルを計算したい場合。
 
-- When you don't require exact values due to the inherent lossy nature of bucketing data in histograms.
+- 事前に値の範囲を推定できる場合。Histogramは観察を事前定義されたバケットに整理します。
 
-- When you need to aggregate histograms across multiple instances.
+- Histogramのデータを複数のインスタンスにわたって集約する必要がある場合。
 
-### Examples
+### 例
 
-#### Histogram With Linear Buckets
+#### 線形バケットを持つHistogram
 
-In this example, we create a histogram with linear buckets, ranging from 0 to 100 in increments of 10, and an "Infinity" bucket. It's suitable for effects yielding a `number`. The program then generates random values, records them in the histogram, and displays the histogram's state.
+この例では、0から100まで10刻みの線形バケットと「無限大」バケットを持つHistogramを作成します。これは、`number`を生成するエフェクトに適しています。プログラムはランダムな値を生成し、それらをHistogramに記録し、Histogramの状態を表示します。
 
 ```ts twoslash
 import { Effect, Metric, MetricBoundaries, Random } from "effect"
@@ -243,7 +241,7 @@ Effect.runPromise(
   program.pipe(Effect.andThen(Metric.value(latencyHistogram)))
 ).then((histogramState) => console.log("%o", histogramState))
 /*
-Output:
+出力:
 HistogramState {
   buckets: [
     [ 0, 0 ],
@@ -268,9 +266,9 @@ HistogramState {
 */
 ```
 
-#### Timer Metric
+#### タイマーメトリック
 
-This example demonstrates the use of a timer metric to track workflow durations. It generates random values, simulates waiting times, records durations in the timer metric, and displays the histogram's state.
+この例では、タイマーメトリックを使用してワークフローの持続時間を追跡する方法を示します。ランダムな値を生成し、待機時間をシミュレートし、タイマーメトリックに持続時間を記録し、ヒストグラムの状態を表示します。
 
 ```ts twoslash
 import { Metric, Array, Random, Effect } from "effect"
@@ -288,7 +286,7 @@ Effect.runPromise(program.pipe(Effect.andThen(Metric.value(timer)))).then(
   (histogramState) => console.log("%o", histogramState)
 )
 /*
-Output:
+出力:
 HistogramState {
   buckets: [
     [ 1, 3 ],
@@ -313,37 +311,36 @@ HistogramState {
 */
 ```
 
-These examples showcase how histograms can be used to analyze and understand the distribution of data in various scenarios, making them a valuable tool in software metrics.
+これらの例は、ヒストグラムがさまざまなシナリオでデータの分布を分析し理解するためにどのように使用できるかを示しており、ソフトウェアメトリクスにおいて貴重なツールとなります。
 
 ## Summary
 
-A Summary is a metric that provides valuable insights into a time series by calculating specific percentiles. These percentiles help us understand the distribution of values within the time series. Imagine you're tracking response times for requests over the past hour; you might be interested in percentiles like the 50th, 90th, 95th, and 99th to analyze performance.
+Summaryは、特定のパーセンタイルを計算することで時系列データに貴重な洞察を提供するメトリックです。これらのパーセンタイルは、時系列内の値の分布を理解するのに役立ちます。例えば、過去1時間のリクエストの応答時間を追跡している場合、パフォーマンスを分析するために50パーセンタイル、90パーセンタイル、95パーセンタイル、99パーセンタイルなどに関心があるかもしれません。
 
-### How Summaries Work
+### Summariesの動作
 
-Summaries, much like histograms, observe `number` values. However, instead of directly modifying bucket counters and discarding samples, summaries retain the observed samples in their internal state. To prevent uncontrolled growth of the sample set, a summary is configured with a maximum age `maxAge` and a maximum size `maxSize`. When calculating statistics, it uses a maximum of `maxSize` samples, all of which are not older than `maxAge`.
+Summariesはヒストグラムと同様に`number`値を観察します。しかし、バケットカウンターを直接変更してサンプルを破棄する代わりに、Summariesは観察されたサンプルを内部状態に保持します。サンプルセットの無制限な増加を防ぐために、Summaryは最大年齢`maxAge`と最大サイズ`maxSize`で構成されます。統計を計算する際には、`maxAge`より古くない`maxSize`のサンプルを最大限使用します。
 
-Think of the set of samples as a sliding window over the most recent observations that meet the specified conditions.
+サンプルセットを、指定された条件を満たす最新の観察結果に対するスライディングウィンドウと考えてください。
 
-Summaries are primarily used to calculate quantiles over the current set of samples. A quantile is defined by a `number` value `q` with `0 <= q <= 1` and results in a `number` as well.
+Summariesは主に現在のサンプルセットに対して分位数を計算するために使用されます。分位数は`0 <= q <= 1`の`number`値で定義され、結果も`number`となります。
 
-The value of a specific quantile `q` is determined as the maximum value `v` from the current sample buffer (with size `n`) where at most `q * n` values from the sample buffer are less than or equal to `v`.
+特定の分位数`q`の値は、現在のサンプルバッファ（サイズ`n`）からの最大値`v`として決定され、サンプルバッファの`q * n`以下の値が`v`以下である場合にその値が選ばれます。
 
-Common quantiles for observation include `0.5` (the median) and `0.95`. Quantiles are particularly useful for monitoring Service Level Agreements (SLAs).
+観察に一般的な分位数には`0.5`（中央値）や`0.95`があります。分位数はサービスレベルアグリーメント（SLA）の監視に特に有用です。
 
-The Effect Metrics API also allows summaries to be configured with an error margin `error`. This margin is applied to the count of values, so a quantile `q` for a set of size `s` resolves to value `v` if the count `n` of values less than or equal to `v` falls within the range `(1 - error)q * s <= n <= (1 + error)q`.
+Effect Metrics APIでは、Summariesを誤差範囲`error`で構成することもできます。この範囲は値のカウントに適用され、サイズ`s`のセットに対する分位数`q`は、`(1 - error)q * s <= n <= (1 + error)q`の範囲内に`v`以下の値のカウント`n`が収まる場合に値`v`として解決されます。
 
-### When to Use Summaries
+### Summariesの使用時期
 
-Summaries are excellent for monitoring latencies when histograms are not the right fit due to accuracy concerns. They shine in situations where:
+Summariesは、ヒストグラムが精度の問題で適していない場合のレイテンシーの監視に最適です。以下のような状況で特に有用です：
 
-- The range of values is not well-estimated, making histograms less suitable.
+- 値の範囲がよく見積もられていないため、ヒストグラムが適していない場合。
+- 複数のインスタンス間での集計や平均化が不要で、Summaryの計算がアプリケーション側で行われる場合。
 
-- There's no need for aggregation or averaging across multiple instances, as summary calculations are performed on the application side.
+### 例
 
-### Example
-
-Let's create a summary to hold `100` samples, with a maximum sample age of `1 day`, and an error margin of `3%`. This summary should report the `10%`, `50%`, and `90%` quantiles. It can be applied to effects yielding integers:
+`100`サンプルを保持し、最大サンプル年齢を`1日`、誤差範囲を`3%`とするSummaryを作成しましょう。このSummaryは`10%`、`50%`、`90%`の分位数を報告する必要があります。これは整数を生成するエフェクトに適用できます。
 
 ```ts twoslash
 import { Metric, Random, Effect } from "effect"
@@ -364,7 +361,7 @@ Effect.runPromise(
   program.pipe(Effect.andThen(Metric.value(responseTimeSummary)))
 ).then((summaryState) => console.log("%o", summaryState))
 /*
-Output:
+出力:
 SummaryState {
   error: 0.03,
   quantiles: [
@@ -383,19 +380,19 @@ SummaryState {
 
 ## Frequency
 
-Frequencies are metrics that help us count the occurrences of specific values. Think of them as a set of counters, each associated with a unique value. When new values are observed, frequencies automatically create new counters for them.
+Frequenciesは特定の値の出現回数をカウントするのに役立つメトリクスです。これらは、各ユニークな値に関連付けられた一連のカウンターと考えることができます。新しい値が観測されると、Frequenciesは自動的に新しいカウンターを作成します。
 
-### When to Use Frequencies
+### Frequenciesの使用時期
 
-Frequencies are invaluable for counting the occurrences of distinct string values. Consider using frequencies in scenarios like:
+Frequenciesは、異なる文字列値の出現回数をカウントするのに非常に有用です。以下のようなシナリオでFrequenciesを使用することを検討してください：
 
-- Tracking the number of invocations for each service in an application that uses logical names for its services.
+- 論理名を使用するサービスの各サービスの呼び出し回数を追跡する場合。
 
-- Monitoring the frequency of different types of failures.
+- 異なる種類の失敗の頻度を監視する場合。
 
-### Example
+### 例
 
-Let's create a Frequency to observe the occurrences of unique strings. This example can be applied to effects that yield a `string`:
+ユニークな文字列の出現回数を観測するためにFrequencyを作成しましょう。この例は、`string`を生成するエフェクトに適用できます。
 
 ```ts twoslash
 import { Metric, Random, Effect } from "effect"
@@ -410,7 +407,7 @@ Effect.runPromise(
   program.pipe(Effect.andThen(Metric.value(errorFrequency)))
 ).then((frequencyState) => console.log("%o", frequencyState))
 /*
-Output:
+出力:
 FrequencyState {
   occurrences: Map(9) {
     'Error-7' => 12,

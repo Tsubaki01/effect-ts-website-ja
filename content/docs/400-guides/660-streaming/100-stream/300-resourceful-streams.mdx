@@ -1,21 +1,21 @@
 ---
-title: Resourceful Streams
-excerpt: Discover how to manage resources effectively in Effect's `Stream` module. Explore constructors tailored for lifting scoped resources, ensuring safe acquisition and release within streams. Dive into examples illustrating the use of `Stream.acquireRelease` for file operations, finalization for cleanup tasks, and `ensuring` for post-finalization actions. Master the art of resource management in streaming applications with Effect.
+title: リソースフルなStream
+excerpt: Effectの`Stream`モジュールでリソースを効果的に管理する方法を発見しましょう。スコープされたリソースを持ち上げるために特化されたコンストラクタを探求し、ストリーム内での安全な取得と解放を確保します。ファイル操作のための`Stream.acquireRelease`の使用、クリーンアップタスクのためのファイナライゼーション、そしてポストファイナライゼーションアクションのための`ensuring`の使用例を掘り下げます。Effectを使ったストリーミングアプリケーションでのリソース管理の技術をマスターしましょう。
 bottomNavigation: pagination
 ---
 
-In the Stream module, you'll find that most of the constructors offer a special variant designed for lifting a scoped resource into a `Stream`. When you use these specific constructors, you're essentially creating streams that are inherently safe with regards to resource management. These constructors, before creating the stream, handle the resource acquisition, and after the stream's usage, they ensure its proper closure.
+Streamモジュールでは、ほとんどのコンストラクタがスコープされたリソースを`Stream`に持ち上げるための特別なバリアントを提供しています。これらの特定のコンストラクタを使用すると、リソース管理に関して本質的に安全なストリームを作成することになります。これらのコンストラクタは、ストリームを作成する前にリソースの取得を処理し、ストリームの使用後にその適切な閉鎖を確保します。
 
-Stream also provides us with `Stream.acquireRelease` and `Stream.finalizer` constructors that share similarities with `Effect.acquireRelease` and `Effect.addFinalizer`. These tools empower us to perform cleanup or finalization tasks before the stream concludes its operation.
+Streamはまた、`Stream.acquireRelease`と`Stream.finalizer`のコンストラクタを提供しており、これらは`Effect.acquireRelease`と`Effect.addFinalizer`と類似しています。これらのツールは、ストリームがその操作を終了する前にクリーンアップやファイナライゼーションタスクを実行する力を与えてくれます。
 
 ## Acquire Release
 
-In this section, we'll explore an example that demonstrates the use of `Stream.acquireRelease` when working with file operations.
+このセクションでは、ファイル操作で`Stream.acquireRelease`を使用する例を探求します。
 
 ```ts twoslash
 import { Stream, Console, Effect } from "effect"
 
-// Simulating File operations
+// ファイル操作のシミュレーション
 const open = (filename: string) =>
   Effect.gen(function* () {
     yield* Console.log(`Opening ${filename}`)
@@ -32,7 +32,7 @@ const stream = Stream.acquireRelease(
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 Opening file.txt
 Closing file.txt
 {
@@ -44,13 +44,13 @@ Closing file.txt
 */
 ```
 
-In this code snippet, we're simulating file operations using the `open` function. The `Stream.acquireRelease` function is employed to ensure that the file is correctly opened and closed, and we then process the lines of the file using the acquired resource.
+このコードスニペットでは、`open`関数を使用してファイル操作をシミュレートしています。`Stream.acquireRelease`関数を使用して、ファイルが正しく開かれ、閉じられることを保証し、取得したリソースを使用してファイルの行を処理します。
 
 ## Finalization
 
-In this section, we'll explore the concept of finalization in streams. Finalization allows us to execute a specific action before a stream ends. This can be particularly useful when we want to perform cleanup tasks or add final touches to a stream.
+このセクションでは、ストリームにおけるファイナライゼーションの概念を探求します。ファイナライゼーションにより、ストリームが終了する前に特定のアクションを実行することができます。これは、クリーンアップタスクを実行したり、ストリームに最終的な仕上げを加えたりする場合に特に有用です。
 
-Imagine a scenario where our streaming application needs to clean up a temporary directory when it completes its execution. We can achieve this using the `Stream.finalizer` function:
+ストリーミングアプリケーションが実行を完了したときに、一時ディレクトリをクリーンアップする必要があるシナリオを想像してください。これを`Stream.finalizer`関数を使用して実現できます：
 
 ```ts twoslash
 import { Stream, Console, Effect } from "effect"
@@ -71,7 +71,7 @@ const program = application.pipe(
 
 Effect.runPromise(Stream.runCollect(program)).then(console.log)
 /*
-Output:
+出力:
 Application Logic.
 Deleting dir: tmp
 Temporary directory was deleted.
@@ -82,13 +82,13 @@ Temporary directory was deleted.
 */
 ```
 
-In this code example, we start with our application logic represented by the `application` stream. We then use `Stream.finalizer` to define a finalization step, which deletes a temporary directory and logs a message. This ensures that the temporary directory is cleaned up properly when the application completes its execution.
+このコード例では、`application`ストリームで表されるアプリケーションロジックから始めます。次に、`Stream.finalizer`を使用して、テンポラリディレクトリを削除し、メッセージをログに記録するファイナライゼーションステップを定義します。これにより、アプリケーションが実行を完了したときにテンポラリディレクトリが適切にクリーンアップされることが保証されます。
 
 ## Ensuring
 
-In this section, we'll explore a scenario where we need to perform actions after the finalization of a stream. To achieve this, we can utilize the `Stream.ensuring` operator.
+このセクションでは、ストリームのファイナライゼーション後にアクションを実行する必要があるシナリオを探ります。これを実現するために、`Stream.ensuring`オペレーターを利用できます。
 
-Consider a situation where our application has completed its primary logic and finalized some resources, but we also need to perform additional actions afterward. We can use `Stream.ensuring` for this purpose:
+アプリケーションが主要なロジックを完了し、いくつかのリソースをファイナライズした後に、追加のアクションを実行する必要がある状況を考えてみましょう。この目的のために`Stream.ensuring`を使用できます。
 
 ```ts twoslash
 import { Stream, Console, Effect } from "effect"
@@ -102,7 +102,7 @@ const program = Stream.fromEffect(Console.log("Application Logic.")).pipe(
 
 Effect.runPromise(Stream.runCollect(program)).then(console.log)
 /*
-Output:
+出力:
 Application Logic.
 Finalizing the stream
 Doing some other works after stream's finalization
@@ -113,4 +113,4 @@ Doing some other works after stream's finalization
 */
 ```
 
-In this code example, we start with our application logic represented by the `Application Logic.` message. We then use `Stream.finalizer` to specify the finalization step, which logs `Finalizing the stream`. After that, we use `Stream.ensuring` to indicate that we want to perform additional tasks after the stream's finalization, resulting in the message `Performing additional tasks after stream's finalization`. This ensures that our post-finalization actions are executed as expected.
+このコード例では、`Application Logic.`メッセージで表されるアプリケーションロジックから始めます。次に、`Stream.finalizer`を使用して、`Finalizing the stream`をログに記録するファイナライゼーションステップを指定します。その後、`Stream.ensuring`を使用して、ストリームのファイナライゼーション後に追加のタスクを実行したいことを示し、`Performing additional tasks after stream's finalization`というメッセージを出力します。これにより、ファイナライゼーション後のアクションが期待通りに実行されることが保証されます。

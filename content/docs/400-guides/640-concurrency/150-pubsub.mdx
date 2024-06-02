@@ -1,23 +1,23 @@
 ---
 title: PubSub
-excerpt: Dive into the world of `PubSub` with Effect, a powerful asynchronous message hub that facilitates seamless communication between publishers and subscribers. Learn the core operations, explore different types of pubsubs, and discover the optimal scenarios for their use. Understand the versatile operators available on pubsubs, from publishing multiple values to checking size and gracefully shutting down. Gain insights into the unique qualities that set pubsubs apart and their equivalence to queues in various scenarios. Elevate your understanding of `PubSub` to enhance your asynchronous workflows.
+excerpt: Effectを使って`PubSub`の世界に飛び込みましょう。`PubSub`は、パブリッシャーとサブスクライバー間のシームレスな通信を促進する強力な非同期メッセージハブです。基本操作を学び、さまざまなタイプのPubSubを探求し、それらの最適な使用シナリオを発見しましょう。複数の値を公開することからサイズを確認し、優雅にシャットダウンするまで、PubSubで利用可能な多用途なオペレーターを理解しましょう。PubSubの独自の特性と、さまざまなシナリオでのキューとの等価性についての洞察を得て、非同期ワークフローを向上させるための`PubSub`の理解を深めましょう。
 bottomNavigation: pagination
 ---
 
-In this guide, we'll explore the concept of a `PubSub`, which is an asynchronous message hub. It allows publishers to send messages to the pubsub, and subscribers can receive those messages.
+このガイドでは、非同期メッセージハブである`PubSub`の概念を探ります。これにより、パブリッシャーはメッセージをPubSubに送信し、サブスクライバーはそのメッセージを受信することができます。
 
-Unlike a [Queue](queue), where each value offered to the queue can be taken by **one** taker, each value published to a pubsub can be received by **all** subscribers.
+[Queue](queue)では、キューに提供された各値は**1人**のテイカーによってのみ取得されますが、PubSubに公開された各値は**すべての**サブスクライバーによって受信されます。
 
-Whereas a [Queue](queue) represents the optimal solution to the problem of how to **distribute** values, a `PubSub` represents the optimal solution to the problem of how to **broadcast** them.
+[Queue](queue)が値を**分配**する問題の最適な解決策を表すのに対し、`PubSub`はそれらを**放送**する問題の最適な解決策を表します。
 
-## Basic Operations
+## 基本操作
 
-The core operations of a `PubSub` are `PubSub.publish` and `PubSub.subscribe`:
+`PubSub`の基本操作は`PubSub.publish`と`PubSub.subscribe`です：
 
-- The `publish` operation sends a message of type `A` to the pubsub. It returns an effect that indicates whether the message was successfully published.
-- The `subscribe` operation returns a scoped effect that allows you to subscribe to the pubsub. It automatically unsubscribes when the scope is closed. Within the scope, you gain access to a `Dequeue`, which is essentially a `Queue` for dequeuing messages published to the pubsub.
+- `publish`操作は、型`A`のメッセージをPubSubに送信します。これは、メッセージが正常に公開されたかどうかを示すエフェクトを返します。
+- `subscribe`操作は、PubSubにサブスクライブするためのスコープ付きエフェクトを返します。スコープが閉じられると自動的にサブスクライブが解除されます。スコープ内では、PubSubに公開されたメッセージをデキューするための`Dequeue`（本質的には`Queue`）にアクセスできます。
 
-Let's look at an example to understand how to use a pubsub:
+PubSubの使い方を理解するために、例を見てみましょう：
 
 ```ts twoslash
 import { Effect, PubSub, Queue, Console } from "effect"
@@ -44,15 +44,15 @@ Hello from a PubSub!
 */
 ```
 
-It's important to note that a subscriber will only receive messages published to the pubsub while it's subscribed. To ensure that a specific message reaches a subscriber, make sure that the subscription has been established before publishing the message.
+サブスクライバーは、サブスクライブしている間にPubSubに公開されたメッセージのみを受信することに注意してください。特定のメッセージがサブスクライバーに届くようにするには、メッセージを公開する前にサブスクライブが確立されていることを確認してください。
 
-## Creating PubSubs
+## PubSubの作成
 
-You can create a pubsub using various constructors provided by the PubSub module:
+PubSubモジュールが提供するさまざまなコンストラクタを使用して、PubSubを作成できます：
 
 ### Bounded PubSub
 
-A bounded pubsub applies back pressure to publishers when it's at capacity, meaning publishers will block if the pubsub is full.
+Bounded PubSubは、容量に達したときにパブリッシャーにバックプレッシャーを適用します。つまり、PubSubが満杯の場合、パブリッシャーはブロックされます。
 
 ```ts twoslash
 import { PubSub } from "effect"
@@ -60,11 +60,11 @@ import { PubSub } from "effect"
 const boundedPubSub = PubSub.bounded<string>(2)
 ```
 
-Back pressure ensures that all subscribers receive all messages while they are subscribed. However, it can lead to slower message delivery if a subscriber is slow.
+バックプレッシャーは、すべてのサブスクライバーがサブスクライブしている間にすべてのメッセージを受信することを保証します。しかし、サブスクライバーが遅い場合、メッセージの配信が遅くなる可能性があります。
 
 ### Dropping PubSub
 
-A dropping pubsub simply discards values if it's full. The `PubSub.publish` function will return `false` when the pubsub is full.
+Dropping PubSubは、満杯の場合に値を単純に破棄します。`PubSub.publish`関数は、PubSubが満杯のときに`false`を返します。
 
 ```ts twoslash
 import { PubSub } from "effect"
@@ -72,11 +72,11 @@ import { PubSub } from "effect"
 const droppingPubSub = PubSub.dropping<string>(2)
 ```
 
-In a dropping pubsub, publishers can continue to publish new values, but subscribers are not guaranteed to receive all messages.
+Dropping PubSubでは、パブリッシャーは新しい値を公開し続けることができますが、サブスクライバーがすべてのメッセージを受信する保証はありません。
 
 ### Sliding PubSub
 
-A sliding pubsub drops the oldest value when it's full, ensuring that publishing always succeeds immediately.
+Sliding PubSubは、満杯になると最も古い値を削除し、公開が常に即座に成功することを保証します。
 
 ```ts twoslash
 import { PubSub } from "effect"
@@ -84,11 +84,11 @@ import { PubSub } from "effect"
 const slidingPubSub = PubSub.sliding<string>(2)
 ```
 
-A sliding pubsub prevents slow subscribers from impacting the message delivery rate. However, there's still a risk that slow subscribers may miss some messages.
+Sliding PubSubは、遅いサブスクライバーがメッセージ配信速度に影響を与えるのを防ぎます。しかし、遅いサブスクライバーがいくつかのメッセージを見逃すリスクは依然として存在します。
 
 ### Unbounded PubSub
 
-An unbounded pubsub can never be full, and publishing always succeeds immediately.
+Unbounded PubSubは決して満杯になることがなく、公開は常に即座に成功します。
 
 ```ts twoslash
 import { PubSub } from "effect"
@@ -96,17 +96,17 @@ import { PubSub } from "effect"
 const unboundedPubSub = PubSub.unbounded<string>()
 ```
 
-Unbounded pubsubs guarantee that all subscribers receive all messages without slowing down message delivery. However, they can grow indefinitely if messages are published faster than they are consumed.
+Unbounded pubsubsは、メッセージ配信を遅くすることなく、すべてのサブスクライバーがすべてのメッセージを受信することを保証します。しかし、メッセージが消費されるよりも速く公開される場合、無限に成長する可能性があります。
 
-Generally, it's recommended to use bounded, dropping, or sliding pubsubs unless you have specific use cases for unbounded pubsubs.
+一般的には、特定のユースケースがない限り、bounded、dropping、またはsliding pubsubsを使用することをお勧めします。
 
-## Operators On PubSubs
+## PubSubsのオペレーター
 
-PubSubs support various operations similar to those available on queues.
+PubSubsは、キューで利用可能なさまざまな操作をサポートしています。
 
-### Publishing Multiple Values
+### 複数の値を公開する
 
-You can use the `PubSub.publishAll` operator to publish multiple values to the pubsub at once:
+`PubSub.publishAll`オペレーターを使用して、一度に複数の値をpubsubに公開できます。
 
 ```ts twoslash
 import { Effect, PubSub, Queue, Console } from "effect"
@@ -133,9 +133,9 @@ Output:
 */
 ```
 
-### Checking Size
+### サイズの確認
 
-You can determine the capacity and current size of the pubsub using `PubSub.capacity` and `PubSub.size`:
+`PubSub.capacity`と`PubSub.size`を使用して、pubsubの容量と現在のサイズを確認できます。
 
 ```ts twoslash
 import { Effect, PubSub, Console } from "effect"
@@ -157,22 +157,22 @@ size: 0
 */
 ```
 
-Note that `capacity` returns a `number` because the capacity is set at pubsub creation and never changes. In contrast, `size` returns an effect that determines the current size of the pubsub since the number of messages in the pubsub can change over time.
+`capacity`はpubsubの作成時に設定され、変更されないため、`number`を返します。対照的に、`size`はpubsub内のメッセージ数が時間とともに変化するため、現在のサイズを決定するエフェクトを返します。
 
-### Shutting Down a PubSub
+### PubSubのシャットダウン
 
-You can shut down a pubsub using `PubSub.shutdown`, check if it's shut down with `PubSub.isShutdown`, or await its shutdown with `PubSub.awaitShutdown`. Shutting down a pubsub also shuts down all associated queues, ensuring the proper propagation of the shutdown signal.
+`PubSub.shutdown`を使用してpubsubをシャットダウンしたり、`PubSub.isShutdown`でシャットダウンされているか確認したり、`PubSub.awaitShutdown`でシャットダウンを待機することができます。pubsubをシャットダウンすると、関連するすべてのキューもシャットダウンされ、シャットダウン信号が適切に伝播されることが保証されます。
 
-## PubSub as an Enqueue
+## EnqueueとしてのPubSub
 
-As you can see, the operators on `PubSub` are identical to the ones on [Queue](queue) with the exception of `PubSub.publish` and `PubSub.subscribe` replacing `Queue.offer` and `Queue.take`. So if you know how to use a `Queue`, you already know how to use a `PubSub`.
+ご覧のとおり、`PubSub`のオペレーターは、`PubSub.publish`と`PubSub.subscribe`が`Queue.offer`と`Queue.take`に置き換わる点を除いて、[Queue](queue)のオペレーターと同一です。したがって、`Queue`の使い方を知っていれば、`PubSub`の使い方もすでに知っていることになります。
 
-In fact, a `PubSub` can be viewed as a `Queue` that can only be written to:
+実際、`PubSub`は書き込み専用の`Queue`と見なすことができます。
 
 ```ts
 interface PubSub<A> extends Queue.Enqueue<A> {}
 ```
 
-Here, the `Enqueue` type represents a queue that can only be enqueued. Enqueuing to the queue publishes a value to the pubsub, and actions like shutting down the queue also shut down the pubsub.
+ここで、`Enqueue`型はエンキューのみ可能なキューを表します。キューにエンキューすることで、pubsubに値が公開され、キューのシャットダウンなどのアクションはpubsubもシャットダウンします。
 
-This versatility allows you to use a `PubSub` wherever you currently use a `Queue` that you only write to.
+この汎用性により、書き込み専用の`Queue`を使用している場所であればどこでも`PubSub`を使用することができます。

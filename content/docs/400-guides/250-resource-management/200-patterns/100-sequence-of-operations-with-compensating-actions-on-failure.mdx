@@ -1,18 +1,18 @@
 ---
-title: Sequence of Operations with Compensating Actions on Failure
-excerpt: Effect facilitates sequential operations where success depends on prior steps, with rollback on failure.
+title: 失敗時に補償アクションを伴う操作のシーケンス
+excerpt: Effectは、前のステップに依存する連続操作を促進し、失敗時にはロールバックを行います。
 bottomNavigation: pagination
 ---
 
-In certain scenarios, you might need to perform a sequence of chained operations where the success of each operation depends on the previous one. However, if any of the operations fail, you would want to reverse the effects of all previous successful operations. This pattern is valuable when you need to ensure that either all operations succeed, or none of them have any effect at all.
+特定のシナリオでは、各操作の成功が前の操作に依存する一連の連鎖操作を実行する必要があるかもしれません。しかし、いずれかの操作が失敗した場合、以前のすべての成功した操作の効果を逆転させたいと考えるでしょう。このパターンは、すべての操作が成功するか、または何も効果がないことを保証する必要がある場合に価値があります。
 
-Effect offers a way to achieve this pattern using the [Effect.acquireRelease](../scope#defining-resources) function in combination with the [Exit](../../../other/data-types/exit) type.
-The [Effect.acquireRelease](../scope#defining-resources) function allows you to acquire a resource, perform operations with it, and release the resource when you're done.
-The [Exit](../../../other/data-types/exit) type represents the outcome of an effectful computation, indicating whether it succeeded or failed.
+Effectは、[Effect.acquireRelease](../scope#defining-resources)関数と[Exit](../../../other/data-types/exit)型を組み合わせてこのパターンを実現する方法を提供します。
+[Effect.acquireRelease](../scope#defining-resources)関数は、リソースを取得し、それを使用して操作を行い、完了したらリソースを解放することを可能にします。
+[Exit](../../../other/data-types/exit)型は、効果的な計算の結果を表し、それが成功したか失敗したかを示します。
 
-Let's go through an example of implementing this pattern. Suppose we want to create a "Workspace" in our application, which involves creating an S3 bucket, an ElasticSearch index, and a Database entry that relies on the previous two.
+このパターンを実装する例を見てみましょう。アプリケーションで「ワークスペース」を作成する場合を考えます。これは、S3バケット、ElasticSearchインデックス、および前の2つに依存するデータベースエントリを作成することを含みます。
 
-To begin, we define the domain model for the required [services](./context-management/services): `S3`, `ElasticSearch`, and `Database`.
+まず、必要な[サービス](./context-management/services)のドメインモデルを定義します：`S3`、`ElasticSearch`、および`Database`。
 
 ```twoslash include Services
 import { Effect, Context } from "effect"
@@ -73,9 +73,9 @@ export class Database extends Context.Tag("Database")<
 // @include: Services
 ```
 
-Next, we define the three create actions and the overall transaction (`make`) for the Workspace.
+次に、Workspaceのための3つの作成アクションと全体のトランザクション（`make`）を定義します。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts filename="Workspace.ts" twoslash
@@ -87,19 +87,19 @@ Next, we define the three create actions and the overall transaction (`make`) fo
 import { Effect, Exit } from "effect"
 import * as Services from "./Services"
 
-// Create a bucket, and define the release function that deletes the bucket if the operation fails.
+// バケットを作成し、操作が失敗した場合にバケットを削除するリリース関数を定義します。
 const createBucket = Effect.gen(function* () {
   const { createBucket, deleteBucket } = yield* Services.S3
   return yield* Effect.acquireRelease(createBucket, (bucket, exit) =>
-    // The release function for the Effect.acquireRelease operation is responsible for handling the acquired resource (bucket) after the main effect has completed.
-    // It is called regardless of whether the main effect succeeded or failed.
-    // If the main effect failed, Exit.isFailure(exit) will be true, and the function will perform a rollback by calling deleteBucket(bucket).
-    // If the main effect succeeded, Exit.isFailure(exit) will be false, and the function will return Effect.void, representing a successful, but do-nothing effect.
+    // Effect.acquireRelease操作のリリース関数は、メインのエフェクトが完了した後に取得したリソース（バケット）を処理する責任があります。
+    // メインのエフェクトが成功したか失敗したかに関わらず呼び出されます。
+    // メインのエフェクトが失敗した場合、Exit.isFailure(exit)はtrueとなり、関数はdeleteBucket(bucket)を呼び出してロールバックを行います。
+    // メインのエフェクトが成功した場合、Exit.isFailure(exit)はfalseとなり、関数はEffect.voidを返します。これは成功したが何もしないエフェクトを表します。
     Exit.isFailure(exit) ? deleteBucket(bucket) : Effect.void
   )
 })
 
-// Create an index, and define the release function that deletes the index if the operation fails.
+// インデックスを作成し、操作が失敗した場合にインデックスを削除するリリース関数を定義します。
 const createIndex = Effect.gen(function* () {
   const { createIndex, deleteIndex } = yield* Services.ElasticSearch
   return yield* Effect.acquireRelease(createIndex, (index, exit) =>
@@ -107,7 +107,7 @@ const createIndex = Effect.gen(function* () {
   )
 })
 
-// Create an entry in the database, and define the release function that deletes the entry if the operation fails.
+// データベースにエントリを作成し、操作が失敗した場合にエントリを削除するリリース関数を定義します。
 const createEntry = (bucket: Services.Bucket, index: Services.Index) =>
   Effect.gen(function* () {
     const { createEntry, deleteEntry } = yield* Services.Database
@@ -139,20 +139,20 @@ export const make = Effect.scoped(
 import { Effect, Exit } from "effect"
 import * as Services from "./Services"
 
-// Create a bucket, and define the release function that deletes the bucket if the operation fails.
+// バケットを作成し、操作が失敗した場合にバケットを削除するリリース関数を定義します。
 const createBucket = Services.S3.pipe(
   Effect.andThen(({ createBucket, deleteBucket }) =>
     Effect.acquireRelease(createBucket, (bucket, exit) =>
-      // The release function for the Effect.acquireRelease operation is responsible for handling the acquired resource (bucket) after the main effect has completed.
-      // It is called regardless of whether the main effect succeeded or failed.
-      // If the main effect failed, Exit.isFailure(exit) will be true, and the function will perform a rollback by calling deleteBucket(bucket).
-      // If the main effect succeeded, Exit.isFailure(exit) will be false, and the function will return Effect.void, representing a successful, but do-nothing effect.
+      // Effect.acquireRelease操作のリリース関数は、メインのエフェクトが完了した後に取得したリソース（バケット）を処理する役割を担います。
+      // メインのエフェクトが成功したか失敗したかに関わらず、この関数は呼び出されます。
+      // メインのエフェクトが失敗した場合、Exit.isFailure(exit)はtrueとなり、関数はdeleteBucket(bucket)を呼び出してロールバックを行います。
+      // メインのエフェクトが成功した場合、Exit.isFailure(exit)はfalseとなり、関数はEffect.voidを返します。これは成功したが何もしないエフェクトを表します。
       Exit.isFailure(exit) ? deleteBucket(bucket) : Effect.void
     )
   )
 )
 
-// Create an index, and define the release function that deletes the index if the operation fails.
+// インデックスを作成し、操作が失敗した場合にインデックスを削除するリリース関数を定義します。
 const createIndex = Services.ElasticSearch.pipe(
   Effect.andThen(({ createIndex, deleteIndex }) =>
     Effect.acquireRelease(createIndex, (index, exit) =>
@@ -161,7 +161,7 @@ const createIndex = Services.ElasticSearch.pipe(
   )
 )
 
-// Create an entry in the database, and define the release function that deletes the entry if the operation fails.
+// データベースにエントリを作成し、操作が失敗した場合にエントリを削除するリリース関数を定義します。
 const createEntry = (bucket: Services.Bucket, index: Services.Index) =>
   Services.Database.pipe(
     Effect.andThen(({ createEntry, deleteEntry }) =>
@@ -183,11 +183,11 @@ export const make = Effect.scoped(
 </Tab>
 </Tabs>
 
-We then create simple service implementations to test the behavior of our Workspace code.
-To achieve this, we will utilize [layers](./context-management/layers) to construct test services.
-These layers will be able to handle various scenarios, including errors, which we can control using the `FailureCase` type.
+ワークスペースコードの動作をテストするために、シンプルなサービス実装を作成します。
+これを実現するために、[レイヤー](./context-management/layers)を利用してテストサービスを構築します。
+これらのレイヤーは、エラーを含むさまざまなシナリオに対応でき、`FailureCase`タイプを使用して制御することができます。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts filename="WorkspaceTest.ts" twoslash
@@ -237,12 +237,12 @@ import { Effect, Context, Layer, Console } from "effect"
 import * as Services from "./Services"
 import * as Workspace from "./Workspace"
 
-// The `FailureCaseLiterals` type allows us to provide different error scenarios while testing our services.
-// For example, by providing the value "S3", we can simulate an error scenario specific to the S3 service.
-// This helps us ensure that our program handles errors correctly and behaves as expected in various situations.
-// Similarly, we can provide other values like "ElasticSearch" or "Database" to simulate error scenarios for those services.
-// In cases where we want to test the absence of errors, we can provide `undefined`.
-// By using this parameter, we can thoroughly test our services and verify their behavior under different error conditions.
+// `FailureCaseLiterals`型を使用すると、サービスをテストする際にさまざまなエラーシナリオを提供できます。
+// 例えば、値として「S3」を指定すると、S3サービスに特有のエラーシナリオをシミュレートできます。
+// これにより、プログラムがエラーを正しく処理し、さまざまな状況で期待通りに動作することを確認できます。
+// 同様に、「ElasticSearch」や「Database」などの値を指定して、それらのサービスのエラーシナリオをシミュレートすることもできます。
+// エラーが発生しない場合をテストしたい場合は、`undefined`を指定できます。
+// このパラメータを使用することで、サービスを徹底的にテストし、さまざまなエラー条件下での動作を検証できます。
 type FailureCaseLiterals = "S3" | "ElasticSearch" | "Database" | undefined
 
 class FailureCase extends Context.Tag("FailureCase")<
@@ -250,7 +250,7 @@ class FailureCase extends Context.Tag("FailureCase")<
   FailureCaseLiterals
 >() {}
 
-// Create a test layer for the S3 service
+// S3サービスのテストレイヤーを作成する
 
 const S3Test = Layer.effect(
   Services.S3,
@@ -271,7 +271,7 @@ const S3Test = Layer.effect(
   })
 )
 
-// Create a test layer for the ElasticSearch service
+// ElasticSearchサービスのテストレイヤーを作成する
 
 const ElasticSearchTest = Layer.effect(
   Services.ElasticSearch,
@@ -292,7 +292,7 @@ const ElasticSearchTest = Layer.effect(
   })
 )
 
-// Create a test layer for the Database service
+// Databaseサービスのテストレイヤーを作成する
 
 const DatabaseTest = Layer.effect(
   Services.Database,
@@ -316,12 +316,12 @@ const DatabaseTest = Layer.effect(
   })
 )
 
-// Merge all the test layers for S3, ElasticSearch, and Database services into a single layer
+// S3、ElasticSearch、およびDatabaseサービスのすべてのテストレイヤーを単一のレイヤーにマージする
 
 const layer = Layer.mergeAll(S3Test, ElasticSearchTest, DatabaseTest)
 
-// Create a runnable effect to test the Workspace code
-// The effect is provided with the test layer and a FailureCase service with undefined value (no failure case)
+// ワークスペースコードをテストするための実行可能なエフェクトを作成する
+// エフェクトにはテストレイヤーと未定義の値（失敗ケースなし）のFailureCaseサービスが提供される
 
 const runnable = Workspace.make.pipe(
   Effect.provide(layer),
@@ -381,12 +381,12 @@ import { Effect, Context, Layer, Console } from "effect"
 import * as Services from "./Services"
 import * as Workspace from "./Workspace"
 
-// The `FailureCaseLiterals` type allows us to provide different error scenarios while testing our services.
-// For example, by providing the value "S3", we can simulate an error scenario specific to the S3 service.
-// This helps us ensure that our program handle errors correctly and behave as expected in various situations.
-// Similarly, we can provide other values like "ElasticSearch" or "Database" to simulate error scenarios for those services.
-// In cases where we want to test the absence of errors, we can provide `undefined`.
-// By using this parameter, we can thoroughly test our services and verify their behavior under different error conditions.
+// `FailureCaseLiterals` 型は、サービスをテストする際に異なるエラーシナリオを提供することを可能にします。
+// 例えば、値として "S3" を提供することで、S3 サービスに特有のエラーシナリオをシミュレートできます。
+// これにより、プログラムがエラーを正しく処理し、さまざまな状況で期待通りに動作することを確認できます。
+// 同様に、"ElasticSearch" や "Database" などの値を提供することで、それらのサービスのエラーシナリオをシミュレートできます。
+// エラーが発生しない場合をテストしたい場合は、`undefined` を提供できます。
+// このパラメータを使用することで、サービスを徹底的にテストし、異なるエラー条件下での動作を検証できます。
 type FailureCaseLiterals = "S3" | "ElasticSearch" | "Database" | undefined
 
 class FailureCase extends Context.Tag("FailureCase")<
@@ -394,7 +394,7 @@ class FailureCase extends Context.Tag("FailureCase")<
   FailureCaseLiterals
 >() {}
 
-// Create a test layer for the S3 service
+// S3サービスのテストレイヤーを作成する
 
 const S3Test = Layer.effect(
   Services.S3,
@@ -410,7 +410,7 @@ const S3Test = Layer.effect(
   }))
 )
 
-// Create a test layer for the ElasticSearch service
+// ElasticSearchサービスのテストレイヤーを作成する
 
 const ElasticSearchTest = Layer.effect(
   Services.ElasticSearch,
@@ -427,7 +427,7 @@ const ElasticSearchTest = Layer.effect(
   }))
 )
 
-// Create a test layer for the Database service
+// Databaseサービスのテストレイヤーを作成する
 
 const DatabaseTest = Layer.effect(
   Services.Database,
@@ -446,12 +446,12 @@ const DatabaseTest = Layer.effect(
   }))
 )
 
-// Merge all the test layers for S3, ElasticSearch, and Database services into a single layer
+// S3、ElasticSearch、およびDatabaseサービスのすべてのテストレイヤーを単一のレイヤーにマージする
 
 const layer = Layer.mergeAll(S3Test, ElasticSearchTest, DatabaseTest)
 
-// Create a runnable effect to test the Workspace code
-// The effect is provided with the test layer and a FailureCase service with undefined value (no failure case)
+// Workspaceコードをテストするための実行可能なエフェクトを作成する
+// エフェクトはテストレイヤーと未定義の値（失敗ケースなし）のFailureCaseサービスを提供される
 
 const runnable = Workspace.make.pipe(
   Effect.provide(layer),
@@ -464,7 +464,7 @@ Effect.runPromise(Effect.either(runnable)).then(console.log)
 </Tab>
 </Tabs>
 
-Let's examine the test results for the scenario where `FailureCase` is set to `undefined` (happy path):
+`FailureCase` が `undefined` に設定されているシナリオ（ハッピーパス）のテスト結果を見てみましょう：
 
 ```
 [S3] creating bucket
@@ -479,9 +479,9 @@ Let's examine the test results for the scenario where `FailureCase` is set to `u
 }
 ```
 
-In this case, all operations succeed, and we see a successful result with `right({ id: '<entry.id>' })`.
+この場合、すべての操作が成功し、`right({ id: '<entry.id>' })` という成功した結果が表示されます。
 
-Now, let's simulate a failure in the `Database`:
+次に、`Database`での失敗をシミュレートしてみましょう：
 
 ```ts
 const runnable = Workspace.make.pipe(
@@ -507,9 +507,9 @@ The console output will be:
 }
 ```
 
-You can observe that once the `Database` error occurs, there is a complete rollback that deletes the `ElasticSearch` index first and then the associated `S3` bucket. The result is a failure with `left(new DatabaseError())`.
+`Database`エラーが発生すると、まず`ElasticSearch`インデックスが削除され、その後関連する`S3`バケットが削除される完全なロールバックが行われることがわかります。結果は`left(new DatabaseError())`という失敗になります。
 
-Let's now make the index creation fail instead:
+次に、インデックス作成を失敗させてみましょう：
 
 ```ts
 const runnable = Workspace.make.pipe(
@@ -518,7 +518,7 @@ const runnable = Workspace.make.pipe(
 )
 ```
 
-In this case, the console output will be:
+この場合、コンソール出力は次のようになります：
 
 ```
 [S3] creating bucket
@@ -533,4 +533,4 @@ In this case, the console output will be:
 }
 ```
 
-As expected, once the `ElasticSearch` index creation fails, there is a rollback that deletes the `S3` bucket. The result is a failure with `left(new ElasticSearchError())`.
+予想通り、`ElasticSearch`のインデックス作成が失敗すると、`S3`バケットが削除されるロールバックが行われます。結果は`left(new ElasticSearchError())`という失敗になります。

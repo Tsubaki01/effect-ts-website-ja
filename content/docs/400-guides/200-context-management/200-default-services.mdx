@@ -1,16 +1,16 @@
 ---
-title: Default Services
-excerpt: Explore the default services in Effect - Clock, Console, Random, ConfigProvider, and Tracer. Learn how Effect automatically provides live versions of these services, eliminating the need for explicit implementations in your programs.
+title: デフォルトサービス
+excerpt: Effectにおけるデフォルトサービス - Clock、Console、Random、ConfigProvider、Tracerを探求しましょう。Effectがこれらのサービスのライブバージョンを自動的に提供し、プログラム内で明示的な実装が不要になる方法を学びます。
 bottomNavigation: pagination
 ---
 
-Effect comes equipped with five pre-built services:
+Effectには5つの事前構築されたサービスが装備されています：
 
 ```ts
 type DefaultServices = Clock | Console | Random | ConfigProvider | Tracer
 ```
 
-When we employ these services, there's no need to explicitly provide their implementations. Effect automatically supplies live versions of these services to our effects, sparing us from manual setup.
+これらのサービスを使用する際、明示的に実装を提供する必要はありません。Effectはこれらのサービスのライブバージョンを自動的にエフェクトに供給し、手動での設定を省いてくれます。
 
 ```ts twoslash
 import { Effect, Clock, Console } from "effect"
@@ -21,5 +21,5 @@ const program = Effect.gen(function* () {
 })
 ```
 
-As you can observe, even if our program utilizes both `Clock` and `Console`, the `Requirements` parameter, representing the services required for the effect to execute, remains set to `never`.
-Effect takes care of handling these services seamlessly for us.
+ご覧の通り、プログラムが `Clock` と `Console` の両方を使用していても、エフェクトの実行に必要なサービスを表す `Requirements` パラメータは `never` に設定されたままです。
+Effectはこれらのサービスをシームレスに処理してくれます。

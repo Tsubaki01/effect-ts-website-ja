@@ -1,35 +1,35 @@
 ---
-title: Cache
-excerpt: Cache
+title: キャッシュ
+excerpt: キャッシュ
 bottomNavigation: pagination
 ---
 
-The Cache module makes it easy to optimize the performance of our application by caching values.
+Cacheモジュールは、値をキャッシュすることでアプリケーションのパフォーマンスを最適化するのを簡単にします。
 
-## Introduction
+## はじめに
 
-In many applications, we may encounter scenarios where overlapping work is performed. For example, if we are developing a service that handles incoming requests, it is essential to avoid processing duplicate requests. By using the Cache module, we can enhance our application's performance by preventing redundant work.
+多くのアプリケーションでは、重複する作業が行われるシナリオに遭遇することがあります。例えば、受信リクエストを処理するサービスを開発している場合、重複するリクエストの処理を避けることが重要です。Cacheモジュールを使用することで、冗長な作業を防ぎ、アプリケーションのパフォーマンスを向上させることができます。
 
-Key Features of Cache:
+Cacheの主な特徴:
 
-- **Compositionality**: Cache allows different parts of our application to perform overlapping work while still benefiting from compositional programming principles.
+- **Compositionality**: Cacheは、アプリケーションの異なる部分が重複する作業を行うことを可能にしながら、コンポジショナルプログラミングの原則を享受することができます。
 
-- **Unification of Synchronous and Asynchronous Caches**: The compositional definition of a cache through a lookup function unifies both synchronous and asynchronous caches, allowing the lookup function to compute values either synchronously or asynchronously.
+- **Unification of Synchronous and Asynchronous Caches**: lookup関数を通じたキャッシュのコンポジショナルな定義により、同期キャッシュと非同期キャッシュの両方が統一され、lookup関数が同期的または非同期的に値を計算できるようになります。
 
-- **Deep Effect Integration**: Cache is designed to work natively with the Effect library, supporting concurrent lookups, failure handling, and interruption without losing the power of Effect.
+- **Deep Effect Integration**: CacheはEffectライブラリとネイティブに連携するように設計されており、並行ルックアップ、エラーハンドリング、中断をサポートしながら、Effectの力を失うことはありません。
 
-- **Caching Policy**: Caching policies determine when values should be removed from the cache, providing flexibility for complex and custom caching strategies. The policy has two parts:
+- **Caching Policy**: キャッシングポリシーは、値をキャッシュから削除するタイミングを決定し、複雑でカスタムなキャッシング戦略に柔軟性を提供します。ポリシーは2つの部分から成ります:
 
-  - **Priority (Optional Removal)**: Defines the order in which values **might** be removed when the cache is running out of space.
-  - **Evict (Mandatory Removal)**: Specifies when values **must** be removed because they are no longer valid (e.g., they are too old or no longer satisfy business requirements).
+  - **Priority (Optional Removal)**: キャッシュがスペース不足になったときに値が削除される順序を定義します。
+  - **Evict (Mandatory Removal)**: 値が無効になったとき（例: 古くなった、またはビジネス要件を満たさなくなった）に削除されるタイミングを指定します。
 
-- **Composition Caching Policy**: Allows the definition of complex caching policies using simpler ones.
+- **Composition Caching Policy**: より単純なポリシーを使用して複雑なキャッシングポリシーを定義することができます。
 
-- **Cache/Entry Statistics**: Cache tracks metrics such as entries, hits, misses, helping us to assess and optimize cache performance.
+- **Cache/Entry Statistics**: Cacheはエントリ、ヒット、ミスなどのメトリクスを追跡し、キャッシュのパフォーマンスを評価および最適化するのに役立ちます。
 
-## How to Define a Cache?
+## キャッシュの定義方法
 
-A cache is defined by a lookup function that describes how to compute the value associated with a key if it is not already in the cache.
+キャッシュは、キーに関連付けられた値を計算する方法を記述するlookup関数によって定義されます。
 
 ```ts
 export type Lookup<Key, Value, Error = never, Environment = never> = (
@@ -37,11 +37,11 @@ export type Lookup<Key, Value, Error = never, Environment = never> = (
 ) => Effect.Effect<Value, Error, Environment>
 ```
 
-The lookup function takes a key of type `Key` and returns an `Effect` that requires an environment of type `Environment` and can fail with an error of type `Error` or succeed with a value of type `Value`. Since the lookup function returns an `Effect`, it can describe both synchronous and asynchronous workflows.
+lookup関数は`Key`型のキーを受け取り、`Environment`型の環境を必要とし、`Error`型のエラーで失敗するか、`Value`型の値で成功する`Effect`を返します。lookup関数が`Effect`を返すため、同期および非同期のワークフローの両方を記述することができます。
 
-In short, if you can describe it with an `Effect`, you can use it as the lookup function for a cache.
+簡単に言えば、`Effect`で記述できるものなら、キャッシュのlookup関数として使用することができます。
 
-We construct a cache using a lookup function along with a maximum size and a time to live.
+キャッシュは、lookup関数と最大サイズ、および有効期限を使用して構築します。
 
 ```ts
 export declare const make: <
@@ -56,13 +56,13 @@ export declare const make: <
 }) => Effect.Effect<Cache<Key, Value, Error>, never, Environment>
 ```
 
-Once a cache is created, the most idiomatic way to work with it is the `get` operator. The `get` operator returns the current value in the cache if it exists, or computes a new value, puts it in the cache, and returns it.
+キャッシュが作成されたら、最も慣用的な操作方法は`get`オペレーターを使用することです。`get`オペレーターは、キャッシュ内に現在の値が存在する場合はそれを返し、新しい値を計算してキャッシュに格納し、それを返します。
 
-If multiple concurrent processes request the same value, it will only be computed once. All other processes will receive the computed value as soon as it is available. This is managed using Effect's fiber-based concurrency model without blocking the underlying thread.
+複数の並行プロセスが同じ値を要求した場合、その値は一度だけ計算されます。他のすべてのプロセスは、値が利用可能になり次第、計算された値を受け取ります。これは、Effectのファイバーベースの並行性モデルを使用して管理され、基盤となるスレッドをブロックしません。
 
-### Example
+### 例
 
-In this example, we call `timeConsumingEffect` three times in parallel with the same key. The Cache runs this effect only once, so concurrent lookups will wait until the value is available:
+この例では、同じキーで`timeConsumingEffect`を3回並行して呼び出します。Cacheはこのエフェクトを一度だけ実行するため、並行ルックアップは値が利用可能になるまで待機します:
 
 ```ts twoslash
 import { Effect, Cache, Duration } from "effect"
@@ -94,33 +94,33 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 Result of parallel execution of three effects with the same key: 4,4,4
 Number of cache hits: 2
 Number of cache misses: 1
 */
 ```
 
-## Concurrent Access
+## 同時アクセス
 
-The cache is designed to be safe for concurrent access and efficient under concurrent conditions. If two concurrent processes request the same value and it is not in the cache, the value will be computed once and provided to both processes as soon as it is available. Concurrent processes will wait for the value without blocking operating system threads.
+キャッシュは同時アクセスに対して安全であり、同時条件下で効率的に動作するように設計されています。もし二つの同時プロセスが同じ値を要求し、それがキャッシュに存在しない場合、その値は一度だけ計算され、利用可能になり次第、両方のプロセスに提供されます。同時プロセスは、オペレーティングシステムのスレッドをブロックすることなく、その値を待ちます。
 
-If the lookup function fails or is interrupted, the error will be propagated to all concurrent processes waiting for the value. Failures are cached to prevent repeated computation of the same failed value. If interrupted, the key will be removed from the cache, so subsequent calls will attempt to compute the value again.
+もしlookup関数が失敗または中断された場合、そのエラーは値を待っているすべての同時プロセスに伝播されます。失敗はキャッシュされ、同じ失敗した値の再計算を防ぎます。中断された場合、そのキーはキャッシュから削除されるため、後続の呼び出しは再度値を計算しようとします。
 
-## Capacity
+## 容量
 
-A cache is created with a specified capacity. When the cache reaches capacity, the least recently accessed values will be removed first. The cache size may slightly exceed the specified capacity between operations.
+キャッシュは指定された容量で作成されます。キャッシュが容量に達すると、最も最近アクセスされていない値が最初に削除されます。操作間でキャッシュサイズが指定された容量をわずかに超えることがあります。
 
 ## Time To Live (TTL)
 
-A cache can also have a specified time to live (TTL). Values older than the TTL will not be returned. The age is calculated from when the value was loaded into the cache.
+キャッシュには指定されたTime To Live (TTL)を持たせることもできます。TTLを超えた値は返されません。値の年齢はキャッシュにロードされた時点から計算されます。
 
-## Operators
+## オペレーター
 
-In addition to `get`, Cache provides several other operators:
+`get`に加えて、Cacheは他にもいくつかのオペレーターを提供します:
 
-- **refresh**: Similar to `get`, but triggers a re-computation of the value without invalidating it, allowing requests to the associated key to be served while the value is being re-computed.
-- **size**: Returns the current size of the cache. Under concurrent access, the size is approximate.
-- **contains**: Checks if a value associated with a specified key exists in the cache. Under concurrent access, the result is valid as of the check time but may change immediately after.
-- **invalidate**: Evicts the value associated with a specified key.
-- **invalidateAll**: Evicts all values in the cache.
+- **refresh**: `get`に似ていますが、値を無効にせずに再計算をトリガーし、再計算中も関連するキーへのリクエストを処理します。
+- **size**: 現在のキャッシュサイズを返します。同時アクセス下では、サイズは概算です。
+- **contains**: 指定されたキーに関連する値がキャッシュに存在するかを確認します。同時アクセス下では、結果はチェック時点で有効ですが、その直後に変更される可能性があります。
+- **invalidate**: 指定されたキーに関連する値を削除します。
+- **invalidateAll**: キャッシュ内のすべての値を削除します。

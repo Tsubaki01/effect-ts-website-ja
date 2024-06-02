@@ -1,17 +1,16 @@
 ---
-title: Importing Effect
-excerpt: Start using Effect by installing the `effect` package and exploring module imports. Learn how to import the `Effect` module, understand namespace imports, and grasp the advantages of using functions over methods in the Effect ecosystem. Focus on essential functions to build a strong foundation for your journey with Effect.
+title: Effectのインポート
+excerpt: `effect`パッケージをインストールし、モジュールのインポートを探索することで、Effectの使用を開始します。`Effect`モジュールのインポート方法、名前空間インポートの理解、Effectエコシステムでメソッドよりも関数を使用する利点を把握します。Effectの旅を始めるための強固な基盤を築くために、基本的な関数に焦点を当てます。
 bottomNavigation: pagination
 ---
 
-Welcome to Effect! If you're just getting started, you might feel overwhelmed by the variety of modules and functions that Effect offers.
-However, rest assured that you don't need to worry about all of them right away.
-In this guide, we will provide you with a simple orientation on how to import modules and functions and assure you that,
-in most cases, installing the `effect` package is all you need to get started. Let's dive in!
+Effectへようこそ！始めたばかりの方は、Effectが提供するさまざまなモジュールや関数に圧倒されるかもしれません。
+しかし、すべてをすぐに理解する必要はないのでご安心ください。
+このガイドでは、モジュールや関数のインポート方法について簡単に説明し、ほとんどの場合、`effect`パッケージをインストールするだけで十分であることをお伝えします。それでは始めましょう！
 
-## Installing Effect
+## Effectのインストール
 
-To begin your journey with Effect, you first need to install the `effect` package. Open your terminal and run the following command:
+Effectの旅を始めるには、まず`effect`パッケージをインストールする必要があります。ターミナルを開き、次のコマンドを実行してください：
 
 <Tabs items={["NPM", "PNPM", "Yarn"]}>
 <Tab>
@@ -36,80 +35,78 @@ yarn add effect
 
 </Tab>
 </Tabs>
+このパッケージをインストールするだけで、Effectの基本機能にアクセスできます。
 
-By installing this single package, you gain access to the core functionality of Effect.
+DenoやBunなどの他のプラットフォームでの詳細なインストール手順については、[クイックスタート](../../quickstart)チュートリアルを参照してください。
+これにより、異なる環境でEffectをセットアップするためのステップバイステップのガイダンスが提供されます。
 
-For more detailed installation instructions on other platforms like Deno or Bun, you can refer to the [Quickstart](../../quickstart) tutorial.
-This will provide you with step-by-step guidance to set up Effect on different environments.
+## モジュールと関数のインポート
 
-## Importing Modules and Functions
+`effect`パッケージをインストールしたら、そのモジュールや関数をプロジェクトで使用し始めることができます。
+モジュールや関数のインポートは簡単で、標準的なJavaScript/TypeScriptのインポート構文に従います。
 
-Once you have installed the `effect` package, you can start using its modules and functions in your projects.
-Importing modules and functions is straightforward and follows the standard JavaScript/TypeScript import syntax.
-
-To import a module or a function from the `effect` package, simply use the `import` statement at the top of your file. Here's how you can import the `Effect` module:
-
-```ts
-import { Effect } from "effect"
-```
-
-Now, you have access to the `Effect` module, which is the heart of the `effect` library. It provides various functions and combinators to create, compose, and manipulate effectful computations.
-
-## Namespace imports
-
-In addition to importing the `Effect` module with a named import, as shown previously:
+`effect`パッケージからモジュールや関数をインポートするには、ファイルの先頭に`import`文を使用します。以下は`Effect`モジュールをインポートする方法です：
 
 ```ts
 import { Effect } from "effect"
 ```
 
-You can also import it using a namespace import like this:
+これで、`effect`ライブラリの中心である`Effect`モジュールにアクセスできるようになりました。`Effect`モジュールは、効果的な計算を作成、構成、および操作するためのさまざまな関数やコンビネータを提供します。
+
+## 名前空間インポート
+
+前述のように、名前付きインポートで`Effect`モジュールをインポートすることに加えて、
+
+```ts
+import { Effect } from "effect"
+```
+
+このように名前空間インポートを使用してインポートすることもできます：
 
 ```ts
 import * as Effect from "effect/Effect"
 ```
 
-Both forms of import allow you to access the functionalities provided by the `Effect` module.
+両方のインポート形式を使用すると、`Effect`モジュールが提供する機能にアクセスできます。
 
-However an important consideration is tree shaking, which refers to a process that eliminates unused code during the bundling of your application.
-Named imports may generate tree shaking issues when a bundler doesn't support deep scope analysis.
+しかし、重要な考慮事項としてツリーシェーキングがあります。これは、アプリケーションのバンドル中に未使用のコードを排除するプロセスを指します。
+名前付きインポートは、バンドラーが深いスコープ解析をサポートしていない場合、ツリーシェーキングの問題を引き起こす可能性があります。
 
-Here are some bundlers that support deep scope analysis and thus don't have issues with named imports:
+以下は、深いスコープ解析をサポートしているため、名前付きインポートに問題がないバンドラーの例です：
 
 - Rollup
 - Webpack 5+
 
-## Functions vs Methods
+## 関数 vs メソッド
 
-In the Effect ecosystem, libraries often expose functions rather than methods. This design choice is important for two key reasons: tree shakeability and extendibility.
+Effectエコシステムでは、ライブラリはメソッドではなく関数を公開することが多いです。この設計選択は、ツリーシェーキングと拡張性の2つの重要な理由から重要です。
 
-### Tree Shakeability
+### ツリーシェーキング
 
-Tree shakeability refers to the ability of a build system to eliminate unused code during the bundling process. Functions are tree shakeable, while methods are not.
+ツリーシェーキングとは、ビルドシステムがバンドルプロセス中に未使用のコードを排除する能力を指します。関数はツリーシェーキング可能ですが、メソッドはそうではありません。
 
-When functions are used in the Effect ecosystem, only the functions that are actually imported and used in your application will be included in the final bundled code. Unused functions are automatically removed, resulting in a smaller bundle size and improved performance.
+Effectエコシステムで関数が使用される場合、実際にアプリケーションでインポートされ使用される関数のみが最終的なバンドルコードに含まれます。未使用の関数は自動的に削除され、バンドルサイズが小さくなり、パフォーマンスが向上します。
 
-On the other hand, methods are attached to objects or prototypes, and they cannot be easily tree shaken. Even if you only use a subset of methods, all methods associated with an object or prototype will be included in the bundle, leading to unnecessary code bloat.
+一方、メソッドはオブジェクトやプロトタイプにアタッチされているため、簡単にツリーシェーキングすることはできません。たとえ一部のメソッドしか使用しなくても、オブジェクトやプロトタイプに関連するすべてのメソッドがバンドルに含まれ、不要なコードの膨張を引き起こします。
 
-### Extendibility
+### 拡張性
 
-Another important advantage of using functions in the Effect ecosystem is the ease of extendibility. With methods, extending the functionality of an existing API often requires modifying the prototype of the object, which can be complex and error-prone.
+Effectエコシステムで関数を使用するもう一つの重要な利点は、拡張の容易さです。メソッドを使用する場合、既存のAPIの機能を拡張するには、オブジェクトのプロトタイプを変更する必要があり、これは複雑でエラーが発生しやすいです。
 
-In contrast, with functions, extending the functionality is much simpler. You can define your own "extension methods" as plain old functions without the need to modify the prototypes of objects. This promotes cleaner and more modular code, and it also allows for better compatibility with other libraries and modules.
+対照的に、関数を使用する場合、機能の拡張ははるかに簡単です。オブジェクトのプロトタイプを変更することなく、通常の関数として独自の「拡張メソッド」を定義できます。これにより、よりクリーンでモジュール化されたコードが促進され、他のライブラリやモジュールとの互換性も向上します。
 
 <Idea>
-  The use of functions in the Effect ecosystem libraries is important for
-  achieving **tree shakeability** and ensuring **extendibility**. Functions
-  enable efficient bundling by eliminating unused code, and they provide a
-  flexible and modular approach to extending the libraries' functionality.
+  Effectエコシステムのライブラリで関数を使用することは、**ツリーシェーキング**を達成し、
+  **拡張性**を確保するために重要です。関数は未使用のコードを排除することで効率的なバンドルを可能にし、
+  ライブラリの機能を拡張するための柔軟でモジュール化されたアプローチを提供します。
 </Idea>
 
-## Commonly Used Functions
+## よく使われる関数
 
-As you start your adventure with Effect, you don't need to dive into every function in the `effect` package right away. Instead, focus on some commonly used functions that will provide a solid foundation for your journey into the world of Effect.
+Effectの冒険を始めるにあたり、`effect`パッケージのすべての関数をすぐに理解する必要はありません。代わりに、Effectの世界への旅の基盤を提供するいくつかのよく使われる関数に焦点を当てましょう。
 
-In the upcoming guides, we will explore some of these essential functions, specifically those for creating and running `Effect`s and building pipelines.
+今後のガイドでは、特に`Effect`を作成し実行するための関数やパイプラインを構築するための基本的な関数について探求します。
 
-But before we dive into those, let's start from the very heart of Effect: understanding the `Effect` type. This will lay the groundwork for your understanding of how Effect brings composability, type safety, and error handling into your applications.
+しかし、その前に、Effectの中心である`Effect`型を理解することから始めましょう。これにより、Effectがどのようにしてコンポーザビリティ、型安全性、およびエラーハンドリングをアプリケーションにもたらすかの基礎が築かれます。
 
-So, let's take the first step and explore the fundamental concepts of the [The Effect Type](the-effect-type).
+それでは、最初のステップを踏み出し、[The Effect Type](the-effect-type)の基本概念を探ってみましょう。

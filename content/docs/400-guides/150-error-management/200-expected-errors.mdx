@@ -1,16 +1,15 @@
 ---
-title: Expected Errors
-excerpt: Explore how Effect represents and manages expected errors. Learn about creating error instances, tracking errors at the type level, and the short-circuiting behavior of Effect programs. Discover techniques to catch and recover from errors, and gain insights into error handling strategies using Effect's powerful combinators.
+title: 予期されたエラー
+excerpt: Effectが予期されたエラーをどのように表現し管理するかを探ります。エラーインスタンスの作成、型レベルでのエラー追跡、Effectプログラムのショートサーキット動作について学びます。エラーをキャッチして回復する技術を発見し、Effectの強力なコンビネータを使用したエラーハンドリング戦略についての洞察を得ます。
 bottomNavigation: pagination
 ---
 
-In this guide you will learn:
+このガイドでは以下を学びます：
 
-- How Effect represents expected errors
-- The tools Effect provides for robust and comprehensive error management
+- Effectが予期されたエラーをどのように表現するか
+- Effectが提供する堅牢で包括的なエラーマネジメントツール
 
-As we saw in the guide [Creating Effects](../essentials/creating-effects), we can use the `fail` constructor to create an Effect
-that represents an error:
+ガイド[エフェクトの作成](../essentials/creating-effects)で見たように、`fail`コンストラクタを使用してエラーを表すEffectを作成できます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -23,12 +22,12 @@ const program = Effect.fail(new HttpError())
 ```
 
 <Info>
-  We use a class to represent the `HttpError` type above simply to gain access
-  to both the error type and a free constructor. However, you can use whatever
-  you like to model your error types.
+  上記の`HttpError`型を表現するためにクラスを使用していますが、
+  これはエラータイプとフリーコンストラクタの両方にアクセスするためです。
+  しかし、エラータイプをモデル化するために好きなものを使用することができます。
 </Info>
 
-It's worth noting that we added a readonly `_tag` field as discriminant to our error in the example:
+この例では、エラーの識別子としてreadonlyの`_tag`フィールドを追加していることに注意してください：
 
 ```ts {1}
 class HttpError {
@@ -37,23 +36,21 @@ class HttpError {
 ```
 
 <Idea>
-  Adding a discriminant field, such as `_tag`, can be beneficial for
-  distinguishing between different types of errors during error handling. It
-  also prevents TypeScript from unifying types, ensuring that each error is
-  treated uniquely based on its discriminant value.
+  `_tag`のような識別フィールドを追加することは、エラーハンドリング中に異なる種類のエラーを区別するのに役立ちます。
+  また、TypeScriptが型を統一するのを防ぎ、各エラーがその識別値に基づいて個別に扱われることを保証します。
 </Idea>
 
-Expected errors **are tracked at the type level** by the `Effect` data type in the "Error" channel.
+予期されたエラーは、`Effect`データ型の「Error」チャネルで**型レベルで追跡されます**。
 
-It is evident from the type of `program` that can fail with an error of type `HttpError`:
+`program`の型から、`HttpError`型のエラーで失敗する可能性があることが明らかです：
 
 ```ts
 Effect<never, HttpError, never>
 ```
 
-## Error Tracking
+## エラーの追跡
 
-The following program serves as an illustration of how errors are automatically tracked for you:
+次のプログラムは、エラーが自動的に追跡される方法を示す例です：
 
 <Tabs items={["Using Effect.gen", "Using pipe"]}>
 <Tab>
@@ -87,7 +84,7 @@ export const program = Effect.gen(function* () {
 Effect.runPromise(program).then(console.log, console.error)
 ```
 
-In the above program, we compute two values: `foo` and `bar`, each representing a potential source of error.
+上記のプログラムでは、`foo`と`bar`という2つの値を計算しており、それぞれがエラーの潜在的な原因を表しています。
 
 </Tab>
 <Tab>
@@ -120,30 +117,30 @@ export const program = Effect.all([flakyFoo, flakyBar]).pipe(
 )
 ```
 
-In the above program, we have two operations: `flakyFoo` and `flakyBar`, each representing a potential source of error.
-These operations are combined using the `Effect.all(effects){:ts}` function from the Effect library, which allows us to sequence them together.
+上記のプログラムでは、`flakyFoo`と`flakyBar`という2つの操作があり、それぞれがエラーの潜在的な原因を表しています。
+これらの操作は、Effectライブラリの`Effect.all(effects){:ts}`関数を使用して組み合わせることができ、これにより一連の操作として実行することができます。
 
 </Tab>
 </Tabs>
 
-Effect automatically keeps track of the possible errors that can occur during the execution of the program.
-In this case, we have `FooError` and `BarError` as the possible error types.
-The error channel of the `program` is specified as
+Effectはプログラムの実行中に発生する可能性のあるエラーを自動的に追跡します。
+この場合、`FooError`と`BarError`が考えられるエラータイプです。
+プログラムのエラーチャンネルは次のように指定されています
 
 ```ts
 Effect<string, FooError | BarError, never>
 ```
 
-indicating that it can potentially fail with either a `FooError` or a `BarError`.
+これは、`FooError`または`BarError`のいずれかで失敗する可能性があることを示しています。
 
-## Short-Circuiting
+## ショートサーキット
 
-When working with APIs like `Effect.gen`, `Effect.map`, `Effect.flatMap`, `Effect.andThen` and `Effect.all`, it's important to understand how they handle errors.
-These APIs are designed to **short-circuit the execution** upon encountering the **first error**.
+`Effect.gen`、`Effect.map`、`Effect.flatMap`、`Effect.andThen`、`Effect.all`のようなAPIを使用する際には、これらがエラーをどのように処理するかを理解することが重要です。
+これらのAPIは、**最初のエラー**に遭遇した時点で**実行をショートサーキット**するように設計されています。
 
-What does this mean for you as a developer? Well, let's say you have a chain of operations or a collection of effects to be executed in sequence. If any error occurs during the execution of one of these effects, the remaining computations will be skipped, and the error will be propagated to the final result.
+開発者として、これはどういう意味でしょうか？例えば、一連の操作やエフェクトのコレクションを順番に実行する場合を考えてみましょう。これらのエフェクトの実行中にエラーが発生した場合、残りの計算はスキップされ、そのエラーが最終結果に伝播されます。
 
-In simpler terms, the short-circuiting behavior ensures that if something goes wrong at any step of your program, it won't waste time executing unnecessary computations. Instead, it will immediately stop and return the error to let you know that something went wrong.
+簡単に言えば、ショートサーキットの動作は、プログラムのどのステップで問題が発生しても、不要な計算を実行する時間を無駄にしないことを保証します。代わりに、すぐに停止してエラーを返し、何が問題だったかを知らせてくれます。
 
 <Tabs items={["Using Effect.gen", "Using pipe"]}>
 <Tab>
@@ -151,23 +148,23 @@ In simpler terms, the short-circuiting behavior ensures that if something goes w
 ```ts twoslash
 import { Effect, Console } from "effect"
 
-// Define three effects representing different tasks.
+// 3つの異なるタスクを表すエフェクトを定義します。
 const task1 = Console.log("Executing task1...")
 const task2 = Effect.fail("Something went wrong!")
 const task3 = Console.log("Executing task3...")
 
-// Compose the three tasks to run them in sequence.
-// If one of the tasks fails, the subsequent tasks won't be executed.
+// 3つのタスクを順番に実行するように構成します。
+// もし1つのタスクが失敗した場合、後続のタスクは実行されません。
 const program = Effect.gen(function* () {
   yield* task1
-  yield* task2 // After task1, task2 is executed, but it fails with an error
-  yield* task3 // This computation won't be executed because the previous one fails
+  yield* task2 // task1の後にtask2が実行されますが、エラーで失敗します
+  yield* task3 // 前の計算が失敗するため、この計算は実行されません
 })
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
-Executing task1...
+出力:
+タスク1を実行中...
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -182,23 +179,23 @@ Executing task1...
 ```ts twoslash
 import { Effect, Console } from "effect"
 
-// Define three effects representing different tasks.
+// 3つの異なるタスクを表すエフェクトを定義します。
 const task1 = Console.log("Executing task1...")
 const task2 = Effect.fail("Something went wrong!")
 const task3 = Console.log("Executing task3...")
 
-// Compose the three tasks using `Effect.andThen` to run them in sequence.
-// The `Effect.andThen` function allows us to chain effects together.
-// If one of the tasks fails, the subsequent tasks won't be executed.
+// 3つのタスクを`Effect.andThen`を使って順番に実行するように構成します。
+// `Effect.andThen`関数を使うことで、エフェクトを連鎖させることができます。
+// もし1つのタスクが失敗した場合、後続のタスクは実行されません。
 const program = task1.pipe(
-  Effect.andThen(task2), // After task1, task2 is executed, but it fails with an error
-  Effect.andThen(task3) // This computation won't be executed because the previous one fails
+  Effect.andThen(task2), // task1の後にtask2が実行されますが、エラーで失敗します
+  Effect.andThen(task3) // 前の計算が失敗するため、この計算は実行されません
 )
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
-Executing task1...
+出力:
+タスク1を実行中...
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -210,23 +207,23 @@ Executing task1...
 </Tab>
 </Tabs>
 
-This code snippet demonstrates the short-circuiting behavior when an error occurs.
-Each operation depends on the successful execution of the previous one.
-If any error occurs, the execution is short-circuited, and the error is propagated.
-In this specific example, `task3` is never executed because an error occurs in `task2`.
+このコードスニペットは、エラーが発生したときのショートサーキット動作を示しています。
+各操作は前の操作が成功することに依存しています。
+もしエラーが発生した場合、実行はショートサーキットされ、エラーが伝播されます。
+この具体的な例では、`task2`でエラーが発生するため、`task3`は実行されません。
 
-## Catching all Errors
+## すべてのエラーをキャッチする
 
 ### either
 
-The `Effect.either` function converts an `Effect<A, E, R>` into another effect where both its failure (`E`) and success (`A`) channels have been lifted into an [Either&lt;A, E&gt;](../../other/data-types/either) data type:
+`Effect.either`関数は、`Effect<A, E, R>`を、失敗（`E`）と成功（`A`）の両方のチャネルが[Either&lt;A, E&gt;](../../other/data-types/either)データ型に持ち上げられた別のエフェクトに変換します：
 
 ```ts
 Effect<A, E, R> -> Effect<Either<A, E>, never, R>
 ```
 
-The [Either&lt;R, L&gt;](../../other/data-types/either) data type represents a value that can be either a `Right` value (`R`) or a `Left` value (`L`).
-By yielding an `Either`, we gain the ability to "pattern match" on this type to handle both failure and success cases within the generator function.
+[Either&lt;R, L&gt;](../../other/data-types/either) データ型は、`Right` 値 (`R`) または `Left` 値 (`L`) のいずれかを表す値です。
+`Either` を使用することで、この型に対して「パターンマッチ」を行い、ジェネレータ関数内で失敗と成功の両方のケースを処理する能力を得ることができます。
 
 ```ts twoslash
 // @filename: error-tracking.ts
@@ -240,17 +237,17 @@ import { program } from "./error-tracking"
 const recovered = Effect.gen(function* () {
   const failureOrSuccess = yield* Effect.either(program)
   if (Either.isLeft(failureOrSuccess)) {
-    // failure case: you can extract the error from the `left` property
+    // 失敗の場合: `left` プロパティからエラーを抽出できます
     const error = failureOrSuccess.left
     return `Recovering from ${error._tag}`
   } else {
-    // success case: you can extract the value from the `right` property
+    // 成功の場合: `right` プロパティから値を抽出できます
     return failureOrSuccess.right
   }
 })
 ```
 
-We can make the code less verbose by using the `Either.match` function, which directly accepts the two callback functions for handling errors and successful values:
+`Either.match` 関数を使用することで、エラーと成功の値を処理するための2つのコールバック関数を直接受け取るため、コードをより簡潔にすることができます。
 
 ```ts twoslash
 // @filename: error-tracking.ts
@@ -265,14 +262,14 @@ const recovered = Effect.gen(function* () {
   const failureOrSuccess = yield* Effect.either(program)
   return Either.match(failureOrSuccess, {
     onLeft: (error) => `Recovering from ${error._tag}`,
-    onRight: (value) => value // do nothing in case of success
+    onRight: (value) => value // 成功の場合は何もしない
   })
 })
 ```
 
 ### catchAll
 
-The `Effect.catchAll` function allows you to catch any error that occurs in the program and provide a fallback.
+`Effect.catchAll` 関数は、プログラム内で発生するあらゆるエラーをキャッチし、フォールバックを提供することができます。
 
 ```ts {5} twoslash
 // @filename: error-tracking.ts
@@ -288,12 +285,11 @@ const recovered = program.pipe(
 )
 ```
 
-We can observe that the type in the error channel of our program has changed to `never`,
-indicating that all errors have been handled.
+エラーチャンネルの型が `never` に変わったことが確認できます。これは、すべてのエラーが処理されたことを示しています。
 
-## Catching Some Errors
+## 特定のエラーをキャッチする
 
-Suppose we want to handle a specific error, such as `FooError`.
+例えば、`FooError` のような特定のエラーを処理したいとします。
 
 ```ts {8-10} twoslash
 // @filename: error-tracking.ts
@@ -318,10 +314,9 @@ const recovered = Effect.gen(function* () {
 })
 ```
 
-We can observe that the type in the error channel of our program has changed to only show `BarError`,
-indicating that `FooError` has been handled.
+プログラムのエラーチャンネルの型が `BarError` のみを示すように変わったことが確認できます。これは、`FooError` が処理されたことを示しています。
 
-If we also want to handle `BarError`, we can easily add another case to our code:
+もし `BarError` も処理したい場合は、簡単に別のケースをコードに追加することができます。
 
 ```ts {11} twoslash
 // @filename: error-tracking.ts
@@ -347,12 +342,11 @@ const recovered = Effect.gen(function* () {
 })
 ```
 
-We can observe that the type in the error channel of our program has changed to `never`,
-indicating that all errors have been handled.
+プログラムのエラーチャンネルの型が `never` に変わったことが確認できます。これは、すべてのエラーが処理されたことを示しています。
 
 ### catchSome
 
-If we want to catch and recover from only some types of errors and effectfully attempt recovery, we can use the `Effect.catchSome` function:
+特定の種類のエラーのみをキャッチして回復を試みたい場合は、`Effect.catchSome` 関数を使用できます。
 
 ```ts twoslash
 // @filename: error-tracking.ts
@@ -373,13 +367,13 @@ const recovered = program.pipe(
 )
 ```
 
-In the code above, `Effect.catchSome` takes a function that examines the error (`error`) and decides whether to attempt recovery or not. If the error matches a specific condition, recovery can be attempted by returning `Option.some(effect)`. If no recovery is possible, you can simply return `Option.none()`.
+上記のコードでは、`Effect.catchSome` はエラー (`error`) を調べて回復を試みるかどうかを決定する関数を受け取ります。エラーが特定の条件に一致する場合、`Option.some(effect)` を返すことで回復を試みることができます。回復が不可能な場合は、単に `Option.none()` を返すことができます。
 
-It's important to note that while `Effect.catchSome` lets you catch specific errors, it **doesn't alter the error type** itself. Therefore, the resulting effect (`recovered` in this case) will still have the same error type (`FooError | BarError`) as the original effect.
+重要なのは、`Effect.catchSome` は特定のエラーをキャッチすることができる一方で、**エラーの型自体を変更しない**という点です。したがって、結果として得られるエフェクト（この場合は `recovered`）は、元のエフェクトと同じエラー型 (`FooError | BarError`) を持ち続けます。
 
 ### catchIf
 
-Similar to `Effect.catchSome`, the function `Effect.catchIf` allows you to recover from specific errors based on a predicate:
+`Effect.catchSome` と同様に、`Effect.catchIf` 関数は、述語に基づいて特定のエラーから回復することを可能にします：
 
 ```ts twoslash
 // @filename: error-tracking.ts
@@ -398,9 +392,9 @@ const recovered = program.pipe(
 )
 ```
 
-It's important to note that while `Effect.catchIf` lets you catch specific errors, it **doesn't alter the error type** itself. Therefore, the resulting effect (`recovered` in this case) will still have the same error type (`FooError | BarError`) as the original effect.
+`Effect.catchIf` は特定のエラーをキャッチすることができますが、**エラーの型自体を変更しない**ことに注意が必要です。したがって、結果として得られるエフェクト（この場合は `recovered`）は、元のエフェクトと同じエラー型 (`FooError | BarError`) を持ち続けます。
 
-However, if you provide a [user-defined type guard](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) instead of a predicate, the resulting error type will be pruned, returning an `Effect<string, BarError, never>`:
+しかし、述語の代わりに[ユーザー定義の型ガード](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)を提供すると、結果のエラー型が絞り込まれ、`Effect<string, BarError, never>` が返されます：
 
 ```ts {6} twoslash
 // @filename: error-tracking.ts
@@ -421,7 +415,7 @@ const recovered = program.pipe(
 
 ### catchTag
 
-If your program's errors are all tagged with a `_tag` field that acts as a discriminator you can use the `Effect.catchTag` function to catch and handle specific errors with precision.
+プログラムのエラーがすべて識別子として機能する `_tag` フィールドでタグ付けされている場合、`Effect.catchTag` 関数を使用して特定のエラーを正確にキャッチして処理することができます。
 
 ```ts {5-7} twoslash
 // @filename: error-tracking.ts
@@ -439,14 +433,14 @@ const recovered = program.pipe(
 )
 ```
 
-In the example above, the `Effect.catchTag` function allows us to handle `FooError` specifically.
-If a `FooError` occurs during the execution of the program, the provided error handler function will be invoked,
-and the program will proceed with the recovery logic specified within the handler.
+上記の例では、`Effect.catchTag` 関数を使用して `FooError` を特定して処理することができます。
+プログラムの実行中に `FooError` が発生した場合、提供されたエラーハンドラ関数が呼び出され、
+ハンドラ内で指定されたリカバリロジックに従ってプログラムが進行します。
 
-We can observe that the type in the error channel of our program has changed to only show `BarError`,
-indicating that `FooError` has been handled.
+プログラムのエラーチャンネルの型が `BarError` のみを示すように変わったことが観察できます。
+これは `FooError` が処理されたことを示しています。
 
-If we also wanted to handle `BarError`, we can simply add another `catchTag`:
+もし `BarError` も処理したい場合は、別の `catchTag` を追加するだけです：
 
 ```ts {8-10} twoslash
 // @filename: error-tracking.ts
@@ -467,18 +461,21 @@ const recovered = program.pipe(
 )
 ```
 
-We can observe that the type in the error channel of our program has changed to `never`,
-indicating that all errors have been handled.
+プログラムのエラーチャンネルの型が `never` に変わったことが観察できます。
+これはすべてのエラーが処理されたことを示しています。
 
 <Warning>
-  It is important to ensure that the error type used with `catchTag` has a
-  `readonly _tag` discriminant field. This field is required for the matching
-  and handling of specific error tags.
+  `catchTag` で使用するエラー型には `readonly _tag`
+  判別フィールドが必要であることを
+  確認することが重要です。このフィールドは特定のエラータグをマッチングし、
+  処理するために必要です。
 </Warning>
 
 ### catchTags
 
-Instead of using the `Effect.catchTag` function multiple times to handle individual error types, we have a more convenient option called `Effect.catchTags`. With `Effect.catchTags`, we can handle multiple errors in a single block of code.
+個々のエラータイプを処理するために `Effect.catchTag` 関数を複数回使用する代わりに、
+より便利なオプションとして `Effect.catchTags` があります。`Effect.catchTags` を使用すると、
+1つのコードブロックで複数のエラーを処理することができます。
 
 ```ts {5-8} twoslash
 // @filename: error-tracking.ts
@@ -497,12 +494,12 @@ const recovered = program.pipe(
 )
 ```
 
-In the above example, instead of using `Effect.catchTag` multiple times to handle individual errors, we utilize the `Effect.catchTags` combinator.
-This combinator takes an object where each property represents a specific error `_tag` (`"FooError"` and `"BarError"` in this case),
-and the corresponding value is the error handler function to be executed when that particular error occurs.
+上記の例では、個々のエラーを処理するために `Effect.catchTag` を複数回使用する代わりに、`Effect.catchTags` コンビネータを利用しています。
+このコンビネータは、各プロパティが特定のエラー `_tag`（この場合は `"FooError"` と `"BarError"`）を表し、
+対応する値がその特定のエラーが発生したときに実行されるエラーハンドラ関数であるオブジェクトを受け取ります。
 
 <Warning>
-  It is important to ensure that all the error types used with
-  `Effect.catchTags` have a `readonly _tag` discriminant field. This field is
-  required for the matching and handling of specific error tags.
+  `Effect.catchTags` で使用するすべてのエラータイプに `readonly _tag`
+  判別フィールドがあることを確認することが重要です。
+  このフィールドは特定のエラータグをマッチングし、処理するために必要です。
 </Warning>

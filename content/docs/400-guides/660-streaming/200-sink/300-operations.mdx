@@ -1,16 +1,16 @@
 ---
-title: Sink Operations
-excerpt: Explore sink operations to transform or filter their behavior. Learn to adapt sinks for different input types using `Sink.mapInput`. Discover how `Sink.dimap` allows complete conversion between input and output types. Utilize `Sink.filterInput` to selectively process elements based on specific conditions.
+title: Sinkの操作
+excerpt: Sinkの動作を変換またはフィルタリングするための操作を探ります。`Sink.mapInput`を使用して、異なる入力タイプに合わせてSinkを適応させる方法を学びます。`Sink.dimap`を使用して、入力と出力タイプの完全な変換を実現する方法を発見します。`Sink.filterInput`を利用して、特定の条件に基づいて要素を選択的に処理する方法を学びます。
 bottomNavigation: pagination
 ---
 
-In the previous sections, we learned how to create and use sinks. Now, let's explore some operations you can perform on sinks to transform or filter their behavior.
+前のセクションでは、Sinkの作成と使用方法について学びました。次に、Sinkの動作を変換またはフィルタリングするために実行できるいくつかの操作を探ってみましょう。
 
-## Changing the Input
+## 入力の変更
 
-Sometimes, you have a sink that works perfectly with one type of input, but you want to use it with a different type. This is where `Sink.mapInput` comes in handy. While `Sink.map` modifies the output of a function, `Sink.mapInput` modifies the input. It allows you to adapt your sink to work with a different input.
+時々、あるタイプの入力で完璧に動作するSinkを持っているが、異なるタイプの入力で使用したい場合があります。ここで役立つのが`Sink.mapInput`です。`Sink.map`が関数の出力を変更するのに対し、`Sink.mapInput`は入力を変更します。これにより、異なる入力で動作するようにSinkを適応させることができます。
 
-Imagine you have a `Sink.sum` that calculates the sum of incoming numeric values. However, your stream contains strings, not numbers. You can use `mapInput` to convert your strings into numbers and make `Sink.sum` compatible with your stream:
+例えば、受信する数値の合計を計算する`Sink.sum`があるとします。しかし、ストリームには数値ではなく文字列が含まれています。`mapInput`を使用して文字列を数値に変換し、`Sink.sum`をストリームに適合させることができます。
 
 ```ts twoslash
 import { Stream, Sink, Effect } from "effect"
@@ -25,19 +25,19 @@ Effect.runPromise(
   Stream.make("1", "2", "3", "4", "5").pipe(Stream.run(stringSum))
 ).then(console.log)
 /*
-Output:
+出力:
 15
 */
 ```
 
-## Transforming Both Input and Output
+## 入力と出力の両方を変換する
 
-If you need to change both the input and output of a sink, you can use `Sink.dimap`. It's an extended version of `mapInput` that lets you transform both types. This can be useful when you need to perform a complete conversion between your input and output types:
+Sinkの入力と出力の両方を変更する必要がある場合は、`Sink.dimap`を使用できます。これは`mapInput`の拡張版で、両方のタイプを変換することができます。入力と出力タイプの完全な変換を行う必要がある場合に便利です。
 
 ```ts twoslash
 import { Stream, Sink, Effect } from "effect"
 
-// Convert its input to integers, do the computation and then convert them back to a string
+// 入力を整数に変換し、計算を行い、その後文字列に変換します
 const sumSink = Sink.sum.pipe(
   Sink.dimap({
     onInput: (s: string) => Number.parseFloat(s),
@@ -49,14 +49,14 @@ Effect.runPromise(
   Stream.make("1", "2", "3", "4", "5").pipe(Stream.run(sumSink))
 ).then(console.log)
 /*
-Output:
+出力:
 15 <-- as string
 */
 ```
 
-## Filtering Input
+## 入力のフィルタリング
 
-Sinks offer a way to filter incoming elements using `Sink.filterInput`. This allows you to collect or process only the elements that meet a specific condition. In the following example, we collect elements in chunks of three and filter out the negative numbers:
+Sinksは`Sink.filterInput`を使用して入力される要素をフィルタリングする方法を提供します。これにより、特定の条件を満たす要素のみを収集または処理することができます。次の例では、要素を3つずつのチャンクに分け、負の数をフィルタリングします：
 
 ```ts twoslash
 import { Stream, Sink, Effect } from "effect"
@@ -69,7 +69,7 @@ const stream = Stream.make(1, -2, 0, 1, 3, -3, 4, 2, 0, 1, -3, 1, 1, 6).pipe(
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [

@@ -4,42 +4,42 @@ excerpt: Basic Concurrency
 bottomNavigation: pagination
 ---
 
-Effect is a highly concurrent framework powered by fibers. Fibers are lightweight **virtual threads** with resource-safe cancellation capabilities, enabling many features in Effect.
+Effectは、ファイバーによって駆動される非常に高い並行性を持つフレームワークです。ファイバーはリソースセーフなキャンセル機能を持つ軽量な**仮想スレッド**であり、Effectの多くの機能を可能にします。
 
-In this section, you will learn the basics of fibers and get familiar with some of the powerful high-level operators that utilize fibers.
+このセクションでは、ファイバーの基本を学び、ファイバーを利用する強力な高レベルのオペレーターのいくつかに慣れ親しむことができます。
 
-## What Are Virtual Threads?
+## 仮想スレッドとは？
 
-JavaScript is inherently single-threaded, meaning it executes code in a single sequence of instructions. However, modern JavaScript environments use an event loop to manage asynchronous operations, creating the illusion of multitasking. In this context, virtual threads, or fibers, are logical threads simulated by the Effect runtime. They allow concurrent execution without relying on true multi-threading, which is not natively supported in JavaScript.
+JavaScriptは本質的にシングルスレッドであり、一連の命令を順次実行します。しかし、現代のJavaScript環境では、イベントループを使用して非同期操作を管理し、マルチタスクの錯覚を作り出します。この文脈では、仮想スレッド、またはファイバーは、Effectランタイムによってシミュレートされた論理スレッドです。これにより、JavaScriptがネイティブにサポートしていない真のマルチスレッドに依存せずに並行実行が可能になります。
 
-## Fibers
+## ファイバー
 
-All effects in Effect are executed by fibers. If you didn't create the fiber yourself, it was created by an operation you're using (if it's concurrent) or by the Effect runtime system.
+Effectのすべてのエフェクトはファイバーによって実行されます。自分でファイバーを作成しなかった場合、それは使用している操作（それが並行している場合）またはEffectランタイムシステムによって作成されました。
 
-Even if you write "single-threaded" code with no concurrent operations, there will always be at least one fiber: the "main" fiber that executes your effect.
+たとえ「シングルスレッド」のコードを書いて並行操作が一切ない場合でも、少なくとも1つのファイバー、つまりエフェクトを実行する「メイン」ファイバーが常に存在します。
 
-Effect fibers have a well-defined lifecycle based on the effect they are executing.
+Effectファイバーは、実行しているエフェクトに基づいて明確に定義されたライフサイクルを持っています。
 
-Every fiber exits with either a failure or success, depending on whether the effect it is executing fails or succeeds.
+すべてのファイバーは、実行しているエフェクトが失敗するか成功するかに応じて、失敗または成功のいずれかで終了します。
 
-Effect fibers have unique identities, local state, and a status (such as done, running, or suspended).
+Effectファイバーは、固有のID、ローカルステート、および（完了、実行中、一時停止などの）ステータスを持っています。
 
-### The Fiber Data Type
+### ファイバーデータ型
 
-The Fiber data type in Effect represents a "handle" on the execution of an effect.
+EffectのFiberデータ型は、エフェクトの実行に対する「ハンドル」を表します。
 
-The `Fiber<A, E>` data type has two type parameters:
+`Fiber<A, E>`データ型には2つの型パラメーターがあります：
 
-- **A (Success Type)**: The type of value the fiber may succeed with.
-- **E (Failure Type)**: The type of value the fiber may fail with.
+- **A (成功タイプ)**: ファイバーが成功する可能性のある値の型。
+- **E (失敗タイプ)**: ファイバーが失敗する可能性のある値の型。
 
-Fibers do not have an `R` type parameter because they only execute effects that have already had their requirements provided to them.
+ファイバーには`R`型パラメーターがありません。なぜなら、ファイバーはすでに要件が提供されたエフェクトのみを実行するからです。
 
-### Forking Effects
+### エフェクトのフォーク
 
-One of the fundamental ways to create a fiber is by forking an existing effect. When you fork an effect, it starts executing the effect on a new fiber, giving you a reference to this newly-created fiber.
+ファイバーを作成する基本的な方法の1つは、既存のエフェクトをフォークすることです。エフェクトをフォークすると、新しいファイバーでエフェクトの実行が開始され、この新しく作成されたファイバーへの参照が得られます。
 
-The following code demonstrates how to create a single fiber using the `fork` function. This fiber will execute the function `fib(100)` independently of the main fiber:
+次のコードは、`fork`関数を使用して単一のファイバーを作成する方法を示しています。このファイバーは、メインファイバーとは独立して`fib(100)`関数を実行します：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -55,9 +55,9 @@ const fib = (n: number): Effect.Effect<number> =>
 const fib10Fiber = Effect.fork(fib(10))
 ```
 
-### Joining Fibers
+### ファイバーの結合
 
-A common operation with fibers is joining them using the `Fiber.join` function. This function returns an `Effect` that will succeed or fail based on the outcome of the fiber it joins:
+ファイバーに対する一般的な操作の1つは、`Fiber.join`関数を使用してファイバーを結合することです。この関数は、結合するファイバーの結果に基づいて成功または失敗する`Effect`を返します：
 
 ```ts twoslash
 import { Effect, Fiber } from "effect"
@@ -81,9 +81,9 @@ const program = Effect.gen(function* () {
 Effect.runPromise(program) // 55
 ```
 
-### Awaiting Fibers
+### ファイバーの待機
 
-Another useful function for fibers is `Fiber.await`. This function returns an effect containing an [Exit](../../other/data-types/exit) value, which provides detailed information about how the fiber completed.
+ファイバーに対するもう一つの便利な関数は`Fiber.await`です。この関数は、ファイバーがどのように完了したかについての詳細な情報を提供する[Exit](../../other/data-types/exit)値を含むエフェクトを返します。
 
 ```ts twoslash
 import { Effect, Fiber } from "effect"
@@ -107,11 +107,11 @@ const program = Effect.gen(function* () {
 Effect.runPromise(program) // { _id: 'Exit', _tag: 'Success', value: 55 }
 ```
 
-### Interrupting Fibers
+### ファイバーの中断
 
-If a fiber's result is no longer needed, it can be interrupted, which immediately terminates the fiber and safely releases all resources by running all finalizers.
+ファイバーの結果が不要になった場合、ファイバーを中断することができます。これにより、ファイバーは即座に終了し、すべてのファイナライザを実行して安全にすべてのリソースを解放します。
 
-Similar to `Fiber.await`, `Fiber.interrupt` returns an [Exit](../../other/data-types/exit)` value describing how the fiber completed.
+`Fiber.await`と同様に、`Fiber.interrupt`はファイバーがどのように完了したかを記述する[Exit](../../other/data-types/exit)値を返します。
 
 ```ts twoslash
 import { Effect, Fiber } from "effect"
@@ -124,7 +124,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output
+出力
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -142,9 +142,9 @@ Output
 */
 ```
 
-By design, the effect returned by `Fiber.interrupt` does not resume until the fiber has completed, ensuring that your code does not start new fibers until the old one has terminated. This behavior, often called "back-pressuring," can be overridden if needed.
+`Fiber.interrupt`によって返されるエフェクトは、ファイバーが完了するまで再開されないように設計されています。これにより、古いファイバーが終了するまで新しいファイバーが開始されないことが保証されます。この動作は「バックプレッシャー」と呼ばれることがあり、必要に応じてオーバーライドすることができます。
 
-If you do not need back-pressuring, you can fork the interruption itself into a new fiber:
+バックプレッシャーが不要な場合、割り込み自体を新しいファイバーにフォークすることができます：
 
 ```ts twoslash
 import { Effect, Fiber } from "effect"
@@ -155,7 +155,7 @@ const program = Effect.gen(function* () {
 })
 ```
 
-There is also a shorthand for background interruption called `Fiber.interruptFork`.
+バックグラウンド割り込みのための簡略化された方法として、`Fiber.interruptFork`があります。
 
 ```ts twoslash
 import { Effect, Fiber } from "effect"
@@ -166,13 +166,13 @@ const program = Effect.gen(function* () {
 })
 ```
 
-**Note**: It is also possible to perform interruptions using the high-level API `Effect.interrupt`. For more information, see [Effect.interrupt](interruption-model#calling-effectinterrupt).
+**Note**: 高レベルAPI `Effect.interrupt` を使用して割り込みを行うことも可能です。詳細については、[Effect.interrupt](interruption-model#calling-effectinterrupt) を参照してください。
 
-### Composing Fibers
+### Fibersの合成
 
-The `Fiber.zip` and `Fiber.zipWith` functions allow you to combine two fibers into a single fiber. The resulting fiber produces the results of both input fibers. If either of the input fibers fails, the composed fiber will also fail.
+`Fiber.zip` および `Fiber.zipWith` 関数を使用すると、2つのファイバーを1つのファイバーに結合することができます。結果として得られるファイバーは、両方の入力ファイバーの結果を生成します。入力ファイバーのいずれかが失敗した場合、合成されたファイバーも失敗します。
 
-Here's an example using `Fiber.zip`:
+以下は `Fiber.zip` を使用した例です：
 
 ```ts twoslash
 import { Effect, Fiber } from "effect"
@@ -187,14 +187,14 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 [ 'Hi!', 'Bye!' ]
 */
 ```
 
-Another way to compose fibers is with the `Fiber.orElse` function. This function allows you to specify an alternative fiber that will be executed if the first fiber fails. If the first fiber succeeds, the composed fiber will return its result. If the first fiber fails, the composed fiber will complete with the result of the second fiber, regardless of whether it succeeds or fails.
+ファイバーを合成する別の方法として、`Fiber.orElse` 関数があります。この関数を使用すると、最初のファイバーが失敗した場合に実行される代替のファイバーを指定することができます。最初のファイバーが成功した場合、合成されたファイバーはその結果を返します。最初のファイバーが失敗した場合、合成されたファイバーは、成功するか失敗するかに関わらず、第二のファイバーの結果で完了します。
 
-Here's an example using `Fiber.orElse`:
+以下は `Fiber.orElse` を使用した例です：
 
 ```ts twoslash
 import { Effect, Fiber } from "effect"
@@ -209,18 +209,18 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 Hurray!
 */
 ```
 
-## Concurrency Options
+## 並行性オプション
 
-Effect provides many functions that accept [Concurrency Options](concurrency-options) to help you identify opportunities to parallelize your code.
+Effectは、コードを並列化する機会を特定するのに役立つ[Concurrency Options](concurrency-options)を受け入れる多くの関数を提供します。
 
-For example, the standard `Effect.zip` function combines two effects sequentially. However, there is also a concurrent version, `Effect.zip({_, _, { concurrent: true })`, which combines two effects concurrently.
+例えば、標準の`Effect.zip`関数は2つのエフェクトを順次に結合します。しかし、並列バージョンである`Effect.zip({_, _, { concurrent: true })`を使用すると、2つのエフェクトを並列に結合することができます。
 
-In the following example, we use `Effect.zip` to run two tasks sequentially. The first task takes 1 second, and the second task takes 2 seconds, resulting in a total duration of approximately 3 seconds:
+次の例では、`Effect.zip`を使用して2つのタスクを順次に実行します。最初のタスクは1秒かかり、2番目のタスクは2秒かかるため、合計で約3秒かかります：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -234,14 +234,14 @@ Effect.runPromise(Effect.timed(program)).then(([duration]) =>
   console.log(String(duration))
 )
 /*
-Output:
+出力:
 task1
 task2
 Duration(3s 5ms 369875ns)
 */
 ```
 
-In this example, we use the concurrent version of `Effect.zip` to run two tasks concurrently. The total duration will be approximately equal to the duration of the longest task, which is 2 seconds:
+この例では、`Effect.zip` の並列バージョンを使用して2つのタスクを並列に実行します。合計の実行時間は最も長いタスクの実行時間、つまり2秒にほぼ等しくなります：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -255,16 +255,16 @@ Effect.runPromise(Effect.timed(program)).then(([duration]) =>
   console.log(String(duration))
 )
 /*
-Output:
+出力:
 task1
 task2
 Duration(2s 8ms 179666ns)
 */
 ```
 
-## Racing
+## レーシング
 
-The `Effect.race` function lets you race multiple effects concurrently and returns the result of the first one that successfully completes. Here's an example:
+`Effect.race`関数は、複数のエフェクトを並列に競争させ、最初に成功したエフェクトの結果を返します。以下はその例です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -276,14 +276,14 @@ const program = Effect.race(task1, task2)
 
 Effect.runPromise(program).then(console.log)
 /*
-Output:
+出力:
 task2
 */
 ```
 
-In this example, `task1` is set to fail after 1 second, while `task2` is set to succeed after 2 seconds. The `Effect.race` function runs both tasks concurrently, and since `task2` is the first to succeed, its result is returned.
+この例では、`task1`は1秒後に失敗するように設定されており、`task2`は2秒後に成功するように設定されています。`Effect.race`関数は両方のタスクを並列に実行し、`task2`が最初に成功するため、その結果が返されます。
 
-If you need to handle the first effect to complete, whether it succeeds or fails, you can use the `Effect.either` function. This function wraps the result in an [Either](../../other/data-types/either) type, allowing you to see if the outcome was a success (`Right`) or a failure (`Left`):
+最初に完了したエフェクトを成功か失敗かに関わらず処理する必要がある場合は、`Effect.either`関数を使用できます。この関数は結果を[Either](../../other/data-types/either)型にラップし、結果が成功（`Right`）か失敗（`Left`）かを確認できるようにします：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -295,20 +295,20 @@ const program = Effect.race(Effect.either(task1), Effect.either(task2))
 
 Effect.runPromise(program).then(console.log)
 /*
-Output:
+出力:
 { _id: 'Either', _tag: 'Left', left: 'task1' }
 */
 ```
 
-In this example, `task1` fails after 1 second, and `task2` succeeds after 2 seconds. By using `Effect.either`, the program returns the result of `task1`, showing that it was a failure (`Left`).
+この例では、`task1`は1秒後に失敗し、`task2`は2秒後に成功します。`Effect.either`を使用することで、プログラムは`task1`の結果を返し、それが失敗（`Left`）であることを示します。
 
-## Timeout
+## タイムアウト
 
-When working with asynchronous tasks, it's often important to ensure that they complete within a reasonable time.
-Effect provides a convenient way to enforce time limits on effects using the `Effect.timeout` function.
-This function returns a new effect that will fail with a `TimeoutException` if the original effect does not complete within the specified duration.
+非同期タスクを扱う際には、それらが適切な時間内に完了することを確認することが重要です。
+Effectは、`Effect.timeout`関数を使用してエフェクトに時間制限を設ける便利な方法を提供します。
+この関数は、元のエフェクトが指定された期間内に完了しない場合に`TimeoutException`で失敗する新しいエフェクトを返します。
 
-Here's an example demonstrating how to use `Effect.timeout`:
+以下は`Effect.timeout`の使用方法を示す例です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -324,6 +324,6 @@ TimeoutException
 */
 ```
 
-In this example, `task` is an effect that succeeds after 10 seconds. By wrapping `task` with `Effect.timeout` and specifying a timeout of 2 seconds, the resulting program will fail with a `TimeoutException` because the task takes longer than the allowed time.
+この例では、`task`は10秒後に成功するエフェクトです。`task`を`Effect.timeout`でラップし、タイムアウトを2秒に指定することで、タスクが許容時間を超えるため、結果としてプログラムは`TimeoutException`で失敗します。
 
-If an effect times out, the `effect` library automatically interrupts it to prevent it from continuing to execute in the background. This interruption ensures efficient use of resources by stopping unnecessary work.
+エフェクトがタイムアウトすると、`effect`ライブラリは自動的にそれを中断し、バックグラウンドでの実行を防ぎます。この中断により、不要な作業を停止してリソースを効率的に使用することができます。

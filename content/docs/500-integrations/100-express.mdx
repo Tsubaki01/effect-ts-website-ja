@@ -1,63 +1,63 @@
 ---
-title: Express Integration
+title: Express統合
 navTitle: Express
-excerpt: Explore integrating Effect with Express, a popular Node.js web framework. Learn to create a simple Express server with "Hello World!" response and understand basic routing with Effect and Express. Follow the guide to set up, run, and breakdown the provided examples.
+excerpt: EffectとExpress、人気のあるNode.jsウェブフレームワークを統合する方法を探ります。シンプルなExpressサーバーを作成し、「Hello World!」のレスポンスを返す方法と、EffectとExpressを使った基本的なルーティングを理解します。ガイドに従って、セットアップ、実行、および提供された例の分解を行います。
 bottomNavigation: pagination
 ---
 
-In this guide, we'll explore how to integrate Effect with [Express](https://expressjs.com/), a popular web framework for Node.js.
+このガイドでは、人気のあるNode.jsウェブフレームワークである[Express](https://expressjs.com/)とEffectを統合する方法を探ります。
 
-## Hello World Example
+## Hello Worldの例
 
-Let's start with a simple example that creates an Express server responding with "Hello World!" for requests to the root URL (/).
-This mirrors the classic ["Hello world example"](https://expressjs.com/en/starter/hello-world.html) found in the Express documentation.
+まず、ルートURL（/）へのリクエストに「Hello World!」と応答するExpressサーバーを作成するシンプルな例から始めましょう。
+これはExpressのドキュメントにあるクラシックな["Hello world example"](https://expressjs.com/en/starter/hello-world.html)を反映しています。
 
-### Setup Steps
+### セットアップ手順
 
-1. Create a new directory for your project and navigate to it using your terminal:
+1. プロジェクト用の新しいディレクトリを作成し、ターミナルを使用してそのディレクトリに移動します：
 
    ```bash filename="Terminal"
    mkdir express-effect-integration
    cd express-effect-integration
    ```
 
-2. Initialize your project with npm. This will create a `package.json` file:
+2. npmを使用してプロジェクトを初期化します。これにより、`package.json`ファイルが作成されます：
 
    ```bash filename="Terminal"
    npm init -y
    ```
 
-3. Install the necessary dependencies:
+3. 必要な依存関係をインストールします：
 
    ```bash filename="Terminal"
    npm install effect express
    ```
 
-   Install the necessary dev dependencies:
+   必要な開発依存関係をインストールします：
 
    ```bash filename="Terminal"
    npm install typescript @types/express --save-dev
    ```
 
-   Now, initialize TypeScript:
+   次に、TypeScriptを初期化します：
 
    ```bash filename="Terminal"
    npx tsc --init
    ```
 
-4. Create a new file, for example, `hello-world.ts`, and add the following code:
+4. 新しいファイルを作成します。例えば、`hello-world.ts`という名前にして、次のコードを追加します：
 
    ```ts filename="hello-world.ts" twoslash
    import { Context, Layer, Effect, Runtime } from "effect"
    import express from "express"
 
-   // Define Express as a service
+   // Expressをサービスとして定義する
    class Express extends Context.Tag("Express")<
      Express,
      ReturnType<typeof express>
    >() {}
 
-   // Define the main route, IndexRouteLive, as a Layer
+   // メインルート、IndexRouteLiveをLayerとして定義する
    const IndexRouteLive = Layer.effectDiscard(
      Effect.gen(function* () {
        const app = yield* Express
@@ -69,7 +69,7 @@ This mirrors the classic ["Hello world example"](https://expressjs.com/en/starte
      })
    )
 
-   // Server Setup
+   // サーバー設定
    const ServerLive = Layer.scopedDiscard(
      Effect.gen(function* () {
        const port = 3001
@@ -85,45 +85,45 @@ This mirrors the classic ["Hello world example"](https://expressjs.com/en/starte
      })
    )
 
-   // Setting Up Express
+   // Expressの設定
    const ExpressLive = Layer.sync(Express, () => express())
 
-   // Combine the layers
+   // レイヤーを結合する
    const AppLive = ServerLive.pipe(
      Layer.provide(IndexRouteLive),
      Layer.provide(ExpressLive)
    )
 
-   // Run the program
+   // プログラムを実行する
    Effect.runFork(Layer.launch(AppLive))
    ```
 
-5. Run your Express server. If you have [ts-node](https://github.com/TypeStrong/ts-node) installed, run the following command in the terminal:
+5. Expressサーバーを実行します。[ts-node](https://github.com/TypeStrong/ts-node)がインストールされている場合、ターミナルで次のコマンドを実行してください：
 
    ```bash filename="Terminal"
    ts-node hello-world.ts
    ```
 
-   Visit [http://localhost:3001](http://localhost:3001) in your web browser, and you should see "Hello World!".
+   Webブラウザで[http://localhost:3001](http://localhost:3001)にアクセスすると、「Hello World!」が表示されるはずです。
 
-### Code Breakdown
+### コードの内訳
 
-Here's a breakdown of what's happening:
+ここで何が起こっているのかを説明します：
 
-- **Express Service**. We define an `Express` [service](../guides/context-management/services) to retrieve the Express app later on.
+- **Express Service**。後でExpressアプリを取得するために、`Express` [service](../guides/context-management/services)を定義します。
 
   ```ts
-  // Define Express as a service
+  // Expressをサービスとして定義する
   class Express extends Context.Tag("Express")<
     Express,
     ReturnType<typeof express>
   >() {}
   ```
 
-- **Main Route**. The main route, `IndexRouteLive`, is defined as a [Layer](../guides/context-management/layers).
+- **メインルート**。メインルートである`IndexRouteLive`は[Layer](../guides/context-management/layers)として定義されています。
 
   ```ts
-  // Define the main route, IndexRouteLive, as a Layer
+  // メインルートであるIndexRouteLiveをLayerとして定義する
   const IndexRouteLive = Layer.effectDiscard(
     Effect.gen(function* () {
       const app = yield* Express
@@ -136,13 +136,13 @@ Here's a breakdown of what's happening:
   )
   ```
 
-  We access the [runtime](../guides/runtime) (`Effect.runtime`), which can be used to execute tasks within our route (`runFork`).
-  Since we don't need to produce any service in the output, we use `Layer.effectDiscard` to discard its output.
+  [runtime](../guides/runtime) (`Effect.runtime`)にアクセスし、ルート内でタスクを実行するために使用できます（`runFork`）。
+  出力にサービスを生成する必要がないため、`Layer.effectDiscard`を使用してその出力を破棄します。
 
-- **Server Setup**. The server is created in a layer (`ServerLive`) and mounted at the end of our program.
+- **サーバーセットアップ**。サーバーはレイヤー (`ServerLive`) 内で作成され、プログラムの最後にマウントされます。
 
   ```ts
-  // Server Setup
+  // サーバーセットアップ
   const ServerLive = Layer.scopedDiscard(
     Effect.gen(function* () {
       const port = 3001
@@ -159,10 +159,10 @@ Here's a breakdown of what's happening:
   )
   ```
 
-  We use [Effect.acquireRelease](../guides/resource-management/scope#defining-resources) to create the server, allowing automatic management of the [scope](../guides/resource-management/scope#scope).
-  Again, as we don't need to produce any service in the output, we use `Layer.scopedDiscard` to discard its output.
+  サーバーを作成するために[Effect.acquireRelease](../guides/resource-management/scope#defining-resources)を使用し、自動的に[scope](../guides/resource-management/scope#scope)を管理します。
+  また、出力にサービスを生成する必要がないため、`Layer.scopedDiscard`を使用してその出力を破棄します。
 
-- **Mounting**. Finally, we mount the server by adding our route
+- **マウント**。最後に、ルートを追加してサーバーをマウントします。
 
   ```ts {1}
   const AppLive = ServerLive.pipe(
@@ -171,31 +171,30 @@ Here's a breakdown of what's happening:
   )
   ```
 
-  and providing the necessary dependency to the Express app
+  そして、Expressアプリに必要な依存関係を提供します
 
   ```ts {0,5}
   const ExpressLive = Layer.sync(Express, () => express())
 
-  // Combine the layers
+  // レイヤーを結合する
   const AppLive = ServerLive.pipe(
     Layer.provide(IndexRouteLive),
     Layer.provide(ExpressLive)
   )
   ```
 
-## Basic routing
+## 基本的なルーティング
 
-In this example, we'll explore the basics of routing with Effect and Express. The goal is to create a simple web server with two routes: one that returns all todos and another that returns a todo by its ID.
+この例では、EffectとExpressを使用したルーティングの基本を探ります。目標は、すべてのtodosを返すルートと、IDによってtodoを返すルートを持つシンプルなWebサーバーを作成することです。
 
 ```ts filename="basic-routing.ts"
 import { Context, Effect, FiberSet, Layer } from "effect"
 import express from "express"
 
 //
-// Express
+// エクスプレス
 //
-// NB: this is an example of an integration to a third party lib, not the suggested way of integrating express
-//
+// NB: これはサードパーティライブラリとの統合の例であり、Expressを統合する推奨方法ではありません
 
 // Define Express as a service
 class Express extends Context.Tag("Express")<
@@ -216,7 +215,7 @@ const get = <A, E, R>(
     app.get(path, (req, res) => run(body(req, res)))
   })
 
-// Server Setup
+// サーバーのセットアップ
 const ServerLive = Layer.scopedDiscard(
   Effect.gen(function* () {
     const port = 3001
@@ -232,11 +231,11 @@ const ServerLive = Layer.scopedDiscard(
   })
 )
 
-// Setting Up Express
+// Expressのセットアップ
 const ExpressLive = Layer.sync(Express, () => express())
 
 //
-// Domain
+// ドメイン
 //
 
 interface Todo {
@@ -245,7 +244,7 @@ interface Todo {
   readonly completed: boolean
 }
 
-// Define the repository as a service
+// リポジトリをサービスとして定義する
 class TodoRepository extends Context.Tag("TodoRepository")<
   TodoRepository,
   {
@@ -258,7 +257,7 @@ class TodoRepository extends Context.Tag("TodoRepository")<
 // App
 //
 
-// Define a main route that returns all Todos
+// すべてのTodosを返すメインルートを定義する
 const IndexRouteLive = Layer.scopedDiscard(
   Effect.gen(function* () {
     const repo = yield* TodoRepository
@@ -272,7 +271,7 @@ const IndexRouteLive = Layer.scopedDiscard(
   })
 )
 
-// Define a route that returns a Todo by its ID
+// IDによってTodoを返すルートを定義する
 const TodoByIdRouteLive = Layer.scopedDiscard(
   Effect.gen(function* () {
     const repo = yield* TodoRepository
@@ -287,7 +286,7 @@ const TodoByIdRouteLive = Layer.scopedDiscard(
   })
 )
 
-// Merge routes into a single layer
+// ルートを単一のレイヤーにマージする
 const RouterLive = Layer.mergeAll(IndexRouteLive, TodoByIdRouteLive)
 
 // Combine all layers to create the final application layer
@@ -296,7 +295,7 @@ const AppLive = ServerLive.pipe(
   Layer.provide(ExpressLive)
 )
 
-// Test Data for TodoRepository
+// TodoRepositoryのテストデータ
 const testData = [
   {
     id: 1,
@@ -315,7 +314,7 @@ const testData = [
   }
 ]
 
-// Create a layer with test data
+// テストデータを使用してレイヤーを作成する
 const TodoRepositoryTest = Layer.succeed(TodoRepository, {
   getTodos: Effect.succeed(testData),
   getTodo: (id) =>

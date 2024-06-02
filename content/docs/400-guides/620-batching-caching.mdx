@@ -1,20 +1,20 @@
 ---
-title: Batching & Caching
-excerpt: Effect is a powerful TypeScript library designed to help developers easily create complex, synchronous, and asynchronous programs.
+title: バッチ処理 & キャッシング
+excerpt: Effectは、開発者が複雑な同期および非同期プログラムを簡単に作成できるように設計された強力なTypeScriptライブラリです。
 bottomNavigation: pagination
 ---
 
-Before we dig into the Effect's solution to batching and caching let's start with a description of the problem.
+Effectのバッチ処理とキャッシングの解決策に入る前に、まず問題の説明から始めましょう。
 
-It is very common in apps to depend on a number of external data sources like:
+アプリでは、以下のような多くの外部データソースに依存することが非常に一般的です：
 
 - HTTP APIs
 - Databases
 - Filesystems
 
-## Model Definition
+## モデル定義
 
-Let's start with a fairly minimal model description:
+まずは、かなり最小限のモデルの説明から始めましょう。
 
 ```twoslash include Model
 import { Effect } from "effect"
@@ -51,15 +51,15 @@ export class SendEmailError {
 ```
 
 <Idea>
-  In a real world scenario we may want to use a more precise types instead of
-  directly using primitives for identifiers (see [Branded
-  Types](style/branded-types)). We may also want to include more information
-  in the errors.
+  実際のシナリオでは、識別子に直接プリミティブを使用するのではなく、
+  より正確な型を使用することを検討するかもしれません（[Branded
+  Types](style/branded-types)を参照）。
+  また、エラーにもっと多くの情報を含めることも考慮するかもしれません。
 </Idea>
 
-## Classic Approach
+## 従来のアプローチ
 
-Given such a model we usually write up functions to call some API (or database, etc.) like the following:
+このようなモデルが与えられた場合、通常は次のようにAPI（またはデータベースなど）を呼び出す関数を作成します：
 
 ```twoslash include API
 import { Effect } from "effect"
@@ -68,7 +68,7 @@ import * as Model from "./Model"
 export const simulatedValidation = async <A>(
   promise: Promise<Response>
 ): Promise<A> => {
-  // In a real world scenario we may not want to trust our APIs to actually return the expected data
+  // 実際のシナリオでは、APIが期待通りのデータを返すとは限りません
   return promise.then((res) => res.json() as Promise<A>)
 }
 
@@ -123,12 +123,11 @@ export const notifyOwner = (todo: Model.Todo) =>
 ```
 
 <Idea>
-  In a real world scenario we may not want to trust our APIs to actually
-  return the expected data - for doing this properly you can use
-  `@effect/schema` or similar alternatives such as `zod`.
+  実際のシナリオでは、APIが期待通りのデータを返すとは限りません。
+  これを適切に行うために、`@effect/schema`や`zod`のような代替手段を使用することができます。
 </Idea>
 
-When using the utilities we defined it is normal to end up with code that looks like the following:
+定義したユーティリティを使用すると、次のようなコードになるのが普通です：
 
 ```ts filename="index.ts" twoslash
 // @filename: Model.ts
@@ -150,21 +149,19 @@ const program = Effect.gen(function* () {
 })
 ```
 
-Here we used the `forEach` to repeat an effect for every `Todo` and the effect repeated
-first fetches the `User` who owns the todo and then sends an email.
+ここでは、`forEach`を使用してすべての`Todo`に対してエフェクトを繰り返し、そのエフェクトは最初に`Todo`の所有者である`User`を取得し、次にメールを送信します。
 
-We like writing code this way because it is **very expressive** and very easy to read, but is it **efficient**?
+このようにコードを書くのが好きです。なぜなら、**非常に表現力豊か**で読みやすいからです。しかし、それは**効率的**でしょうか？
 
-This code will execute tons of individual API calls. Many `Todo`s will likely have the same owner and
-our APIs may also provide batched alternatives where you can request as many users as you would like to in one call.
+このコードは大量の個別のAPIコールを実行します。多くの`Todo`は同じ所有者を持つ可能性が高く、私たちのAPIは一度に多くのユーザーをリクエストできるバッチ処理の代替手段も提供するかもしれません。
 
-So what can we do? Rewrite all our code to use a different form of API? Should we really do that?
+では、どうすればいいでしょうか？すべてのコードを異なる形式のAPIに書き換えるべきでしょうか？本当にそうするべきでしょうか？
 
-Well **not anymore.**
+もう**その必要はありません。**
 
-## Declaring Requests
+## リクエストの宣言
 
-Let's rewrite our example to be as efficient as possible - we'll start by writing a model for the requests that our data sources support:
+データソースがサポートするリクエストのモデルを作成することで、例をできるだけ効率的に書き直しましょう。
 
 ```twoslash include RequestModel
 import { Request } from "effect"
@@ -206,12 +203,11 @@ export type ApiRequest = GetTodos | GetUserById | SendEmail
 // @include: RequestModel
 ```
 
-## Declaring Resolvers
+## リゾルバの宣言
 
-Now that we have our requests defined it is time to tell Effect how to resolve those requests. That's where we would use a `RequestResolver`.
+リクエストが定義されたので、次はEffectにそれらのリクエストをどのように解決するかを伝える時です。ここで`RequestResolver`を使用します。
 
-Here we will define a single resolver per query. There is no right or wrong answer in how granular your resolvers should be
-but usually you will split up your resolvers based on which API calls can be batched.
+ここではクエリごとに単一のリゾルバを定義します。リゾルバの粒度に関して正解や不正解はありませんが、通常はどのAPIコールがバッチ処理できるかに基づいてリゾルバを分割します。
 
 ```twoslash include Resolvers
 import { Effect, RequestResolver, Request } from "effect"
@@ -219,7 +215,7 @@ import * as API from "./API"
 import * as Model from "./Model"
 import * as RequestModel from "./RequestModel"
 
-// we assume we cannot batch GetTodos, we create a normal resolver
+// GetTodosはバッチ処理できないと仮定し、通常のリゾルバを作成します
 export const GetTodosResolver = RequestResolver.fromEffect(
   (request: RequestModel.GetTodos) =>
     Effect.tryPromise({
@@ -262,7 +258,7 @@ export const GetUserByIdResolver = RequestResolver.makeBatched(
     )
 )
 
-// we assume we can batch SendEmail, we create a batched resolver
+// SendEmailをバッチ処理できると仮定し、バッチリゾルバを作成します
 export const SendEmailResolver = RequestResolver.makeBatched(
   (requests: Array<RequestModel.SendEmail>) =>
     Effect.tryPromise({
@@ -308,14 +304,12 @@ export const SendEmailResolver = RequestResolver.makeBatched(
 ```
 
 <Info>
-  Resolvers can also access context like any other `Effect` and there are many
-  different ways of creating resolvers. You may want to check the reference
-  documentation of the `RequestResolver` module next.
+  Resolversは他の`Effect`と同様にコンテキストにアクセスすることができ、リゾルバを作成する方法は多岐にわたります。次に`RequestResolver`モジュールのリファレンスドキュメントを確認することをお勧めします。
 </Info>
 
-## Defining Queries
+## クエリの定義
 
-At this point we are ready to plug the pieces together! Let's do just that:
+ここで、これらのピースを組み合わせる準備が整いました！さっそくやってみましょう：
 
 ```twoslash include Queries
 import { Effect } from "effect"
@@ -367,9 +361,9 @@ export const notifyOwner = (todo: Model.Todo) =>
 // @include: Queries
 ```
 
-It looks like we are back at the beginning, same exact types and same exact composition.
+最初に戻ったように見えますが、同じ型と同じ構成です。
 
-But now the following program:
+しかし、次のプログラムでは：
 
 ```ts filename="index.ts" {8} twoslash
 // @filename: Model.ts
@@ -400,18 +394,15 @@ const program = Effect.gen(function* () {
 })
 ```
 
-Will only require **3** queries to be executed to our APIs instead of **1 + 2n** where **n** is the number of todos.
+APIへのクエリは、**1 + 2n**（**n**はtodosの数）ではなく、**3**つのクエリのみが必要になります。
 
-## Resolvers with Context
+## Contextを持つResolvers
 
-There may be cases where you want to access some context as part of the request resolver, in order for requests to be
-batchable the resolver they reference has to be the same so it is important to avoid over providing context to a
-resolver because having even two slightly different services makes the resolvers incompatible leading to no batching.
+リクエストリゾルバの一部としていくつかのコンテキストにアクセスしたい場合があるかもしれません。リクエストをバッチ処理可能にするためには、参照されるリゾルバが同じである必要があるため、リゾルバに過剰にコンテキストを提供することを避けることが重要です。わずかに異なる2つのサービスがあるだけで、リゾルバが互換性を持たなくなり、バッチ処理ができなくなります。
 
-To avoid easy mistakes we decided to force the context of the resolver passed to `Effect.request` to `never` so that
-you always have to specify how context is accessed.
+簡単なミスを避けるために、`Effect.request`に渡されるリゾルバのコンテキストを`never`に強制し、常にコンテキストのアクセス方法を指定する必要があるようにしました。
 
-Let's see how we would do it:
+どのように行うか見てみましょう。
 
 ```twoslash include ResolversWithContext
 import { Effect, Context, Layer, RequestResolver } from "effect"
@@ -429,7 +420,7 @@ export const HttpServiceLive = Layer.sync(HttpService, () =>
 )
 
 export const GetTodosResolver =
-  // we create a normal resolver like we did before
+  // 以前と同じように通常のリゾルバを作成します
   RequestResolver.fromEffect((request: RequestModel.GetTodos) =>
     Effect.andThen(HttpService, (http) =>
       Effect.tryPromise({
@@ -441,7 +432,7 @@ export const GetTodosResolver =
       })
     )
   ).pipe(
-    // we list the tags that the resolver can access
+    // リゾルバがアクセスできるタグを列挙します
     RequestResolver.contextFromServices(HttpService)
   )
 ```
@@ -461,15 +452,15 @@ export const GetTodosResolver =
 // @include: ResolversWithContext
 ```
 
-We can see now that the type of `GetTodosResolver` is no longer a `RequestResolver` but instead it is:
+今では `GetTodosResolver` の型が `RequestResolver` ではなく、次のようになっていることがわかります：
 
 ```ts
 Effect<RequestResolver<GetTodos, never>, never, HttpService>
 ```
 
-which is an `Effect` that access the `HttpService` and returns a composed resolver that has the minimal context ready to use.
+これは `HttpService` にアクセスし、最小限のコンテキストを持つリゾルバを返す `Effect` です。
 
-Once we have such `Effect` we can directly use it in our request definition:
+このような `Effect` を持っていれば、リクエスト定義で直接使用できます：
 
 ```ts filename="QueriesWithContext.ts" twoslash
 // @filename: Model.ts
@@ -501,11 +492,11 @@ export const getTodos: Effect.Effect<
 )
 ```
 
-We can see that the `Effect` correctly requires `HttpService` to be provided.
+`Effect` が正しく `HttpService` を提供する必要があることがわかります。
 
-Alternatively you can create `RequestResolver`s as part of layers direcly accessing or closing over context from construction.
+また、レイヤーの一部として、コンテキストに直接アクセスしたり、構築時にコンテキストを閉じ込めたりする `RequestResolver` を作成することもできます。
 
-For example:
+例えば：
 
 ```ts filename="QueriesFromLayers.ts" twoslash
 // @filename: Model.ts
@@ -562,11 +553,11 @@ export const getTodos: Effect.Effect<
 > = Effect.andThen(TodosService, (service) => service.getTodos)
 ```
 
-This way is probably the best for most of the cases given that layers are the natural primitive where to wire services together.
+この方法は、レイヤーがサービスを結びつける自然なプリミティブであることを考えると、ほとんどの場合に最適です。
 
-## Controlling Batching
+## バッチ処理の制御
 
-Batching can be locally disabled using the `Effect.withRequestBatching` utility in the following way:
+バッチ処理は、次のように `Effect.withRequestBatching` ユーティリティを使用してローカルに無効にすることができます：
 
 ```ts filename="index.ts" {11} twoslash
 // @filename: Model.ts
@@ -597,13 +588,13 @@ const program = Effect.gen(function* () {
 }).pipe(Effect.withRequestBatching(false))
 ```
 
-## Request Caching
+## リクエストキャッシング
 
-Up to this point we optimized how requests are executed but there is still a catch - we are not doing any caching.
+ここまででリクエストの実行方法を最適化しましたが、まだ問題があります - キャッシングを行っていません。
 
-This leads to request duplication...
+これによりリクエストの重複が発生します...
 
-Fortunately we also have a primitive for caching in `Effect` and we use that to automatically cache requests.
+幸いなことに、`Effect`にはキャッシングのためのプリミティブもあり、それを使用してリクエストを自動的にキャッシュします。
 
 ```ts {9} filename="Queries.ts" twoslash
 // @filename: Model.ts
@@ -664,20 +655,19 @@ const program = Effect.gen(function* () {
 }).pipe(Effect.repeat(Schedule.fixed("10 seconds")))
 ```
 
-With this program, the `getTodos` operation retrieves the todos for each user. Then, the `Effect.forEach` function is used to notify the owner of each todo concurrently, without waiting for the notifications to complete.
+このプログラムでは、`getTodos` 操作が各ユーザーのtodosを取得します。その後、`Effect.forEach` 関数を使用して、通知が完了するのを待たずに各todoの所有者に通知します。
 
-The `repeat` function is applied to the entire chain of operations, and it ensures that the program repeats every 10 seconds using a fixed schedule. This means that the entire process, including fetching todos and sending notifications, will be executed repeatedly with a 10-second interval.
+`repeat` 関数は操作の全体のチェーンに適用され、固定スケジュールを使用してプログラムが10秒ごとに繰り返されることを保証します。つまり、todosの取得と通知の送信を含む全プロセスが10秒間隔で繰り返し実行されます。
 
-The program incorporates a caching mechanism, which prevents the same `GetUserById` operation from being executed more than once within a span of 1 minute (unless there are more than 65,000 users). This **default** caching behavior helps optimize the program's execution and reduces unnecessary requests to fetch user data.
+プログラムにはキャッシングメカニズムが組み込まれており、同じ `GetUserById` 操作が1分以内に複数回実行されるのを防ぎます（65,000人以上のユーザーがいない限り）。この**デフォルト**のキャッシング動作は、プログラムの実行を最適化し、ユーザーデータを取得するための不要なリクエストを減らすのに役立ちます。
 
-Furthermore, the program is designed to send emails in batches, allowing for efficient processing and better utilization of resources.
+さらに、プログラムはバッチでメールを送信するように設計されており、効率的な処理とリソースのより良い利用を可能にします。
 
-## The Request Cache
+## リクエストキャッシュ
 
-There may be cases where you want to localize a cache (use a cache only for a part of your program)
-or maybe you want a global cache with a different setup, or a mix of both.
+プログラムの一部に対してのみキャッシュを使用したい場合や、異なる設定のグローバルキャッシュを使用したい場合、またはその両方を組み合わせたい場合があります。
 
-To cover those scenarios you'd create a custom cache like the following:
+そのようなシナリオに対応するために、次のようなカスタムキャッシュを作成します。
 
 ```ts {14-16} filename="index.ts" twoslash
 // @filename: Model.ts
@@ -715,13 +705,11 @@ const program = Effect.gen(function* () {
 )
 ```
 
-Alternatively you can also directly construct a cache with `Request.makeCache({ capacity: 256, timeToLive: "60 minutes" }){:ts}` and then use
-`Effect.withRequestCache(program, myCache){:ts}` on a program to make sure the requests generated from that program uses
-the custom cache (when enabled with `Effect.withRequestCaching(true){:ts}`).
+また、`Request.makeCache({ capacity: 256, timeToLive: "60 minutes" }){:ts}` を使用して直接キャッシュを構築し、その後プログラムに `Effect.withRequestCache(program, myCache){:ts}` を使用して、プログラムから生成されるリクエストがカスタムキャッシュを使用するようにすることもできます（`Effect.withRequestCaching(true){:ts}` を有効にした場合）。
 
-## How is this possible?
+## これはどうやって可能なのか？
 
-We recently introduced a new key primitive in the fiber that enables an execution to pause when it sees the program requires a request. In the process of pausing, the fiber will reify its stack into a continuation that can be externally performed.
+最近、ファイバーに新しいキー原始を導入しました。これにより、プログラムがリクエストを必要とする場合に実行を一時停止することができます。一時停止の過程で、ファイバーはそのスタックを継続に変換し、外部で実行できるようにします。
 
 ```ts twoslash
 // @filename: Model.ts
@@ -754,7 +742,7 @@ const program = Effect.gen(function* () {
 const nextStep = Effect.step(program).pipe(
   Effect.andThen((step) => {
     switch (step._op) {
-      // the program is blocked on a number of requests
+      // プログラムは複数のリクエストでブロックされています
       case "Blocked": {
         const requests = step.effect_instruction_i0
         const continuation = step.effect_instruction_i1
@@ -762,7 +750,7 @@ const nextStep = Effect.step(program).pipe(
           Effect.andThen(() => continuation)
         )
       }
-      // the program completed
+      // プログラムが完了しました
       case "Success":
       case "Failure": {
         return step
@@ -779,17 +767,13 @@ const shipRequestsToBeExecutedAndWait = <E, A>(
 }
 ```
 
-By using the functions provided by the `RequestBlock` module, you can combine requests from multiple blocked
-effects. By using the function `Effect.blocked(requests, continuation){:ts}`, you can express an effect that is blocked
-on `requests` that should continue with `continuation`.
+`RequestBlock`モジュールが提供する関数を使用することで、複数のブロックされたエフェクトからのリクエストを組み合わせることができます。`Effect.blocked(requests, continuation){:ts}`関数を使用することで、`requests`にブロックされ、`continuation`で続行するエフェクトを表現することができます。
 
-## Using Cache Directly
+## キャッシュの直接使用
 
-There are many cases where you have functions `(key: Key) => Effect<A, E, R>{:ts}` that you would like to cache
-and not necessarily every case is a good fit for the request model shown above. For example, non-batchable API
-calls or intensive work.
+`(key: Key) => Effect<A, E, R>{:ts}`のような関数をキャッシュしたい場合が多くありますが、必ずしもすべてのケースが上記のリクエストモデルに適しているわけではありません。例えば、バッチ処理ができないAPI呼び出しや集中的な作業などです。
 
-Let's see how we would go about using cache:
+キャッシュを使用する方法を見てみましょう：
 
 ```ts twoslash
 import { Effect, Cache } from "effect"
@@ -815,9 +799,7 @@ const program = Effect.gen(function* () {
 ```
 
 <Warning>
-  In order for the cache to correctly compare two `Key` values if you are not
-  using primitives (e.g. `string`, `boolean`, `number`), you should use types
-  that implement the [Equal](../other/trait/equal) interface.
+  Cacheが2つの`Key`値を正しく比較するためには、プリミティブ（例：`string`、`boolean`、`number`）を使用していない場合、[Equal](../other/trait/equal)インターフェースを実装する型を使用する必要があります。
 </Warning>
 
-There are many more methods available in the `Cache` module. As a next step, check out the [reference docs](https://effect-ts.github.io/effect/effect/Cache.ts.html)!
+`Cache`モジュールにはさらに多くのメソッドが用意されています。次のステップとして、[reference docs](https://effect-ts.github.io/effect/effect/Cache.ts.html)をチェックしてください！

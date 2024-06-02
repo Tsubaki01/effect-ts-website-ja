@@ -1,14 +1,14 @@
 ---
-title: The Effect Type
-excerpt: Explore the `Effect<Success, Error, Requirements>` type in the Effect ecosystem, representing an immutable, lazy description of a workflow or job. Understand its type parameters and conceptualize it as an effectful program. Learn how to interpret `Effect` values with the Effect Runtime System for effectful interactions with the external world.
+title: Effectタイプ
+excerpt: Effectエコシステムにおける`Effect<Success, Error, Requirements>`タイプを探求し、ワークフローやジョブの不変で遅延評価される記述を表します。その型パラメータを理解し、効果的なプログラムとして概念化します。Effectランタイムシステムを使用して、外部世界との効果的な相互作用を持つ`Effect`値を解釈する方法を学びます。
 bottomNavigation: pagination
 ---
 
-The `Effect<Success, Error, Requirements>` type represents an **immutable** value that **lazily** describes a workflow or job.
+`Effect<Success, Error, Requirements>`タイプは、ワークフローやジョブを**不変**の値として**遅延評価**で記述するものです。
 
-This type encapsulates the logic of a program, defining whether it succeeds, providing a value of type `Success`, or fails, resulting in an error of type `Error`. Additionally, the program requires a collection of contextual data `Context<Requirements>` to execute.
+このタイプはプログラムのロジックをカプセル化し、成功した場合は`Success`タイプの値を提供し、失敗した場合は`Error`タイプのエラーを返します。さらに、プログラムの実行には`Context<Requirements>`というコンテキストデータのコレクションが必要です。
 
-Conceptually, you can think of `Effect<Success, Error, Requirements>` as an effectful version of the following function type:
+概念的には、`Effect<Success, Error, Requirements>`を次の関数タイプの効果的なバージョンと考えることができます：
 
 ```ts
 type Effect<Success, Error, Requirements> = (
@@ -16,30 +16,28 @@ type Effect<Success, Error, Requirements> = (
 ) => Error | Success
 ```
 
-Effects are not actually functions, of course, they can model synchronous, asynchronous, concurrent, and resourceful computations.
+Effectは実際には関数ではありませんが、同期、非同期、並行、およびリソースを使用する計算をモデル化することができます。
 
-## Type Parameters
+## 型パラメータ
 
-The `Effect` type has three type parameters with the following meanings:
+`Effect`タイプには次の意味を持つ3つの型パラメータがあります：
 
-- **Success**. Represents the type of value that an effect can succeed with when executed.
-  If this type parameter is `void`, it means the effect produces no useful information, while if it is `never`, it means the effect runs forever (or until failure).
-- **Error**. Represents the expected errors that can occur when executing an effect.
-  If this type parameter is `never`, it means the effect cannot fail, because there are no values of type `never`.
-- **Requirements**. Represents the contextual data required by the effect to be executed.
-  This data is stored in a collection named `Context`.
-  If this type parameter is `never`, it means the effect has no requirements and the `Context` collection is empty.
+- **Success**. Effectが実行されたときに成功する値の型を表します。
+  この型パラメータが`void`の場合、Effectは有用な情報を生成しないことを意味し、`never`の場合、Effectは永遠に（または失敗するまで）実行されることを意味します。
+- **Error**. Effectを実行する際に発生する可能性のある予期されたエラーを表します。
+  この型パラメータが`never`の場合、Effectは失敗しないことを意味します。なぜなら、`never`型の値は存在しないからです。
+- **Requirements**. Effectを実行するために必要なコンテキストデータを表します。
+  このデータは`Context`というコレクションに格納されます。
+  この型パラメータが`never`の場合、Effectには要件がなく、`Context`コレクションは空であることを意味します。
 
 <Info>
-  In the Effect ecosystem, you may often encounter the type parameters of
-  `Effect` abbreviated as `A`, `E`, and `R` respectively. This is just
-  shorthand for the success value of type **A**, **E**rror, and
-  **R**equirements.
+  Effectエコシステムでは、`Effect`の型パラメータがそれぞれ`A`、`E`、`R`と略されることがよくあります。
+  これは、成功値の型**A**、**E**rror、**R**equirementsの略称です。
 </Info>
 
-`Effect` values are immutable, and all Effect functions produce new `Effect` values.
+`Effect`値は不変であり、すべてのEffect関数は新しい`Effect`値を生成します。
 
-`Effect` values do not actually do anything, they are just values that model or describe effectful interactions.
+`Effect`値は実際には何も行いません。それらは効果的な相互作用をモデル化または記述する値に過ぎません。
 
-An `Effect` can be interpreted by the Effect Runtime System into effectful interactions with the external world.
-Ideally, this occurs at a single time, in our application's `main` function.
+`Effect`はEffectランタイムシステムによって解釈され、外部世界との効果的な相互作用に変換されます。
+理想的には、これはアプリケーションの`main`関数で一度だけ行われます。

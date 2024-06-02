@@ -1,30 +1,30 @@
 ---
-title: Configuration
-excerpt: Effect is a powerful TypeScript library designed to help developers easily create complex, synchronous, and asynchronous programs.
+title: 設定
+excerpt: Effectは、開発者が複雑な同期および非同期プログラムを簡単に作成できるように設計された強力なTypeScriptライブラリです。
 bottomNavigation: pagination
 ---
 
-Configuration is an essential aspect of any cloud-native application. Effect simplifies the process of managing configuration by offering a convenient interface for configuration providers.
+設定は、クラウドネイティブアプリケーションの重要な側面です。Effectは、設定プロバイダーのための便利なインターフェースを提供することで、設定管理のプロセスを簡素化します。
 
-The configuration front-end in Effect enables ecosystem libraries and applications to specify their configuration requirements in a declarative manner. It offloads the complex tasks to a `ConfigProvider`, which can be supplied by third-party libraries.
+Effectの設定フロントエンドは、エコシステムライブラリやアプリケーションが宣言的に設定要件を指定できるようにします。複雑なタスクは、サードパーティライブラリによって提供される`ConfigProvider`にオフロードされます。
 
-Effect comes bundled with a straightforward default `ConfigProvider` that retrieves configuration data from environment variables. This default provider can be used during development or as a starting point before transitioning to more advanced configuration providers.
+Effectには、環境変数から設定データを取得するシンプルなデフォルトの`ConfigProvider`がバンドルされています。このデフォルトプロバイダーは、開発中やより高度な設定プロバイダーに移行する前の出発点として使用できます。
 
-To make our application configurable, we need to understand three essential elements:
+アプリケーションを設定可能にするためには、次の3つの重要な要素を理解する必要があります：
 
-- **Config Description**: We describe the configuration data using an instance of `Config<A>`. If the configuration data is simple, such as a `string`, `number`, or `boolean`, we can use the built-in functions provided by the `Config` module. For more complex data types like [HostPort](#custom-configurations), we can combine primitive configs to create a custom configuration description.
+- **Config Description**: 設定データを`Config<A>`のインスタンスを使用して記述します。設定データが`string`、`number`、`boolean`のようにシンプルな場合、`Config`モジュールが提供する組み込み関数を使用できます。[HostPort](#custom-configurations)のような複雑なデータ型の場合、プリミティブな設定を組み合わせてカスタム設定記述を作成できます。
 
-- **Config Frontend**: We utilize the instance of `Config<A>` to load the configuration data described by the instance (a `Config` is, in itself, an effect). This process leverages the current `ConfigProvider` to retrieve the configuration.
+- **Config Frontend**: `Config<A>`のインスタンスを利用して、インスタンスによって記述された設定データをロードします（`Config`自体がエフェクトです）。このプロセスは、現在の`ConfigProvider`を活用して設定を取得します。
 
-- **Config Backend**: The `ConfigProvider` serves as the underlying engine that manages the configuration loading process. Effect comes with a default config provider as part of its default services. This default provider reads the configuration data from environment variables. If we want to use a custom config provider, we can utilize the `Layer.setConfigProvider` layer to configure the Effect runtime accordingly.
+- **Config Backend**: `ConfigProvider`は、設定読み込みプロセスを管理する基盤エンジンとして機能します。Effectには、デフォルトサービスの一部としてデフォルトの設定プロバイダーが付属しています。このデフォルトプロバイダーは、環境変数から設定データを読み取ります。カスタム設定プロバイダーを使用したい場合は、`Layer.setConfigProvider`レイヤーを利用してEffectランタイムを適切に設定できます。
 
 ## Getting Started
 
-Effect provides a set of primitives for the most common types like `string`, `number`, `boolean`, `integer`, etc.
+Effectは、`string`、`number`、`boolean`、`integer`などの最も一般的な型のための一連のプリミティブを提供します。
 
-Let's start with a simple example of how to read configuration from environment variables:
+環境変数から設定を読み取る簡単な例から始めましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts filename="primitives.ts" twoslash
@@ -60,47 +60,47 @@ Effect.runSync(program)
 </Tab>
 </Tabs>
 
-If we run this application we will get the following output:
+このアプリケーションを実行すると、次の出力が得られます：
 
 ```bash
 (Missing data at HOST: "Expected HOST to exist in the process context")
 ```
 
-This is because we have not provided any configuration. Let's try running it with the following environment variables:
+これは設定を提供していないためです。次の環境変数を使用して実行してみましょう：
 
 ```bash filename="Terminal"
 HOST=localhost PORT=8080 ts-node primitives.ts
 ```
 
-Now we get the following output:
+これで次の出力が得られます：
 
 ```bash
 Application started: localhost:8080
 ```
 
-## Primitives
+## プリミティブ
 
-Effect offers these basic types out of the box:
+Effectは、以下の基本的な型を標準で提供しています：
 
-- `string`: Constructs a config for a string value.
-- `number`: Constructs a config for a float value.
-- `boolean`: Constructs a config for a boolean value.
-- `integer`: Constructs a config for a integer value.
-- `date`: Constructs a config for a date value.
-- `literal`: Constructs a config for a literal (\*) value.
-- `logLevel`: Constructs a config for a [LogLevel](observability/logging#log-levels) value.
-- `duration`: Constructs a config for a duration value.
-- `secret`: Constructs a config for a secret value.
+- `string`: 文字列値のための設定を構築します。
+- `number`: 浮動小数点数値のための設定を構築します。
+- `boolean`: 真偽値のための設定を構築します。
+- `integer`: 整数値のための設定を構築します。
+- `date`: 日付値のための設定を構築します。
+- `literal`: リテラル(\*)値のための設定を構築します。
+- `logLevel`: [LogLevel](observability/logging#log-levels)値のための設定を構築します。
+- `duration`: 期間値のための設定を構築します。
+- `secret`: 秘密値のための設定を構築します。
 
 (\*) `string | number | boolean | null | bigint`
 
 ## Default Values
 
-In some cases, you may encounter situations where an environment variable is not set, leading to a missing value in the configuration. To handle such scenarios, Effect provides the `Config.withDefault` function. This function allows you to specify a fallback or default value to use when an environment variable is not present.
+場合によっては、環境変数が設定されていないために設定値が欠落することがあります。こうしたシナリオに対処するために、Effectは`Config.withDefault`関数を提供しています。この関数を使用すると、環境変数が存在しない場合に使用するフォールバックまたはデフォルト値を指定できます。
 
-Here's how you can use `Config.withDefault` to handle fallback values:
+`Config.withDefault`を使用してフォールバック値を処理する方法は次のとおりです：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts filename="withDefault.ts" twoslash
@@ -136,38 +136,38 @@ Effect.runSync(program)
 </Tab>
 </Tabs>
 
-When running the program with the command:
+このコマンドでプログラムを実行すると：
 
 ```bash filename="Terminal"
 HOST=localhost ts-node withDefault.ts
 ```
 
-you will see the following output:
+次の出力が表示されます：
 
 ```bash
 Application started: localhost:8080
 ```
 
-Even though the `PORT` environment variable is not set, the fallback value of `8080` is used, ensuring that the program continues to run smoothly with a default value.
+`PORT`環境変数が設定されていなくても、フォールバック値の`8080`が使用されるため、プログラムはデフォルト値でスムーズに動作し続けます。
 
-## Constructors
+## コンストラクタ
 
-Effect provides several built-in constructors. These are functions that take a `Config` as input and produce another `Config`.
+Effectは、いくつかの組み込みコンストラクタを提供します。これらは`Config`を入力として受け取り、別の`Config`を生成する関数です。
 
-- `array`: Constructs a config for an array of values.
-- `chunk`: Constructs a config for a sequence of values.
-- `option`: Returns an optional version of this config, which will be `None` if the data is missing from configuration, and `Some` otherwise.
-- `repeat`: Returns a config that describes a sequence of values, each of which has the structure of this config.
-- `hashSet`: Constructs a config for a sequence of values.
-- `hashMap`: Constructs a config for a sequence of values.
+- `array`: 値の配列のためのコンフィグを構築します。
+- `chunk`: 値のシーケンスのためのコンフィグを構築します。
+- `option`: このコンフィグのオプションバージョンを返します。データが設定に存在しない場合は`None`、そうでない場合は`Some`になります。
+- `repeat`: このコンフィグの構造を持つ値のシーケンスを記述するコンフィグを返します。
+- `hashSet`: 値のシーケンスのためのコンフィグを構築します。
+- `hashMap`: 値のシーケンスのためのコンフィグを構築します。
 
-In addition to the basic ones, there are three special constructors you might find useful:
+基本的なものに加えて、次の3つの特別なコンストラクタが役立つかもしれません：
 
-- `succeed`: Constructs a config which contains the specified value.
-- `fail`: Constructs a config that fails with the specified message.
-- `all`: Constructs a config from a tuple / struct / arguments of configs.
+- `succeed`: 指定された値を含むコンフィグを構築します。
+- `fail`: 指定されたメッセージで失敗するコンフィグを構築します。
+- `all`: タプル / 構造体 / コンフィグの引数からコンフィグを構築します。
 
-**Example**
+**例**
 
 ```ts filename="array.ts" twoslash
 import { Effect, Config } from "effect"
@@ -186,27 +186,27 @@ MY_ARRAY=a,b,c ts-node array.ts
 [ 'a', 'b', 'c' ]
 ```
 
-## Operators
+## オペレーター
 
-Effect comes with a set of built-in operators to help you manipulate and handle configurations.
+Effectには、設定を操作および処理するための組み込みオペレーターがいくつか用意されています。
 
-### Transforming Operators
+### 変換オペレーター
 
-These operators allow you to transform a config into a new one:
+これらのオペレーターは、設定を新しいものに変換することができます：
 
-- `validate`: Returns a config that describes the same structure as this one, but which performs validation during loading.
-- `map`: Creates a new config with the same structure as the original but with values transformed using a given function.
-- `mapAttempt`: Similar to `map`, but if the function throws an error, it's caught and turned into a validation error.
-- `mapOrFail`: Like `map`, but allows for functions that might fail. If the function fails, it results in a validation error.
+- `validate`: 同じ構造を記述する設定を返しますが、読み込み中に検証を行います。
+- `map`: 元の構造と同じ構造を持つ新しい設定を作成しますが、指定された関数を使用して値を変換します。
+- `mapAttempt`: `map`に似ていますが、関数がエラーを投げた場合、それがキャッチされて検証エラーに変わります。
+- `mapOrFail`: `map`のように、失敗する可能性のある関数を許可します。関数が失敗した場合、それは検証エラーになります。
 
-### Fallback Operators
+### フォールバックオペレーター
 
-These operators help you set up fallbacks in case of errors or missing data:
+これらのオペレーターは、エラーやデータの欠如が発生した場合のフォールバックを設定するのに役立ちます：
 
-- `orElse`: Sets up a config that tries to use this config first. If there's an issue, it falls back to another specified config.
-- `orElseIf`: This one also tries to use the main config first but switches to a fallback config if there's an error that matches a specific condition.
+- `orElse`: 最初にこの設定を使用しようとします。問題がある場合、別の指定された設定にフォールバックします。
+- `orElseIf`: これも最初にメインの設定を使用しようとしますが、特定の条件に一致するエラーが発生した場合、フォールバック設定に切り替えます。
 
-**Example**
+**例**
 
 ```ts filename="validate.ts" twoslash
 import { Effect, Config } from "effect"
@@ -230,11 +230,11 @@ NAME=foo ts-node validate.ts
 [(Invalid data at NAME: "Expected a string at least 4 characters long")]
 ```
 
-## Custom Configurations
+## カスタム設定
 
-In addition to primitive types, we can also define configurations for custom types. To achieve this, we use primitive configs and combine them using `Config` operators (`zip`, `orElse`, `map`, etc.) and constructors (`array`, `hashSet`, etc.).
+プリミティブ型に加えて、カスタム型の設定も定義できます。これを実現するために、プリミティブ設定を使用し、それらを `Config` オペレーター（`zip`、`orElse`、`map` など）やコンストラクター（`array`、`hashSet` など）を使って組み合わせます。
 
-Let's consider the `HostPort` data type, which consists of two fields: `host` and `port`.
+`HostPort` データ型を考えてみましょう。この型は `host` と `port` の2つのフィールドで構成されています。
 
 ```ts
 class HostPort {
@@ -245,7 +245,7 @@ class HostPort {
 }
 ```
 
-We can define a configuration for this data type by combining primitive configs for `string` and `number`:
+このデータ型の設定は、`string` と `number` のプリミティブ設定を組み合わせることで定義できます：
 
 ```ts filename="HostPort.ts" twoslash
 import { Config } from "effect"
@@ -269,11 +269,11 @@ export const config = Config.map(
 )
 ```
 
-In the above example, we use the `Config.all(configs){:ts}` operator to combine two primitive configs `Config<string>` and `Config<number>` into a `Config<[string, number]>`.
+上記の例では、`Config.all(configs){:ts}` オペレーターを使用して、2つのプリミティブ設定 `Config<string>` と `Config<number>` を `Config<[string, number]>` に組み合わせています。
 
-If we use this customized configuration in our application:
+このカスタマイズされた設定をアプリケーションで使用する場合：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts filename="App.ts" twoslash
@@ -349,7 +349,7 @@ export const program = HostPort.config.pipe(
 </Tab>
 </Tabs>
 
-when you run the program using `Effect.runSync(program){:ts}`, it will attempt to read the corresponding values from environment variables (`HOST` and `PORT`):
+`Effect.runSync(program){:ts}`を使用してプログラムを実行すると、対応する値を環境変数（`HOST`と`PORT`）から読み取ろうとします：
 
 ```bash filename="Terminal"
 HOST=localhost PORT=8080 ts-node HostPort.ts
@@ -357,11 +357,11 @@ HOST=localhost PORT=8080 ts-node HostPort.ts
 Application started: localhost:8080
 ```
 
-## Top-level and Nested Configurations
+## トップレベルとネストされた設定
 
-So far, we have learned how to define configurations in a top-level manner, whether they are for primitive or custom types. However, we can also define nested configurations.
+これまで、プリミティブ型やカスタム型の設定をトップレベルで定義する方法を学びました。しかし、ネストされた設定を定義することもできます。
 
-Let's assume we have a `ServiceConfig` data type that consists of two fields: `hostPort` and `timeout`.
+`ServiceConfig`というデータ型があり、それが`hostPort`と`timeout`の2つのフィールドを持つと仮定しましょう。
 
 ```ts filename="ServiceConfig.ts" twoslash
 // @filename: HostPort.ts
@@ -403,11 +403,11 @@ const config = Config.map(
 )
 ```
 
-If we use this customized config in our application, it tries to read corresponding values from environment variables: `HOST`, `PORT`, and `TIMEOUT`.
+このカスタマイズされたconfigをアプリケーションで使用すると、対応する値を環境変数から読み取ろうとします: `HOST`, `PORT`, および `TIMEOUT`。
 
-However, in many cases, we don't want to read all configurations from the top-level namespace. Instead, we may want to nest them under a common namespace. For example, we want to read both `HOST` and `PORT` from the `HOSTPORT` namespace, and `TIMEOUT` from the root namespace.
+しかし、多くの場合、すべての設定をトップレベルの名前空間から読み取りたくはありません。代わりに、共通の名前空間の下にネストしたい場合があります。例えば、`HOST`と`PORT`を`HOSTPORT`名前空間から読み取り、`TIMEOUT`をルート名前空間から読み取りたいとします。
 
-To achieve this, we can use the `Config.nested` combinator. It allows us to nest configs under a specific namespace. Here's how we can update our configuration:
+これを実現するために、`Config.nested`コンビネータを使用できます。これにより、特定の名前空間の下に設定をネストすることができます。以下は、設定を更新する方法です：
 
 ```ts twoslash
 // @filename: HostPort.ts
@@ -452,17 +452,17 @@ const config = Config.map(
 )
 ```
 
-Now, if we run our application, it will attempt to read the corresponding values from the environment variables: `HOSTPORT_HOST`, `HOSTPORT_PORT`, and `TIMEOUT`.
+さて、アプリケーションを実行すると、対応する値を環境変数から読み取ろうとします: `HOSTPORT_HOST`, `HOSTPORT_PORT`, および `TIMEOUT`。
 
-## Testing Services
+## テストサービス
 
-When testing services, there are scenarios where we need to provide specific configurations to them. In such cases, we should be able to mock the backend that reads the configuration data.
+サービスをテストする際には、特定の設定を提供する必要があるシナリオがあります。そのような場合、設定データを読み取るバックエンドをモックすることができるべきです。
 
-To accomplish this, we can use the `ConfigProvider.fromMap` constructor. This constructor takes a `Map<string, string>` that represents the configuration data, and it returns a config provider that reads the configuration from that map.
+これを実現するために、`ConfigProvider.fromMap`コンストラクタを使用できます。このコンストラクタは、設定データを表す`Map<string, string>`を受け取り、そのマップから設定を読み取るコンフィグプロバイダを返します。
 
-Once we have the mock config provider, we can use `Layer.setConfigProvider` function. This function allows us to override the default config provider and provide our own custom config provider. It returns a `Layer` that can be used to configure the Effect runtime for our test specs.
+モックコンフィグプロバイダを取得したら、`Layer.setConfigProvider`関数を使用できます。この関数はデフォルトのコンフィグプロバイダをオーバーライドし、独自のカスタムコンフィグプロバイダを提供することができます。これにより、テスト仕様のためにEffectランタイムを設定するための`Layer`が返されます。
 
-Here's an example of how we can mock a config provider for testing purposes:
+以下は、テスト目的でコンフィグプロバイダをモックする方法の例です：
 
 ```ts filename="mockConfigProvider.ts" twoslash
 // @filename: HostPort.ts
@@ -501,7 +501,7 @@ export const program = HostPort.config.pipe(
 import { ConfigProvider, Layer, Effect } from "effect"
 import * as App from "./App"
 
-// Create a mock config provider using ConfigProvider.fromMap
+// ConfigProvider.fromMapを使用してモックコンフィグプロバイダを作成する
 const mockConfigProvider = ConfigProvider.fromMap(
   new Map([
     ["HOST", "localhost"],
@@ -509,24 +509,24 @@ const mockConfigProvider = ConfigProvider.fromMap(
   ])
 )
 
-// Create a layer using Layer.setConfigProvider to override the default config provider
+// Layer.setConfigProviderを使用してデフォルトのコンフィグプロバイダをオーバーライドするレイヤーを作成する
 const layer = Layer.setConfigProvider(mockConfigProvider)
 
-// Run the program using the provided layer
+// 提供されたレイヤーを使用してプログラムを実行する
 Effect.runSync(Effect.provide(App.program, layer))
-// Output: Application started: localhost:8080
+// 出力: Application started: localhost:8080
 ```
 
-By using this approach, we can easily mock the configuration data and test our services with different configurations in a controlled manner.
+このアプローチを使用することで、コンフィグデータを簡単にモックし、異なるコンフィグレーションでサービスを制御された方法でテストすることができます。
 
 ## Secret
 
-What sets `Config.secret` apart from `Config.string` is its handling of sensitive information.
-It parses the Config value and wraps it in a `Secret`, a data type designed for holding secrets.
+`Config.secret`が`Config.string`と異なる点は、機密情報の取り扱いです。
+Configの値を解析し、それを`Secret`という機密情報を保持するためのデータ型にラップします。
 
-When you use `console.log` on a secret, the actual value remains hidden, providing an added layer of security. The only way to access the value is by using `Secret.value(secret)`.
+secretに対して`console.log`を使用すると、実際の値は隠され、セキュリティの層が追加されます。値にアクセスする唯一の方法は、`Secret.value(secret)`を使用することです。
 
-Here's a simple example to illustrate:
+以下はそれを説明する簡単な例です：
 
 ```ts twoslash
 import {
@@ -553,10 +553,10 @@ Effect.runSync(
   )
 )
 /*
-Output:
+出力:
 console.log: Secret(<redacted>)
 Secret.value: my-api-key
 */
 ```
 
-In this example, you can see that when logging the secret using `console.log`, the actual value is replaced with `<redacted>`, ensuring that sensitive information is not exposed. The `Secret.value` function, on the other hand, provides a controlled way to retrieve the original secret value.
+この例では、`console.log`を使用してsecretをログに記録すると、実際の値が`<redacted>`に置き換えられ、機密情報が露出しないようにしています。一方、`Secret.value`関数は、元のsecret値を取得するための制御された方法を提供します。

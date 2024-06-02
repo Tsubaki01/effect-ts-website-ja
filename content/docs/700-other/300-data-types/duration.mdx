@@ -1,33 +1,33 @@
 ---
 title: Duration
-excerpt: Explore the `Duration` data type in Effect for representing non-negative spans of time. Learn to create durations with different units, including milliseconds, seconds, and minutes. Discover options for creating infinite durations and decoding values. Retrieve duration values in milliseconds or nanoseconds. Compare durations and perform arithmetic operations like addition and multiplication. Master the capabilities of the `Duration` module for efficient time handling in your applications.
+excerpt: `Duration`データ型を使用して、非負の時間の長さを表現する方法をEffectで探求します。ミリ秒、秒、分など、さまざまな単位でのDurationの作成方法を学びます。無限のDurationを作成するオプションや値のデコード方法を発見します。ミリ秒やナノ秒でDurationの値を取得します。Durationを比較し、加算や乗算などの算術操作を実行します。アプリケーションで効率的な時間管理を行うための`Duration`モジュールの機能をマスターします。
 bottomNavigation: pagination
 ---
 
-The `Duration` data type data type is used to represent specific non-negative spans of time. It is commonly used to represent time intervals or durations in various operations, such as timeouts, delays, or scheduling. The `Duration` type provides a convenient way to work with time units and perform calculations on durations.
+`Duration`データ型は、特定の非負の時間の長さを表現するために使用されます。これは、タイムアウト、遅延、スケジューリングなどのさまざまな操作で時間間隔やDurationを表現するために一般的に使用されます。`Duration`型は、時間単位を扱い、Durationの計算を行うための便利な方法を提供します。
 
-## Creating Durations
+## Durationの作成
 
-The `Duration` module provides several constructors to create durations of different units. Here are some examples:
+`Duration`モジュールはいくつかのコンストラクタを提供しており、さまざまな単位のDurationを作成できます。以下にいくつかの例を示します。
 
 ```ts twoslash
 import { Duration } from "effect"
 
-const duration1 = Duration.millis(100) // Create a duration of 100 milliseconds
-const duration2 = Duration.seconds(2) // Create a duration of 2 seconds
-const duration3 = Duration.minutes(5) // Create a duration of 5 minutes
+const duration1 = Duration.millis(100) // 100ミリ秒のDurationを作成
+const duration2 = Duration.seconds(2) // 2秒のDurationを作成
+const duration3 = Duration.minutes(5) // 5分のDurationを作成
 ```
 
-You can create durations using units such as nanoseconds, microsecond, milliseconds, seconds, minutes, hours, days, and weeks.
+Durationは、ナノ秒、マイクロ秒、ミリ秒、秒、分、時間、日、週などの単位を使用して作成できます。
 
-If you want to create an infinite duration, you can use `Duration.infinity`:
+無限のDurationを作成したい場合は、`Duration.infinity`を使用できます。
 
 ```ts twoslash
 import { Duration } from "effect"
 
 console.log(String(Duration.infinity))
 /*
-Output:
+出力:
 {
   "_id": "Duration",
   "_tag": "Infinity"
@@ -35,47 +35,47 @@ Output:
 */
 ```
 
-Another option for creating durations is using the `Duration.decode` helper:
+Durationを作成する別のオプションとして、`Duration.decode`ヘルパーを使用することができます。
 
-- `number`s are treated as milliseconds
-- `bigint`s are treated as nanoseconds
-- strings must be formatted as `"${number} ${unit}"`
+- `number`はミリ秒として扱われます
+- `bigint`はナノ秒として扱われます
+- 文字列は `"${number} ${unit}"` の形式でなければなりません
 
 ```ts twoslash
 // @target: ES2020
 import { Duration } from "effect"
 
-Duration.decode(10n) // same as Duration.nanos(10)
-Duration.decode(100) // same as Duration.millis(100)
-Duration.decode(Infinity) // same as Duration.infinity
+Duration.decode(10n) // Duration.nanos(10)と同じ
+Duration.decode(100) // Duration.millis(100)と同じ
+Duration.decode(Infinity) // Duration.infinityと同じ
 
-Duration.decode("10 nanos") // same as Duration.nanos(10)
-Duration.decode("20 micros") // same as Duration.micros(20)
-Duration.decode("100 millis") // same as Duration.millis(100)
-Duration.decode("2 seconds") // same as Duration.seconds(2)
-Duration.decode("5 minutes") // same as Duration.minutes(5)
-Duration.decode("7 hours") // same as Duration.hours(7)
-Duration.decode("3 weeks") // same as Duration.weeks(3)
+Duration.decode("10 nanos") // Duration.nanos(10)と同じ
+Duration.decode("20 micros") // Duration.micros(20)と同じ
+Duration.decode("100 millis") // Duration.millis(100)と同じ
+Duration.decode("2 seconds") // Duration.seconds(2)と同じ
+Duration.decode("5 minutes") // Duration.minutes(5)と同じ
+Duration.decode("7 hours") // Duration.hours(7)と同じ
+Duration.decode("3 weeks") // Duration.weeks(3)と同じ
 ```
 
-## Getting the Duration Value
+## Durationの値を取得する
 
-You can retrieve the value of a duration in milliseconds using the `toMillis` function:
+`toMillis`関数を使用して、Durationの値をミリ秒単位で取得できます：
 
 ```ts twoslash
 import { Duration } from "effect"
 
-console.log(Duration.toMillis(Duration.seconds(30))) // Output: 30000
+console.log(Duration.toMillis(Duration.seconds(30))) // 出力: 30000
 ```
 
-You can retrieve the value of a duration in nanoseconds using the `toNanos` function:
+Durationの値をナノ秒単位で取得するには、`toNanos`関数を使用できます：
 
 ```ts twoslash
 import { Duration } from "effect"
 
 console.log(Duration.toNanos(Duration.millis(100)))
 /*
-Output:
+出力:
 {
   _id: "Option",
   _tag: "Some",
@@ -84,25 +84,25 @@ Output:
 */
 ```
 
-Note that `toNanos` returns an `Option<bigint>` since the duration might be infinite. If you want a `bigint` as a return type, you can use `unsafeToNanos`. However, note that it will throw an error for infinite durations:
+`toNanos`は、期間が無限である可能性があるため、`Option<bigint>`を返します。戻り値として`bigint`が必要な場合は、`unsafeToNanos`を使用できます。ただし、無限の期間に対してはエラーをスローすることに注意してください：
 
 ```ts twoslash
 import { Duration } from "effect"
 
-console.log(Duration.unsafeToNanos(Duration.millis(100))) // Output: 100000000n
-console.log(Duration.unsafeToNanos(Duration.infinity)) // throws "Cannot convert infinite duration to nanos"
+console.log(Duration.unsafeToNanos(Duration.millis(100))) // 出力: 100000000n
+console.log(Duration.unsafeToNanos(Duration.infinity)) // "無限の期間をナノ秒に変換することはできません"というエラーをスローします
 ```
 
-## Comparing Durations
+## Durationの比較
 
-You can compare two durations using the following functions:
+次の関数を使用して、2つのDurationを比較できます：
 
-| **Function**           | **Description**                                                             |
-| ---------------------- | --------------------------------------------------------------------------- |
-| `lessThan`             | returns `true` if the first duration is less than the second                |
-| `lessThanOrEqualTo`    | returns `true` if the first duration is less than or equal to the second    |
-| `greaterThan`          | returns `true` if the first duration is greater than the second             |
-| `greaterThanOrEqualTo` | returns `true` if the first duration is greater than or equal to the second |
+| **関数**               | **説明**                                                        |
+| ---------------------- | --------------------------------------------------------------- |
+| `lessThan`             | 最初のDurationが2番目のDurationより小さい場合に`true`を返します |
+| `lessThanOrEqualTo`    | 最初のDurationが2番目のDuration以下の場合に`true`を返します     |
+| `greaterThan`          | 最初のDurationが2番目のDurationより大きい場合に`true`を返します |
+| `greaterThanOrEqualTo` | 最初のDurationが2番目のDuration以上の場合に`true`を返します     |
 
 ```ts twoslash
 import { Duration } from "effect"
@@ -110,15 +110,15 @@ import { Duration } from "effect"
 const duration1 = Duration.seconds(30)
 const duration2 = Duration.minutes(1)
 
-console.log(Duration.lessThan(duration1, duration2)) // Output: true
-console.log(Duration.lessThanOrEqualTo(duration1, duration2)) // Output: true
-console.log(Duration.greaterThan(duration1, duration2)) // Output: false
-console.log(Duration.greaterThanOrEqualTo(duration1, duration2)) // Output: false
+console.log(Duration.lessThan(duration1, duration2)) // 出力: true
+console.log(Duration.lessThanOrEqualTo(duration1, duration2)) // 出力: true
+console.log(Duration.greaterThan(duration1, duration2)) // 出力: false
+console.log(Duration.greaterThanOrEqualTo(duration1, duration2)) // 出力: false
 ```
 
-## Performing Arithmetic Operations
+## Durationの算術演算
 
-You can perform arithmetic operations on durations, such as addition and multiplication. Here are some examples:
+Durationに対して、加算や乗算などの算術演算を行うことができます。以下にいくつかの例を示します：
 
 ```ts twoslash
 import { Duration } from "effect"
@@ -128,7 +128,7 @@ const duration2 = Duration.minutes(1)
 
 console.log(String(Duration.sum(duration1, duration2)))
 /*
-Output:
+出力:
 {
   "_id": "Duration",
   "_tag": "Millis",
@@ -136,9 +136,9 @@ Output:
 }
 */
 
-console.log(String(Duration.times(duration1, 2))) // Output: Duration("60000 millis")
+console.log(String(Duration.times(duration1, 2))) // 出力: Duration("60000 millis")
 /*
-Output:
+出力:
 {
   "_id": "Duration",
   "_tag": "Millis",

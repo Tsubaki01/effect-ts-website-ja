@@ -1,10 +1,10 @@
 ---
-title: Concurrency Options
-excerpt: Effect provides powerful options to manage the execution of effects, offering control over the concurrency of operations. Explore the `concurrency` option, a key factor in determining how many effects can run concurrently. This concise guide delves into sequential execution, numbered concurrency, unbounded concurrency, and the flexible inherit concurrency option. Learn to harness these options to optimize the performance of your Effect programs and tailor the concurrency behavior to your specific use cases.
+title: 並行性オプション
+excerpt: Effectは、エフェクトの実行を管理するための強力なオプションを提供し、操作の並行性を制御することができます。`concurrency`オプションを探求し、どれだけ多くのエフェクトが同時に実行できるかを決定する重要な要素です。この簡潔なガイドでは、順次実行、番号付き並行性、無制限の並行性、および柔軟な継承並行性オプションについて詳しく説明します。これらのオプションを活用して、Effectプログラムのパフォーマンスを最適化し、特定の使用ケースに合わせて並行性の動作を調整する方法を学びましょう。
 bottomNavigation: pagination
 ---
 
-Effect offers various options to manage how effects are executed and control the overall operation's result. These options help determine how many effects can run at the same time concurrently.
+Effectは、エフェクトがどのように実行されるかを管理し、全体の操作結果を制御するためのさまざまなオプションを提供します。これらのオプションは、同時に実行できるエフェクトの数を決定するのに役立ちます。
 
 ```ts
 type Options = {
@@ -13,23 +13,22 @@ type Options = {
 }
 ```
 
-In this section, we'll focus on the option that handles concurrency, which is the `concurrency` option with a type of `Concurrency`:
+このセクションでは、並行性を扱うオプションである`concurrency`オプションに焦点を当てます。これは`Concurrency`型を持ちます。
 
 ```ts
 type Concurrency = number | "unbounded" | "inherit"
 ```
 
-Let's understand the meaning of each configuration value.
+各設定値の意味を理解しましょう。
 
 <Info>
-  The following examples use the `Effect.all` function, but the concept
-  applies to many other Effect APIs that accept concurrency options, such as
-  `Effect.forEach`.
+  以下の例では`Effect.all`関数を使用していますが、この概念は`Effect.forEach`など、
+  並行性オプションを受け入れる他の多くのEffect APIにも適用されます。
 </Info>
 
-## Sequential Execution (Default)
+## 順次実行（デフォルト）
 
-By default, if you don't specify any concurrency option, effects will run sequentially, one after the other. This means each effect starts only after the previous one completes.
+デフォルトでは、並行性オプションを指定しない場合、エフェクトは順次実行されます。つまり、各エフェクトは前のエフェクトが完了した後にのみ開始されます。
 
 ```ts twoslash
 import { Effect, Duration } from "effect"
@@ -53,7 +52,7 @@ const sequential = Effect.all([task1, task2])
 
 Effect.runPromise(sequential)
 /*
-Output:
+出力:
 start task1
 task1 done
 start task2 <-- task2 starts only after task1 completes
@@ -61,9 +60,9 @@ task2 done
 */
 ```
 
-## Numbered Concurrency
+## 数値による並行性
 
-You can control the number of concurrent operations with the `concurrency` option. For example, with `concurrency: 2`, up to 2 effects will run simultaneously.
+`concurrency`オプションを使用して、同時に実行される操作の数を制御できます。例えば、`concurrency: 2`を指定すると、最大2つのエフェクトが同時に実行されます。
 
 ```ts twoslash
 import { Effect, Duration } from "effect"
@@ -92,7 +91,7 @@ const number = Effect.all([task1, task2, task3, task4, task5], {
 
 Effect.runPromise(number)
 /*
-Output:
+出力:
 start task1
 start task2 <-- active tasks: task1, task2
 task2 done
@@ -106,9 +105,9 @@ task5 done
 */
 ```
 
-## Unbounded Concurrency
+## 無制限の並行性
 
-If you set `concurrency: "unbounded"`, as many effects as needed will run concurrently, without any specific limit.
+`concurrency: "unbounded"`を設定すると、必要なだけ多くのエフェクトが特定の制限なしに同時に実行されます。
 
 ```ts twoslash
 import { Effect, Duration } from "effect"
@@ -137,7 +136,7 @@ const unbounded = Effect.all([task1, task2, task3, task4, task5], {
 
 Effect.runPromise(unbounded)
 /*
-Output:
+出力:
 start task1
 start task2
 start task3
@@ -151,11 +150,11 @@ task3 done
 */
 ```
 
-## Inherit Concurrency
+## 継承された並行性
 
-The `concurrency: "inherit"` option adapts based on context, controlled by `Effect.withConcurrency(number | "unbounded")`.
+`concurrency: "inherit"`オプションは、コンテキストに基づいて適応し、`Effect.withConcurrency(number | "unbounded")`によって制御されます。
 
-If there's no `Effect.withConcurrency` call, the default is `"unbounded"`. Otherwise, it inherits the configuration set by `Effect.withConcurrency`.
+`Effect.withConcurrency`の呼び出しがない場合、デフォルトは`"unbounded"`です。それ以外の場合は、`Effect.withConcurrency`で設定された構成を継承します。
 
 ```ts twoslash
 import { Effect, Duration } from "effect"
@@ -184,7 +183,7 @@ const inherit = Effect.all([task1, task2, task3, task4, task5], {
 
 Effect.runPromise(inherit)
 /*
-Output:
+出力:
 start task1
 start task2
 start task3
@@ -198,7 +197,7 @@ task3 done
 */
 ```
 
-If you use `Effect.withConcurrency`, it will adopt that specific concurrency configuration.
+`Effect.withConcurrency`を使用すると、その特定の並行性設定が適用されます。
 
 ```ts twoslash
 import { Effect, Duration } from "effect"
@@ -229,7 +228,7 @@ const withConcurrency = inherit.pipe(Effect.withConcurrency(2))
 
 Effect.runPromise(withConcurrency)
 /*
-Output:
+出力:
 start task1
 start task2 <-- active tasks: task1, task2
 task2 done

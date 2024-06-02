@@ -1,16 +1,16 @@
 ---
-title: What is Dependency Injection?
-excerpt: Understand the Dependency Injection design pattern in software development, fostering loose coupling by passing dependencies externally. Learn its benefits, illustration of problems, and solutions through decoupling the dependency graph and using service interfaces.
+title: Dependency Injectionとは何か？
+excerpt: ソフトウェア開発におけるDependency Injectionデザインパターンを理解し、依存関係を外部から渡すことで疎結合を促進します。その利点、問題の例、およびサービスインターフェースを使用して依存関係グラフを分離する解決策を学びます。
 bottomNavigation: pagination
 ---
 
-Dependency injection is a design pattern used in software development that helps manage the dependencies between different components of an application. It allows developers to create loosely coupled code by passing dependencies to a class or function from an external source.
+Dependency Injectionは、アプリケーションの異なるコンポーネント間の依存関係を管理するために使用されるデザインパターンです。これは、依存関係をクラスや関数に外部から渡すことで、疎結合のコードを作成することを可能にします。
 
-In simpler terms, instead of creating dependencies inside a component, dependency injection enables us to provide them from the outside, making code more flexible and easier to test and maintain. By using dependency injection, developers can easily swap out dependencies or change their behavior without modifying the component's code directly.
+簡単に言えば、コンポーネント内で依存関係を作成する代わりに、Dependency Injectionを使用することで、外部からそれらを提供し、コードをより柔軟にし、テストや保守を容易にします。Dependency Injectionを使用することで、開発者は依存関係を簡単に交換したり、その動作を変更したりすることができ、コンポーネントのコードを直接変更する必要がありません。
 
-## Illustrating the Problem
+## 問題の例
 
-Let's assume we have a `Mailer` service which depends upon the functionality provided by a `Logger` service.
+`Mailer`サービスが`Logger`サービスの機能に依存していると仮定しましょう。
 
 ```ts twoslash
 export class Logger {
@@ -27,17 +27,17 @@ export class Mailer {
 }
 ```
 
-In the code above, we directly construct a `Logger` within our `Mailer` service. This tight coupling between the `Logger` and `Mailer` services introduces several problems:
+上記のコードでは、`Mailer`サービス内で直接`Logger`を構築しています。この`Logger`と`Mailer`サービス間の密結合は、いくつかの問題を引き起こします：
 
-1. Developers using the `Mailer` service have no control over how the `Logger` is constructed
-2. Alternate implementations of the `Logger` service (e.g. for testing) cannot be provided
-3. Changes to the `Logger` service may necessitate changes to the `Mailer` service
+1. `Mailer`サービスを使用する開発者は、`Logger`の構築方法を制御できません
+2. `Logger`サービスの代替実装（例えばテスト用）を提供することができません
+3. `Logger`サービスの変更が`Mailer`サービスの変更を必要とする場合があります
 
-However, by making use of dependency injection we can decouple our `Mailer` and `Logger` services and solve the problems outlined above.
+しかし、Dependency Injectionを使用することで、`Mailer`と`Logger`サービスを分離し、上記の問題を解決することができます。
 
-## Decoupling the Dependency Graph
+## 依存関係グラフの分離
 
-The first step to solving the problems outlined above is to decouple the construction of the `Mailer` and `Logger` services from one another.
+上記の問題を解決するための最初のステップは、`Mailer`と`Logger`サービスの構築を互いに分離することです。
 
 ```ts twoslash
 export class Logger {
@@ -57,28 +57,28 @@ const logger = new Logger()
 const mailer = new Mailer(logger)
 ```
 
-Now instead of constructing the `Logger` service within the `Mailer` service, we construct the `Logger` externally and pass it to the constructor of the `Mailer` service.
+今度は、`Mailer`サービス内で`Logger`サービスを構築する代わりに、`Logger`を外部で構築し、それを`Mailer`サービスのコンストラクタに渡します。
 
 <Idea>
-  This pattern of inverting control of a service to the user is commonly known
-  in software engineering as [_Inversion of
-  Control_](https://en.wikipedia.org/wiki/Inversion_of_control).
+  このようにサービスの制御をユーザーに委ねるパターンは、ソフトウェア工学では一般的に[_Inversion
+  of
+  Control_](https://en.wikipedia.org/wiki/Inversion_of_control)として知られています。
 </Idea>
 
-This gives the developer much more control over how the dependencies within their application are constructed and composed together into a dependency graph.
+これにより、開発者はアプリケーション内の依存関係がどのように構築され、依存関係グラフに組み込まれるかをより自由に制御できるようになります。
 
-## Using Service Interfaces
+## サービスインターフェースの使用
 
-Though we have improved the coupling between our `Mailer` and `Logger` services in the example above, there is still a problem with our code - we can only have a single implementation of our `Mailer` and `Logger` services.
+上記の例では、`Mailer`と`Logger`サービス間の結合を改善しましたが、コードにはまだ問題があります。それは、`Mailer`と`Logger`サービスの実装が一つしかないことです。
 
-But what if we want to provide a different implementation of `Logger` to the `Mailer` service when we are running our application's test suite?
+しかし、アプリケーションのテストスイートを実行する際に、`Mailer`サービスに異なる`Logger`の実装を提供したい場合はどうでしょうか？
 
-We can take things a step further and allow for multiple implementations of our services by decoupling the _interface_ of our services from the _implementation_ of the service.
+サービスの*インターフェース*をサービスの*実装*から分離することで、さらに一歩進んで複数の実装を許可することができます。
 
 <Steps>
-### Define the interface of our services
+### サービスのインターフェースを定義する
 
-First, we define the _interface_, or _behavior_, that our services should expose:
+まず、サービスが公開すべき*インターフェース*、または*動作*を定義します：
 
 ```ts twoslash
 export interface Logger {
@@ -90,9 +90,9 @@ export interface Mailer {
 }
 ```
 
-### Create concrete service implementations
+### 具体的なサービス実装を作成する
 
-Then, we bind the actual implementation of these services to the interfaces we have defined:
+次に、これらのサービスの実際の実装を定義したインターフェースにバインドします：
 
 ```ts twoslash
 export interface Logger {
@@ -121,11 +121,11 @@ const logger = new ConsoleLogger()
 const mailer = new ConsoleMailer(logger)
 ```
 
-### Providing other service implementations
+### 他のサービス実装を提供する
 
-Now, as long as we adhere to the interface specified by our services, we can easily create alternate implementations.
+サービスによって指定されたインターフェースに従う限り、簡単に別の実装を作成することができます。
 
-For example, we can create mock implementations of the `Logger` and `Mailer` services to use in our tests which internally track all messages logged and sent by the services:
+例えば、テストで使用するために、`Logger`と`Mailer`サービスのモック実装を作成し、サービスによって記録および送信されたすべてのメッセージを内部で追跡することができます：
 
 ```ts twoslash
 export interface Logger {

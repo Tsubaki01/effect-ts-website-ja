@@ -1,41 +1,41 @@
 ---
-title: Quickstart
-excerpt: Learn how to set up a new Effect project from scratch in TypeScript, covering Node.js, Deno, Bun, and Vite + React environments. Follow step-by-step instructions for each platform to create a basic program using the Effect library.
+title: クイックスタート
+excerpt: TypeScriptを使用して、Node.js、Deno、Bun、およびVite + React環境で新しいEffectプロジェクトをゼロからセットアップする方法を学びます。各プラットフォームの手順に従って、Effectライブラリを使用して基本的なプログラムを作成します。
 bottomNavigation: pagination
 ---
 
-In this tutorial, we will guide you through the process of setting up a new Effect project from scratch using plain **TypeScript 5.0 or newer**.
+このチュートリアルでは、**TypeScript 5.0以降**を使用して、新しいEffectプロジェクトをゼロからセットアップする手順をガイドします。
 
 <Tabs items={["Node.js", "Deno", "Bun", "Vite + React"]}>
 <Tab>
 
-Follow these steps to create a new Effect project for **Node.js**:
+以下の手順に従って、**Node.js**用の新しいEffectプロジェクトを作成してください。
 
-1. As a first step, create a project directory and navigate into it:
+1. まず、プロジェクトディレクトリを作成し、その中に移動します：
 
    ```bash filename="Terminal"
    mkdir hello-effect
    cd hello-effect
    ```
 
-2. Next, initialize a TypeScript project using npm (make sure you have TypeScript 5.0 or newer):
+2. 次に、npmを使用してTypeScriptプロジェクトを初期化します（TypeScript 5.0以降がインストールされていることを確認してください）:
 
    ```bash filename="Terminal"
    npm init -y
    npm install typescript --save-dev
    ```
 
-   This creates a `package.json` file with an initial setup for your TypeScript project.
+   これにより、TypeScriptプロジェクトの初期設定が含まれた`package.json`ファイルが作成されます。
 
-3. Now, initialize TypeScript:
+3. 次に、TypeScriptを初期化します：
 
    ```bash filename="Terminal"
    npx tsc --init
    ```
 
-   When running this command, it will generate a `tsconfig.json` file that contains configuration options for TypeScript. One of the most important options to consider is the `strict` flag.
+   このコマンドを実行すると、TypeScriptの設定オプションを含む`tsconfig.json`ファイルが生成されます。最も重要なオプションの一つは`strict`フラグです。
 
-   Make sure to open the `tsconfig.json` file and verify that the value of the `strict` option is set to `true`.
+   `tsconfig.json`ファイルを開き、`strict`オプションの値が`true`に設定されていることを確認してください。
 
    ```json filename="tsconfig.json"
    {
@@ -45,24 +45,24 @@ Follow these steps to create a new Effect project for **Node.js**:
    }
    ```
 
-4. Then, install the necessary package as dependency:
+4. 次に、必要なパッケージを依存関係としてインストールします：
 
    ```bash filename="Terminal"
    npm install effect
    ```
 
-   This package will provide the foundational functionality for your Effect project.
+   このパッケージは、Effectプロジェクトの基盤となる機能を提供します。
 
-Let's write and run a simple program to ensure that everything is set up correctly.
+すべてが正しく設定されていることを確認するために、簡単なプログラムを書いて実行してみましょう。
 
-In your terminal, execute the following commands:
+ターミナルで次のコマンドを実行してください：
 
 ```bash filename="Terminal"
 mkdir src
 touch src/index.ts
 ```
 
-Open the `index.ts` file and add the following code:
+`index.ts`ファイルを開き、次のコードを追加してください：
 
 ```ts filename="src/index.ts"
 import { Effect, Console } from "effect"
@@ -72,35 +72,35 @@ const program = Console.log("Hello, World!")
 Effect.runSync(program)
 ```
 
-Run the `index.ts` file. Here we are using [ts-node](https://github.com/TypeStrong/ts-node) to run the `index.ts` file in the terminal:
+`index.ts`ファイルを実行します。ここでは、ターミナルで`index.ts`ファイルを実行するために[ts-node](https://github.com/TypeStrong/ts-node)を使用します：
 
 ```bash filename="Terminal"
 npx ts-node src/index.ts
 ```
 
-You should see the message `"Hello, World!"` printed. This confirms that the program is working correctly.
+「Hello, World!」というメッセージが表示されるはずです。これでプログラムが正しく動作していることが確認できます。
 
 </Tab>
 <Tab>
 
-Follow these steps to create a new Effect project for **Deno**:
+**Deno**用の新しいEffectプロジェクトを作成するには、次の手順に従ってください：
 
-1. As a first step, create a project directory and navigate into it:
+1. まず、プロジェクトディレクトリを作成し、その中に移動します：
 
    ```bash filename="Terminal"
    mkdir hello-effect
    cd hello-effect
    ```
 
-2. Next, initialize Deno:
+2. 次に、Denoを初期化します：
 
    ```bash filename="Terminal"
    deno init
    ```
 
-Let's write and run a simple program to ensure that everything is set up correctly.
+すべてが正しく設定されていることを確認するために、簡単なプログラムを書いて実行してみましょう。
 
-Open the `main.ts` file and replace the content with the following code:
+`main.ts`ファイルを開き、内容を次のコードに置き換えてください：
 
 ```ts filename="main.ts"
 import { Effect, Console } from "npm:effect"
@@ -110,35 +110,35 @@ const program = Console.log("Hello, World!")
 Effect.runSync(program)
 ```
 
-Run the `main.ts` file:
+`main.ts`ファイルを実行します：
 
 ```bash filename="Terminal"
 deno run main.ts
 ```
 
-You should see the message `"Hello, World!"` printed. This confirms that the program is working correctly.
+「Hello, World!」というメッセージが表示されるはずです。これでプログラムが正しく動作していることが確認できます。
 
 </Tab>
 <Tab>
 
-Follow these steps to create a new Effect project for **Bun**:
+**Bun**用の新しいEffectプロジェクトを作成するには、次の手順に従ってください：
 
-1. As a first step, create a project directory and navigate into it:
+1. まず、プロジェクトディレクトリを作成し、その中に移動します：
 
    ```bash filename="Terminal"
    mkdir hello-effect
    cd hello-effect
    ```
 
-2. Next, initialize Bun:
+2. 次に、Bunを初期化します：
 
    ```bash filename="Terminal"
    bun init
    ```
 
-   When running this command, it will generate a `tsconfig.json` file that contains configuration options for TypeScript. One of the most important options to consider is the `strict` flag.
+   このコマンドを実行すると、TypeScriptの設定オプションを含む`tsconfig.json`ファイルが生成されます。最も重要なオプションの一つは`strict`フラグです。
 
-   Make sure to open the `tsconfig.json` file and verify that the value of the `strict` option is set to `true`.
+   `tsconfig.json`ファイルを開き、`strict`オプションの値が`true`に設定されていることを確認してください。
 
    ```json filename="tsconfig.json"
    {
@@ -148,17 +148,17 @@ Follow these steps to create a new Effect project for **Bun**:
    }
    ```
 
-3. Then, install the necessary package as dependency:
+3. 次に、必要なパッケージを依存関係としてインストールします：
 
    ```bash filename="Terminal"
    bun add effect
    ```
 
-   This package will provide the foundational functionality for your Effect project.
+   このパッケージは、Effectプロジェクトの基礎機能を提供します。
 
-Let's write and run a simple program to ensure that everything is set up correctly.
+すべてが正しく設定されていることを確認するために、簡単なプログラムを書いて実行してみましょう。
 
-Open the `index.ts` file and replace the content with the following code:
+`index.ts`ファイルを開き、内容を次のコードに置き換えてください：
 
 ```ts filename="index.ts"
 import { Effect, Console } from "effect"
@@ -168,39 +168,39 @@ const program = Console.log("Hello, World!")
 Effect.runSync(program)
 ```
 
-Run the `index.ts` file:
+`index.ts`ファイルを実行します：
 
 ```bash filename="Terminal"
 bun index.ts
 ```
 
-You should see the message `"Hello, World!"` printed. This confirms that the program is working correctly.
+「Hello, World!」というメッセージが表示されるはずです。これでプログラムが正しく動作していることが確認できます。
 
 </Tab>
 <Tab>
 
-Follow these steps to create a new Effect project for **Vite + React**:
+新しい **Vite + React** 用の Effect プロジェクトを作成するには、次の手順に従ってください：
 
-1. Scaffold your Vite project, open your terminal and run the following command:
+1. Vite プロジェクトをスキャフォールドするために、ターミナルを開いて次のコマンドを実行します：
 
    ```bash filename="Terminal"
    # npm 6.x
    npm create vite@latest hello-effect --template react-ts
 
-   # npm 7+, extra double-dash is needed:
+   # npm 7+ では、追加のダブルダッシュが必要です:
    npm create vite@latest hello-effect -- --template react-ts
    ```
 
-   This command will create a new Vite project with React and TypeScript template.
+   このコマンドは、React と TypeScript テンプレートを使用して新しい Vite プロジェクトを作成します。
 
-2. Navigate into the newly created project directory and install the required packages:
+2. 新しく作成されたプロジェクトディレクトリに移動し、必要なパッケージをインストールします：
 
    ```bash filename="Terminal"
    cd hello-effect
    npm install
    ```
 
-   Once the packages are installed, open the `tsconfig.json` file and ensure that the value of the `strict` option is set to true.
+   パッケージがインストールされたら、`tsconfig.json`ファイルを開き、`strict`オプションの値がtrueに設定されていることを確認してください。
 
    ```json filename="tsconfig.json"
    {
@@ -210,17 +210,17 @@ Follow these steps to create a new Effect project for **Vite + React**:
    }
    ```
 
-3. Then, install the necessary `effect` package as a dependency:
+3. 次に、必要な`effect`パッケージを依存関係としてインストールします：
 
    ```bash filename="Terminal"
    npm install effect
    ```
 
-   The `effect` package will provide the foundational functionality for your Effect project.
+   `effect`パッケージは、Effectプロジェクトの基礎機能を提供します。
 
-Now, let's write and run a simple program to ensure that everything is set up correctly.
+すべてが正しく設定されていることを確認するために、簡単なプログラムを書いて実行してみましょう。
 
-Open the `src/App.tsx` file and replace its content with the following code:
+`src/App.tsx`ファイルを開き、内容を次のコードに置き換えてください。
 
 ```tsx {1,5,10-16,30}
 import { useState, useMemo, useCallback } from "react"
@@ -267,15 +267,15 @@ function App() {
 export default App
 ```
 
-After making these changes, start the development server by running the following command:
+これらの変更を加えた後、次のコマンドを実行して開発サーバーを起動してください。
 
 ```bash filename="Terminal"
 npm run dev
 ```
 
-Then, press **o** to open the application in your browser.
+次に、**o**キーを押してブラウザでアプリケーションを開きます。
 
-When you click the button, you should see the counter increment. This confirms that the program is working correctly.
+ボタンをクリックすると、カウンターが増加するのが確認できるはずです。これでプログラムが正しく動作していることが確認できます。
 
 </Tab>
 

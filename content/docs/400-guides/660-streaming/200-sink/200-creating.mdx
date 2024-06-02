@@ -1,16 +1,16 @@
 ---
-title: Creating Sinks
-excerpt: Learn how to construct powerful sinks for processing stream elements. Explore common constructors like `head`, `last`, `count`, `sum`, `take`, `drain`, `timed`, `forEach`, and discover how to create sinks from success and failure. Dive into collecting strategies using `collectAll`, `collectAllToSet`, `collectAllToMap`, `collectAllN`, `collectAllWhile`, `collectAllToSetN`, `collectAllToMapN`, folding techniques with `foldLeft`, `fold`, `foldWeighted`, `foldUntil`, and more.
+title: Sinkの作成
+excerpt: ストリーム要素を処理するための強力なSinkの構築方法を学びます。`head`、`last`、`count`、`sum`、`take`、`drain`、`timed`、`forEach`などの一般的なコンストラクタを探求し、成功と失敗からSinkを作成する方法を発見します。`collectAll`、`collectAllToSet`、`collectAllToMap`、`collectAllN`、`collectAllWhile`、`collectAllToSetN`、`collectAllToMapN`を使用した収集戦略、`foldLeft`、`fold`、`foldWeighted`、`foldUntil`などの折りたたみ技術に飛び込みます。
 bottomNavigation: pagination
 ---
 
-In the world of streams, sinks are used to consume and process the elements of a stream. Here, we will introduce some common sink constructors that allow you to create sinks for specific tasks.
+ストリームの世界では、Sinkはストリームの要素を消費して処理するために使用されます。ここでは、特定のタスクのためにSinkを作成できる一般的なSinkコンストラクタを紹介します。
 
-## Common Constructors
+## 一般的なコンストラクタ
 
 ### head
 
-The `head` sink creates a sink that captures the first element of a stream. If the stream is empty, it returns `None`.
+`head`Sinkは、ストリームの最初の要素をキャプチャするSinkを作成します。ストリームが空の場合、それは`None`を返します。
 
 ```ts twoslash
 import { Stream, Sink, Effect } from "effect"

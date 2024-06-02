@@ -1,14 +1,14 @@
 ---
 title: FAQ
-excerpt: Explore common questions about Effect, including type extraction, sync/async behavior, comparison with fp-ts, understanding flatMap, and the absence of ZIO-like type aliases. Learn about configuring layers and the flexibility of accepting arguments to influence service construction in layers.
+excerpt: Effectに関する一般的な質問を探求します。タイプ抽出、同期/非同期の動作、fp-tsとの比較、flatMapの理解、ZIOのような型エイリアスの欠如について学びます。レイヤーの設定と、レイヤー内のサービス構築に影響を与える引数の受け入れの柔軟性についても学びます。
 bottomNavigation: pagination
 ---
 
 ## Effect
 
-**Q: Is it possible to extract the types from an Effect?**
+**Q: Effectから型を抽出することは可能ですか？**
 
-A: By using the utility types `Effect.Effect.Context`, `Effect.Effect.Error`, and `Effect.Effect.Success`, we can extract the corresponding types from the `program` Effect. In this example, we extract the context type (`R`), the error type (`E`), and the success type (`A`).
+A: ユーティリティタイプ `Effect.Effect.Context`、`Effect.Effect.Error`、および `Effect.Effect.Success` を使用することで、`program` Effectから対応する型を抽出できます。この例では、コンテキスト型（`R`）、エラー型（`E`）、および成功型（`A`）を抽出します。
 
 ```ts twoslash
 import { Effect, Context } from "effect"
@@ -32,81 +32,81 @@ type E = Effect.Effect.Error<typeof program>
 type A = Effect.Effect.Success<typeof program>
 ```
 
-**Q: Is there a way to determine whether an Effect is synchronous or asynchronous in advance?**
+**Q: Effectが同期的か非同期的かを事前に判断する方法はありますか？**
 
-A: No, there isn't a straightforward way to statically determine if an Effect is synchronous or asynchronous. We did explore this idea in earlier versions of Effect, but we decided against it for a few important reasons:
+A: いいえ、Effectが同期的か非同期的かを静的に判断する簡単な方法はありません。このアイデアはEffectの初期バージョンで検討しましたが、いくつかの重要な理由から採用しませんでした。
 
-1. **Complexity:** Introducing this feature to track sync/async behavior in the type system would make Effect more complex to use and limit its composability.
+1. **複雑さ:** 型システムで同期/非同期の動作を追跡する機能を導入すると、Effectの使用がより複雑になり、合成性が制限されます。
 
-2. **Safety Concerns:** We experimented with different approaches to track asynchronous Effects, but they all resulted in a worse developer experience without significantly improving safety. Even with fully synchronous types, we needed to support a `fromCallback` combinator to work with APIs using Continuation-Passing Style (CPS). However, at the type level, it's impossible to guarantee that such a function is always called immediately and not deferred.
+2. **安全性の懸念:** 非同期Effectを追跡するためのさまざまなアプローチを試みましたが、どれも安全性を大幅に向上させることなく、開発者の体験を悪化させる結果となりました。完全に同期的な型であっても、Continuation-Passing Style (CPS) を使用するAPIと連携するために `fromCallback` コンビネータをサポートする必要がありました。しかし、型レベルでは、そのような関数が常に即座に呼び出され、遅延されないことを保証することは不可能です。
 
-In practice, it's important to note that you should typically only run Effects at the edges of your application. If your application is entirely based on Effect, it usually involves a single call to the `main` effect. In such cases, the best approach is to use `runPromise` or `runFork` for most executions. Synchronous execution is a special case and should be considered an edge case, used only when asynchronous execution is not possible. So, our recommendation is to use `runPromise` or `runFork` whenever you can and resort to `runSync` only when absolutely necessary.
+実際には、Effectは通常アプリケーションのエッジでのみ実行するべきです。アプリケーションが完全にEffectに基づいている場合、通常は `main` effect への単一の呼び出しが含まれます。このような場合、ほとんどの実行には `runPromise` または `runFork` を使用するのが最良のアプローチです。同期実行は特別なケースであり、非同期実行が不可能な場合にのみ考慮すべきです。したがって、可能な限り `runPromise` または `runFork` を使用し、絶対に必要な場合にのみ `runSync` を使用することをお勧めします。
 
-**Q: I'm familiar with `flatMap` in JavaScript/TypeScript from its usage on the `Array` prototype. Why do I see it in modules provided by Effect?**
+**Q: JavaScript/TypeScriptで `Array` プロトタイプの使用から `flatMap` に慣れています。なぜEffectが提供するモジュールに `flatMap` があるのですか？**
 
-A: Many JavaScript / TypeScript engineers are familiar with the term `flatMap` due to it's [presence as a method on the `Array` prototype](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap). Therefore it may be confusing to see `flatMap` methods exported from many of the modules that Effect provides.
+A: 多くのJavaScript / TypeScriptエンジニアは、[`Array` プロトタイプのメソッドとしての `flatMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap) に慣れ親しんでいます。そのため、Effectが提供する多くのモジュールから `flatMap` メソッドがエクスポートされているのを見て混乱するかもしれません。
 
-The `flatMap` operation can actually be used to describe a more generic data transformation. Let's consider for a moment a generic data type that we will call `F`. `F` will also be a container for elements, so we can further refine our representation of `F` to `F<A>` which states that `F` holds some information about some data of type `A`.
+`flatMap` 操作は、より一般的なデータ変換を説明するために使用できます。ここで、`F` と呼ばれる汎用データ型を考えてみましょう。`F` は要素のコンテナでもあるため、`F` の表現を `F<A>` にさらに洗練させることができます。これは、`F` が型 `A` のデータに関する情報を保持していることを示しています。
 
-If we have an `F<A>` and we want to transform to an `F<B>`, we could use the `map` operation:
+もし `F<A>` を持っていて、それを `F<B>` に変換したい場合、`map` 操作を使用できます。
 
 ```ts
 map: <A, B>(fa: F<A>, f: (a: A) => B) => F<B>
 ```
 
-But what if we have some function that returns an `F<B>` instead of just `B`? We can't use `map` because we would end up with a `F<F<B>>` instead of an `F<B>`. What we really want is some operator that allows us to `map` the data and then `flatten` the result.
+しかし、`B` ではなく `F<B>` を返す関数があったらどうでしょうか？この場合、`map` を使用すると `F<B>` の代わりに `F<F<B>>` になってしまいます。私たちが本当に欲しいのは、データを `map` してから結果を `flatten` するオペレーターです。
 
-This exact situation describes a `flatMap` operation:
+この正確な状況を説明するのが `flatMap` 操作です：
 
 ```ts
 flatMap: <A, B>(fa: F<A>, f: (a: A) => F<B>) => F<B>
 ```
 
-You can also see how this directly applies to `Array`'s `flatMap` if we replace our generic data type `F` with the concrete data type of `Array`:
+汎用データ型 `F` を具体的なデータ型 `Array` に置き換えると、これが `Array` の `flatMap` にどのように直接適用されるかもわかります：
 
 ```ts
 flatMap: <A, B>(fa: Array<A>, f: (a: A) => Array<B>) => Array<B>
 ```
 
-**Q: I can't seem to find any type aliases for Effect. Do any exist? I'm looking for something similar to ZIO's `UIO` / `URIO` / `RIO` / `Task` / `IO`. If not, have you considered adding them?**
+**Q: Effectに型エイリアスが見当たりません。存在しますか？ZIOの `UIO` / `URIO` / `RIO` / `Task` / `IO` に似たものを探しています。もしない場合、追加を検討したことはありますか？**
 
-A: In Effect, there are no predefined type aliases such as `UIO`, `URIO`, `RIO`, `Task`, or `IO` like in ZIO.
+A: Effectには、ZIOのような `UIO`、`URIO`、`RIO`、`Task`、`IO` といった定義済みの型エイリアスは存在しません。
 
-The reason for this is that type aliases are lost as soon as you compose them, which renders them somewhat useless unless you maintain **multiple** signatures for **every** function. In Effect, we have chosen not to go down this path. Instead, we utilize the `never` type to indicate unused types.
+その理由は、型エイリアスは一度合成すると失われてしまい、すべての関数に対して**複数**のシグネチャを維持しない限り、ほとんど役に立たないからです。Effectでは、この道を選ばず、未使用の型を示すために `never` 型を利用しています。
 
-It's worth mentioning that the perception of type aliases being quicker to understand is often just an illusion. In Effect, the explicit notation `Effect<A>` clearly communicates that only type `A` is being used. On the other hand, when using a type alias like `RIO<R, A>`, questions arise about the type `E`. Is it `unknown`? `never`? Remembering such details becomes challenging.
+型エイリアスが理解しやすいという認識は、しばしば錯覚に過ぎないことも指摘しておきます。Effectでは、明示的な表記 `Effect<A>` が、型 `A` のみが使用されていることを明確に伝えます。一方、`RIO<R, A>` のような型エイリアスを使用すると、型 `E` についての疑問が生じます。それは `unknown` ですか？`never` ですか？そのような詳細を覚えておくのは難しいです。
 
 ## Layer
 
-**Q: Is it common for layers to accept arguments that control how they construct a service?**
+**Q: レイヤーがサービスの構築方法を制御する引数を受け取るのは一般的ですか？**
 
-A: Yes, it is perfectly normal for `Layer`s to accept arguments that influence the way they construct a service. For example, a layer may require some configuration values in order to properly initialize the service. By passing these arguments to the layer, you can customize the behavior and characteristics of the resulting service instance.
+A: はい、`Layer` がサービスの構築方法に影響を与える引数を受け取るのは完全に普通のことです。例えば、レイヤーはサービスを適切に初期化するためにいくつかの設定値を必要とする場合があります。これらの引数をレイヤーに渡すことで、生成されるサービスインスタンスの動作や特性をカスタマイズできます。
 
-## Comparison with fp-ts
+## fp-tsとの比較
 
-**Q: What are the main differences between Effect and [fp-ts](https://github.com/gcanti/fp-ts)?**
+**Q: Effectと[fp-ts](https://github.com/gcanti/fp-ts)の主な違いは何ですか？**
 
-A: The main differences between Effect and fp-ts are:
+A: Effectとfp-tsの主な違いは次の通りです：
 
-- Effect offers more flexible and powerful dependency management.
-- Effect provides built-in services like `Clock`, `Random`, and `Tracer`, which fp-ts lacks.
-- Effect includes dedicated testing tools like `TestClock` and `TestRandom`, while fp-ts does not offer specific testing utilities.
-- Effect supports interruptions for canceling computations, whereas fp-ts does not have built-in interruption support.
-- Effect has built-in tools to handle defects and unexpected failures, while fp-ts lacks specific defect management features.
-- Effect leverages fiber-based concurrency for efficient and lightweight concurrent computations, which fp-ts does not provide.
-- Effect includes built-in support for customizable retrying of computations, while fp-ts does not have this feature.
-- Effect offers built-in logging, scheduling, caching, and more, which fp-ts does not provide.
+- Effectはより柔軟で強力な依存関係管理を提供します。
+- Effectは `Clock`、`Random`、`Tracer` などの組み込みサービスを提供しますが、fp-tsにはこれらがありません。
+- Effectには `TestClock` や `TestRandom` などの専用のテストツールが含まれていますが、fp-tsには特定のテストユーティリティがありません。
+- Effectは計算のキャンセルをサポートする中断機能を提供しますが、fp-tsには組み込みの中断サポートがありません。
+- Effectには欠陥や予期しない失敗を処理するための組み込みツールがありますが、fp-tsには特定の欠陥管理機能がありません。
+- Effectは効率的で軽量な並行計算のためにファイバーベースの並行性を活用していますが、fp-tsにはこれがありません。
+- Effectにはカスタマイズ可能な再試行のサポートが組み込まれていますが、fp-tsにはこの機能がありません。
+- Effectは組み込みのロギング、スケジューリング、キャッシングなどを提供しますが、fp-tsにはこれらがありません。
 
-For a more detailed comparison, you can refer to the [Effect vs fp-ts](fp-ts) documentation.
+より詳細な比較については、[Effect vs fp-ts](fp-ts) ドキュメントを参照してください。
 
-### Bundle Size Comparison Between Effect and fp-ts
+### Effectとfp-tsのバンドルサイズの比較
 
-**Q: I compared the bundle sizes of two simple programs using Effect and fp-ts. Why does Effect have a larger bundle size?**
+**Q: Effectとfp-tsを使用した2つのシンプルなプログラムのバンドルサイズを比較しました。なぜEffectの方がバンドルサイズが大きいのですか？**
 
-A: It's natural to observe different bundle sizes because Effect and fp-ts are distinct systems designed for different purposes.
-Effect's bundle size is larger due to its included fiber runtime, which is crucial for its functionality.
-While the initial bundle size may seem large, the overhead amortizes as you use Effect.
+A: Effectとfp-tsは異なる目的のために設計されたシステムであるため、異なるバンドルサイズになるのは自然なことです。
+Effectのバンドルサイズが大きいのは、その機能に不可欠なファイバーランタイムが含まれているためです。
+初期のバンドルサイズは大きく見えるかもしれませんが、Effectを使用するにつれてそのオーバーヘッドは相殺されます。
 
-**Q: Should I be concerned about the bundle size difference when choosing between Effect and fp-ts?**
+**Q: Effectとfp-tsのどちらを選ぶ際に、バンドルサイズの違いを気にするべきですか？**
 
-A: Not necessarily. Consider the specific requirements and benefits of each library for your project.
+A: 必ずしもそうではありません。各ライブラリの特定の要件と利点を考慮してください。

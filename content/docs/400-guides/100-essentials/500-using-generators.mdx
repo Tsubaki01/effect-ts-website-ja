@@ -1,22 +1,22 @@
 ---
-title: Using Generators in Effect
-excerpt: Explore the syntax of using generators in Effect to write effectful code. Learn about the `Effect.gen` function. Compare `Effect.gen` with `async`/`await` for writing asynchronous code. Understand how generators enhance control flow, handle errors, and utilize short-circuiting in effectful programs. Discover passing references to `this` in generator functions.
+title: Effectでジェネレーターを使用する
+excerpt: Effectでジェネレーターを使用して効果的なコードを書くための構文を探ります。`Effect.gen`関数について学びます。非同期コードを書くための`Effect.gen`と`async`/`await`の比較を行います。ジェネレーターがどのように制御フローを強化し、エラーを処理し、効果的なプログラムでショートサーキットを利用するかを理解します。ジェネレーター関数で`this`への参照を渡す方法を発見します。
 bottomNavigation: pagination
 ---
 
-In the previous sections, we learned how to [create](./creating-effects) effects and [execute](./running-effects) them. Now, it's time to write our first simple program.
+前のセクションでは、[Effectを作成](./creating-effects)し、それらを[実行](./running-effects)する方法を学びました。今度は、最初のシンプルなプログラムを書いてみましょう。
 
-Effect offers a convenient syntax, similar to `async`/`await`, to write effectful code using [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator).
+Effectは、[ジェネレーター](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator)を使用して効果的なコードを書くための、`async`/`await`に似た便利な構文を提供します。
 
 <Idea>
-  The use of generators is an **optional feature** in Effect. If you find
-  generators unfamiliar or prefer a different coding style, you can explore
-  the documentation about [Building Pipelines](./pipeline) in Effect.
+  ジェネレーターの使用はEffectにおいて**オプションの機能**です。
+  ジェネレーターに馴染みがない場合や、異なるコーディングスタイルを好む場合は、
+  Effectの[パイプラインの構築](./pipeline)に関するドキュメントを参照してください。
 </Idea>
 
-## Understanding Effect.gen
+## Effect.genの理解
 
-Let's start with a basic program that performs a series of transformations:
+一連の変換を行う基本的なプログラムから始めましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -40,21 +40,21 @@ export const program = Effect.gen(function* () {
   return `Result is: ${n2}`
 })
 
-Effect.runPromise(program).then(console.log) // Output: "Result is: 6"
+Effect.runPromise(program).then(console.log) // 出力: "Result is: 6"
 ```
 
 <Warning>
-  The generator API is only available when using the `downlevelIteration` flag
-  or with a `target` of `"es2015"` or higher in your `tsconfig.json` file
+  ジェネレーターAPIは、`downlevelIteration`フラグを使用するか、
+  `tsconfig.json`ファイルの`target`を`"es2015"`以上に設定した場合にのみ利用可能です。
 </Warning>
 
-## Comparing Effect.gen with async/await
+## Effect.genとasync/awaitの比較
 
-If you are familiar with `async`/`await`, you may notice that the flow of writing code is similar.
+`async`/`await`に慣れている場合、コードを書く流れが似ていることに気付くかもしれません。
 
-Let's compare the two approaches:
+この2つのアプローチを比較してみましょう：
 
-<Tabs items={['Using Effect.gen', 'Using async / await']}>
+<Tabs items={['Effect.genの使用', 'async / awaitの使用']}>
   <Tab>
 
 ```ts twoslash
@@ -79,7 +79,7 @@ export const program = Effect.gen(function* () {
   return `Result is: ${n2}`
 })
 
-Effect.runPromise(program).then(console.log) // Output: "Result is: 6"
+Effect.runPromise(program).then(console.log) // 出力: "Result is: 6"
 ```
 
   </Tab>
@@ -105,19 +105,19 @@ export const program = async function () {
   return `Result is: ${n2}`
 }
 
-program().then(console.log) // Output: "Result is: 6"
+program().then(console.log) // 出力: "Result is: 6"
 ```
 
   </Tab>
 </Tabs>
 
-It's important to note that although the code appears similar, the two programs are not identical. The purpose of comparing them side by side is just to highlight the resemblance in how they are written.
+コードが似ているように見えても、2つのプログラムは同一ではないことに注意してください。並べて比較する目的は、書き方の類似性を強調するためだけです。
 
-## Embracing Control Flow
+## 制御フローの活用
 
-One significant advantage of using `Effect.gen` in conjunction with generators is its capability to employ standard control flow constructs within the generator function. These constructs encompass `if`/`else`, `for`, `while`, and other branching and looping mechanisms, enhancing your ability to express complex control flow logic in your code.
+ジェネレーターと組み合わせて `Effect.gen` を使用する大きな利点の一つは、ジェネレーター関数内で標準的な制御フロー構造を使用できることです。これらの構造には、`if`/`else`、`for`、`while` などの分岐やループのメカニズムが含まれており、コード内で複雑な制御フローのロジックを表現する能力が向上します。
 
-To illustrate this, let's delve into a practical example:
+これを実証するために、実際の例を見てみましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -145,7 +145,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 6
 3
 2
@@ -153,9 +153,9 @@ Output:
 */
 ```
 
-## Raising Errors
+## エラーの発生
 
-Within the realm of the `Effect.gen` API, you have the capability to introduce errors into your program by yielding a failed effect. This can be effectively achieved, for instance, by using `Effect.fail`. Let's take a closer look at an example:
+`Effect.gen` APIの領域内では、失敗したEffectをyieldすることでプログラムにエラーを導入することができます。例えば、`Effect.fail`を使用することでこれを効果的に達成できます。具体例を見てみましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -168,7 +168,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 Task1...
 Task2...
 {
@@ -179,16 +179,16 @@ Task2...
 */
 ```
 
-In this example, we intentionally introduce an error using `Effect.fail` to illustrate how errors can be managed within your program.
+この例では、`Effect.fail`を使用して意図的にエラーを導入し、プログラム内でエラーをどのように管理できるかを示しています。
 
-### The Role of Short-Circuiting
+### ショートサーキットの役割
 
-When working with the `Effect.gen` API, it's important to understand how it manages errors.
-This API is designed to **short-circuit the execution** upon encountering the **first error**.
+`Effect.gen` APIを使用する際には、エラーの管理方法を理解することが重要です。
+このAPIは、**最初のエラー**に遭遇した時点で**実行をショートサーキット**するように設計されています。
 
-What does this mean for you as a developer? Well, let's say you have a chain of operations or a collection of effects to be executed in sequence. If any error occurs during the execution of one of these effects, the remaining computations will be skipped, and the error will be propagated to the final result.
+開発者としてこれが何を意味するかというと、例えば一連の操作や一連のEffectを順番に実行する場合、これらのEffectの実行中にエラーが発生すると、残りの計算はスキップされ、そのエラーが最終結果に伝播されるということです。
 
-In simpler terms, the short-circuiting behavior ensures that if something goes wrong at any step of your program it will immediately stop and return the error to let you know that something went wrong.
+簡単に言えば、ショートサーキットの動作は、プログラムのどのステップで問題が発生しても、即座に停止してエラーを返し、何が問題だったのかを知らせてくれることを保証します。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -202,7 +202,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program).then(console.log, console.error)
 /*
-Output:
+出力:
 Task1...
 Task2...
 {
@@ -214,14 +214,13 @@ Task2...
 ```
 
 <Info>
-  If you want to dive deeper into effective error handling with Effect, you
-  can explore the ["Error Management"](../error-management/two-error-types)
-  section.
+  Effectを使った効果的なエラーハンドリングについてさらに詳しく知りたい場合は、
+  ["エラーマネジメント"](../error-management/two-error-types)セクションを参照してください。
 </Info>
 
-## Passing this
+## thisの渡し方
 
-In some cases, you might need to pass a reference to the current object (`this`) into the body of your generator function. You can achieve this by utilizing an overload that accepts the reference as the first argument:
+場合によっては、ジェネレータ関数の本体に現在のオブジェクト（`this`）への参照を渡す必要があるかもしれません。この場合、最初の引数として参照を受け取るオーバーロードを利用することで実現できます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -233,7 +232,7 @@ class MyService {
   })
 }
 
-console.log(Effect.runSync(new MyService().compute)) // Output: 2
+console.log(Effect.runSync(new MyService().compute)) // 出力: 2
 ```
 
-In this example, we have a `MyService` class with a property called `local`. By passing `this` as the first argument to `Effect.gen`, we make the `local` property available within the generator.
+この例では、`local`というプロパティを持つ`MyService`クラスがあります。`Effect.gen`に最初の引数として`this`を渡すことで、ジェネレータ内で`local`プロパティを利用可能にしています。

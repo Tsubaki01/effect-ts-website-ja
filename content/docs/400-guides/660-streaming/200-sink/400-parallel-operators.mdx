@@ -1,14 +1,14 @@
 ---
-title: Parallel Operators
-excerpt: Explore parallel operations like `Sink.zip` for combining results and `Sink.race` for racing concurrent sinks. Learn how to run multiple sinks concurrently, combining or selecting the first to complete. Enhance task performance by executing operations simultaneously.
+title: 並列オペレーター
+excerpt: `Sink.zip`のような結果を結合するための並列操作や、複数のシンクを競争させる`Sink.race`などの並列操作を探求します。複数のシンクを同時に実行し、結果を結合したり、最初に完了したものを選択する方法を学びます。操作を同時に実行することでタスクのパフォーマンスを向上させます。
 bottomNavigation: pagination
 ---
 
-In this section, we'll explore parallel operations that allow you to run multiple sinks concurrently. These operations can be quite useful when you need to perform tasks simultaneously.
+このセクションでは、複数のシンクを同時に実行できる並列操作を探求します。これらの操作は、タスクを同時に実行する必要がある場合に非常に便利です。
 
-## Parallel Zipping: Combining Results
+## 並列ジッピング: 結果の結合
 
-When you want to run two sinks concurrently and combine their results, you can use `Sink.zip`. This operation runs both sinks concurrently and combines their outcomes into a tuple:
+2つのシンクを同時に実行し、その結果を結合したい場合は、`Sink.zip`を使用できます。この操作は、両方のシンクを同時に実行し、その結果をタプルに結合します。
 
 ```ts twoslash
 import { Sink, Console, Stream, Schedule, Effect } from "effect"
@@ -30,7 +30,7 @@ Effect.runPromise(
   )
 ).then(console.log)
 /*
-Output:
+出力:
 sink 1: 1
 sink 2: 1
 sink 1: 2
@@ -45,9 +45,9 @@ sink 2: 5
 */
 ```
 
-## Racing: First One Wins
+## レース: 最初に完了したものが勝つ
 
-Another useful operation is `Sink.race`, which lets you race multiple sinks concurrently. The sink that completes first will provide the result for your program:
+もう一つ便利な操作は`Sink.race`です。これを使うと、複数のシンクを同時に競争させることができます。最初に完了したシンクがプログラムの結果を提供します。
 
 ```ts twoslash
 import { Sink, Console, Stream, Schedule, Effect } from "effect"
@@ -69,7 +69,7 @@ Effect.runPromise(
   )
 ).then(console.log)
 /*
-Output:
+出力:
 sink 1: 1
 sink 2: 1
 sink 1: 2

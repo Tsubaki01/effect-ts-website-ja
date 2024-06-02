@@ -1,22 +1,22 @@
 ---
-title: Simplifying Excessive Nesting
-excerpt: Learn how to simplify code with the `elapsed` function using different approaches. The guide demonstrates using plain pipe, the "do simulation," and the concise `Effect.gen` constructor to calculate and log the elapsed time for an effect's execution. Choose the method that fits your coding style and enhances code readability.
+title: 過剰なネストの簡素化
+excerpt: `elapsed`関数を使用してコードを簡素化する方法を学びます。このガイドでは、plain pipe、"do simulation"、および簡潔な`Effect.gen`コンストラクタを使用して、エフェクトの実行時間を計算してログに記録する方法を示します。自分のコーディングスタイルに合った方法を選び、コードの可読性を向上させましょう。
 bottomNavigation: pagination
 ---
 
-Suppose you want to create a custom function `elapsed` that prints the elapsed time taken by an effect to execute.
+エフェクトの実行にかかる時間を表示するカスタム関数`elapsed`を作成したいとします。
 
-## Using plain pipe
+## plain pipeを使用する
 
-Initially, you may come up with code that uses the standard `pipe` [method](../essentials/pipeline#the-pipe-method), but this approach can lead to excessive nesting and result in verbose and hard-to-read code:
+最初に、標準の`pipe`[メソッド](../essentials/pipeline#the-pipe-method)を使用するコードを思いつくかもしれませんが、このアプローチは過剰なネストを引き起こし、冗長で読みづらいコードになる可能性があります。
 
 ```ts twoslash
 import { Effect, Console } from "effect"
 
-// Get the current timestamp
+// 現在のタイムスタンプを取得
 const now = Effect.sync(() => new Date().getTime())
 
-// Prints the elapsed time occurred to `self` to execute
+// `self`の実行にかかった経過時間を表示
 const elapsed = <R, E, A>(
   self: Effect.Effect<A, E, R>
 ): Effect.Effect<A, E, R> =>
@@ -26,9 +26,9 @@ const elapsed = <R, E, A>(
         Effect.andThen((result) =>
           now.pipe(
             Effect.andThen((endMillis) => {
-              // Calculate the elapsed time in milliseconds
+              // 経過時間をミリ秒で計算
               const elapsed = endMillis - startMillis
-              // Log the elapsed time
+              // 経過時間をログに記録
               return Console.log(`Elapsed: ${elapsed}`).pipe(
                 Effect.map(() => result)
               )
@@ -39,74 +39,74 @@ const elapsed = <R, E, A>(
     )
   )
 
-// Simulates a successful computation with a delay of 200 milliseconds
+// 200ミリ秒の遅延を伴う成功した計算をシミュレート
 const task = Effect.succeed("some task").pipe(Effect.delay("200 millis"))
 
 const program = elapsed(task)
 
 Effect.runPromise(program).then(console.log)
 /*
-Output:
+出力:
 Elapsed: 204
 some task
 */
 ```
 
-To address this issue and make the code more manageable, there is a solution: the "do simulation."
+この問題に対処し、コードをより管理しやすくするための解決策があります。それが「do simulation」です。
 
-## Using the "do simulation"
+## "do simulation"の使用
 
-The "do simulation" in Effect allows you to write code in a more declarative style, similar to the "do notation" in other programming languages. It provides a way to define variables and perform operations on them using functions like `Effect.bind` and `Effect.let`.
+Effectの"do simulation"を使用すると、他のプログラミング言語の"do notation"に似た、より宣言的なスタイルでコードを書くことができます。これにより、`Effect.bind`や`Effect.let`のような関数を使用して変数を定義し、それらに対して操作を行う方法が提供されます。
 
-Here's how the do simulation works:
+以下は、do simulationの動作方法です：
 
-1. Start the do simulation using the `Effect.Do` value:
+1. `Effect.Do`値を使用してdo simulationを開始します：
 
    ```ts
    const program = Effect.Do.pipe(/* ... rest of the code */)
    ```
 
-2. Within the do simulation scope, you can use the `Effect.bind` function to define variables and bind them to `Effect` values:
+2. do simulationのスコープ内では、`Effect.bind`関数を使用して変数を定義し、それらを`Effect`値にバインドすることができます。
 
    ```ts
    Effect.bind("variableName", (scope) => effectValue)
    ```
 
-- `variableName` is the name you choose for the variable you want to define. It must be unique within the scope.
-- `effectValue` is the `Effect` value that you want to bind to the variable. It can be the result of a function call or any other valid `Effect` value.
+- `variableName` は定義したい変数の名前です。スコープ内で一意でなければなりません。
+- `effectValue` は変数にバインドしたい `Effect` 値です。関数呼び出しの結果や他の有効な `Effect` 値である可能性があります。
 
-3. You can accumulate multiple `Effect.bind` statements to define multiple variables within the scope:
+3. スコープ内で複数の変数を定義するために、複数の `Effect.bind` ステートメントを積み重ねることができます：
 
    ```ts
    Effect.bind("variable1", () => effectValue1),
    Effect.bind("variable2", ({ variable1 }) => effectValue2),
-   // ... additional bind statements
+   // ... 追加のbindステートメント
    ```
 
-4. Inside the do simulation scope, you can also use the `Effect.let` function to define variables and bind them to simple values:
+4. do simulationのスコープ内では、`Effect.let`関数を使用して変数を定義し、単純な値にバインドすることもできます：
 
    ```ts
    Effect.let("variableName", (scope) => simpleValue)
    ```
 
-- `variableName` is the name you give to the variable. Like before, it must be unique within the scope.
-- `simpleValue` is the value you want to assign to the variable. It can be a simple value like a `number`, `string`, or `boolean`.
+- `variableName` は変数に与える名前です。前述のように、スコープ内で一意でなければなりません。
+- `simpleValue` は変数に割り当てたい値です。`number`、`string`、`boolean`のような単純な値である可能性があります。
 
-5. Regular Effect functions like `Effect.andThen`, `Effect.flatMap`, `Effect.tap`, and `Effect.map` can still be used within the do simulation. These functions will receive the accumulated variables as arguments within the scope:
+5. `Effect.andThen`、`Effect.flatMap`、`Effect.tap`、`Effect.map`のような通常のEffect関数は、do simulation内でも使用できます。これらの関数は、スコープ内で蓄積された変数を引数として受け取ります。
 
    ```ts
    Effect.andThen(({ variable1, variable2 }) => {
-     // Perform operations using variable1 and variable2
-     // Return an `Effect` value as the result
+     // variable1とvariable2を使用して操作を実行する
+     // 結果として`Effect`値を返す
    })
    ```
 
-With the do simulation, you can rewrite the `elapsed` combinator like this:
+do simulationを使用すると、`elapsed`コンビネータを次のように書き換えることができます：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
 
-// Get the current timestamp
+// 現在のタイムスタンプを取得
 const now = Effect.sync(() => new Date().getTime())
 
 const elapsed = <R, E, A>(
@@ -118,39 +118,39 @@ const elapsed = <R, E, A>(
     Effect.bind("endMillis", () => now),
     Effect.let(
       "elapsed",
-      ({ startMillis, endMillis }) => endMillis - startMillis // Calculate the elapsed time in milliseconds
+      ({ startMillis, endMillis }) => endMillis - startMillis // 経過時間をミリ秒単位で計算
     ),
-    Effect.tap(({ elapsed }) => Console.log(`Elapsed: ${elapsed}`)), // Log the elapsed time
+    Effect.tap(({ elapsed }) => Console.log(`Elapsed: ${elapsed}`)), // 経過時間をログに記録
     Effect.map(({ result }) => result)
   )
 
-// Simulates a successful computation with a delay of 200 milliseconds
+// 200ミリ秒の遅延を伴う成功した計算をシミュレート
 const task = Effect.succeed("some task").pipe(Effect.delay("200 millis"))
 
 const program = elapsed(task)
 
 Effect.runPromise(program).then(console.log)
 /*
-Output:
+出力:
 Elapsed: 204
 some task
 */
 ```
 
-In this solution, we use the do simulation to simplify the code. The `elapsed` function now starts with `Effect.Do` to enter the simulation scope.
-Inside the scope, we use `Effect.bind` to define variables and bind them to the corresponding effects.
+このソリューションでは、do simulationを使用してコードを簡素化します。`elapsed`関数は、`Effect.Do`でシミュレーションスコープに入ることから始まります。
+スコープ内では、`Effect.bind`を使用して変数を定義し、それらを対応するエフェクトにバインドします。
 
-## Using `Effect.gen`
+## `Effect.gen`の使用
 
-The most concise and convenient solution is to use the `Effect.gen` constructor, which allows you to work with [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) when dealing with effects. This approach leverages the native scope provided by the generator syntax, avoiding excessive nesting and leading to more concise code.
+最も簡潔で便利なソリューションは、`Effect.gen`コンストラクタを使用することです。これにより、エフェクトを扱う際に[generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator)を使用できます。このアプローチは、ジェネレーター構文によって提供されるネイティブスコープを活用し、過度なネストを避け、より簡潔なコードを実現します。
 
 ```ts twoslash
 import { Effect } from "effect"
 
-// Get the current timestamp
+// 現在のタイムスタンプを取得
 const now = Effect.sync(() => new Date().getTime())
 
-// Prints the elapsed time occurred to `self` to execute
+// `self`の実行にかかった経過時間を出力
 const elapsed = <R, E, A>(
   self: Effect.Effect<A, E, R>
 ): Effect.Effect<A, E, R> =>
@@ -158,30 +158,30 @@ const elapsed = <R, E, A>(
     const startMillis = yield* now
     const result = yield* self
     const endMillis = yield* now
-    // Calculate the elapsed time in milliseconds
+    // 経過時間をミリ秒単位で計算
     const elapsed = endMillis - startMillis
-    // Log the elapsed time
+    // 経過時間をログに記録
     console.log(`Elapsed: ${elapsed}`)
     return result
   })
 
-// Simulates a successful computation with a delay of 200 milliseconds
+// 200ミリ秒の遅延を伴う成功した計算をシミュレート
 const task = Effect.succeed("some task").pipe(Effect.delay("200 millis"))
 
 const program = elapsed(task)
 
 Effect.runPromise(program).then(console.log)
 /*
-Output:
+出力:
 Elapsed: 204
 some task
 */
 ```
 
-In this solution, we switch to using [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) to simplify the code. The `elapsed` function now uses a generator function (`Effect.gen`) to define the flow of execution. Within the generator, we use `yield*` to invoke effects and bind their results to variables. This eliminates the nesting and provides a more readable and sequential code structure.
+このソリューションでは、コードを簡素化するために[generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator)を使用します。`elapsed`関数は、実行の流れを定義するためにジェネレーター関数 (`Effect.gen`) を使用します。ジェネレーター内では、`yield*`を使用してエフェクトを呼び出し、その結果を変数にバインドします。これによりネストが排除され、より読みやすく、順次的なコード構造が提供されます。
 
-The generator style in Effect uses a more linear and sequential flow of execution, resembling traditional imperative programming languages. This makes the code easier to read and understand, especially for developers who are more familiar with imperative programming paradigms.
+Effectにおけるジェネレーターのスタイルは、従来の命令型プログラミング言語に似た、より線形で順次的な実行フローを使用します。これにより、特に命令型プログラミングパラダイムに慣れている開発者にとって、コードが読みやすく理解しやすくなります。
 
-On the other hand, the pipe style can lead to excessive nesting, especially when dealing with complex effectful computations. This can make the code harder to follow and debug.
+一方で、パイプスタイルは、特に複雑なエフェクトフルな計算を扱う場合、過度なネストにつながる可能性があります。これにより、コードが追跡しにくく、デバッグが難しくなることがあります。
 
-For more information on how to use generators in Effect, you can refer to the [Using Generators in Effect](../essentials/using-generators) guide.
+Effectでジェネレーターを使用する方法についての詳細は、[Using Generators in Effect](../essentials/using-generators)ガイドを参照してください。

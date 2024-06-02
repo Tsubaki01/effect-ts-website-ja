@@ -1,51 +1,51 @@
 ---
-title: Introduction to Effect's Interruption Model
+title: Effectの割り込みモデルの紹介
 navTitle: Interruption Model
-excerpt: Explore the intricacies of Effect's interruption model, a crucial aspect in concurrent application development. Learn the nuances of handling fiber interruptions, including scenarios such as parent fibers terminating child fibers, racing fibers, user-initiated interruptions, and timeouts. Delve into the comparison between polling and asynchronous interruption, understanding the advantages of the latter in maintaining consistency and adhering to functional paradigms. Gain insights into when fibers get interrupted, providing examples and scenarios for a comprehensive understanding of this vital feature.
+excerpt: Effectの割り込みモデルの複雑さを探求し、並行アプリケーション開発における重要な側面を学びます。親ファイバーが子ファイバーを終了させるシナリオ、競争するファイバー、ユーザーによる割り込み、タイムアウトなど、ファイバーの割り込み処理のニュアンスを理解します。ポーリングと非同期割り込みの比較を掘り下げ、後者の一貫性維持と機能的パラダイムの遵守における利点を理解します。ファイバーが割り込まれるタイミングについての洞察を得て、この重要な機能の包括的な理解を提供する例とシナリオを示します。
 bottomNavigation: pagination
 ---
 
-## Handling Fiber Interruption
+## ファイバーの割り込み処理
 
-While developing concurrent applications, there are several cases that we need to _interrupt_ the execution of other fibers, for example:
+並行アプリケーションを開発する際には、他のファイバーの実行を割り込む必要がある場合がいくつかあります。例えば：
 
-1. A parent fiber might start some child fibers to perform a task, and later the parent might decide that, it doesn't need the result of some or all of the child fibers.
+1. 親ファイバーがタスクを実行するためにいくつかの子ファイバーを開始し、後で親ファイバーが一部またはすべての子ファイバーの結果を必要としないと決定する場合。
 
-2. Two or more fibers start race with each other. The fiber whose result is computed first wins, and all other fibers are no longer needed, and should be interrupted.
+2. 二つ以上のファイバーが互いに競争を開始する場合。最初に結果が計算されたファイバーが勝ち、他のすべてのファイバーは不要となり、割り込まれるべきです。
 
-3. In interactive applications, a user may want to stop some already running tasks, such as clicking on the "stop" button to prevent downloading more files.
+3. インタラクティブなアプリケーションでは、ユーザーが既に実行中のタスクを停止したい場合があります。例えば、「停止」ボタンをクリックしてファイルのダウンロードを防ぐ場合などです。
 
-4. Computations that run longer than expected should be aborted by using timeout operations.
+4. 予想よりも長く実行される計算は、タイムアウト操作を使用して中止する必要があります。
 
-5. When we have an application that perform compute-intensive tasks based on the user inputs, if the user changes the input we should cancel the current task and perform another one.
+5. ユーザー入力に基づいて計算集約型タスクを実行するアプリケーションでは、ユーザーが入力を変更した場合、現在のタスクをキャンセルして別のタスクを実行する必要があります。
 
-## Polling vs. Asynchronous Interruption
+## ポーリング vs. 非同期割り込み
 
-When it comes to interrupting fibers, a naive approach is to allow one fiber to forcefully terminate another fiber. However, this approach is not ideal because it can leave shared state in an inconsistent and unreliable state if the target fiber is in the middle of modifying that state. Therefore, it does not guarantee internal consistency of the shared mutable state.
+ファイバーを割り込む際、単純なアプローチは一つのファイバーが他のファイバーを強制的に終了させることです。しかし、このアプローチは、ターゲットファイバーが共有状態を変更している途中であれば、共有状態が一貫性のない信頼できない状態に陥る可能性があるため理想的ではありません。したがって、共有の可変状態の内部一貫性を保証しません。
 
-Instead, there are two popular and valid solutions to tackle this problem:
+代わりに、この問題に対処するための二つの一般的で有効な解決策があります：
 
-1. **Semi-asynchronous Interruption (Polling for Interruption)**: Imperative languages often employ polling as a semi-asynchronous signaling mechanism, such as Java. In this model, a fiber sends an interruption request to another fiber. The target fiber continuously polls the interrupt status and checks whether it has received any interruption requests from other fibers. If an interruption request is detected, the target fiber terminates itself as soon as possible.
+1. **半非同期割り込み（割り込みのためのポーリング）**：命令型言語は、Javaのように、半非同期のシグナリングメカニズムとしてポーリングを使用することがよくあります。このモデルでは、ファイバーが他のファイバーに割り込み要求を送信します。ターゲットファイバーは割り込みステータスを継続的にポーリングし、他のファイバーから割り込み要求を受信したかどうかを確認します。割り込み要求が検出されると、ターゲットファイバーはできるだけ早く自分自身を終了します。
 
-   With this solution, the fiber itself handles critical sections. So, if a fiber is in the middle of a critical section and receives an interruption request, it ignores the interruption and defers its handling until after the critical section.
+   この解決策では、ファイバー自体がクリティカルセクションを処理します。したがって、ファイバーがクリティカルセクションの途中で割り込み要求を受け取った場合、割り込みを無視し、クリティカルセクションが終了するまでその処理を延期します。
 
-   However, one drawback of this approach is that if the programmer forgets to poll regularly, the target fiber can become unresponsive, leading to deadlocks. Additionally, polling a global flag is not aligned with the functional paradigm followed by Effect.
+   しかし、このアプローチの欠点は、プログラマーが定期的にポーリングするのを忘れると、ターゲットファイバーが応答しなくなり、デッドロックを引き起こす可能性があることです。さらに、グローバルフラグのポーリングはEffectが従う機能的パラダイムと一致しません。
 
-2. **Asynchronous Interruption**: In asynchronous interruption, a fiber is allowed to terminate another fiber. The target fiber is not responsible for polling the interrupt status. Instead, during critical sections, the target fiber disables the interruptibility of those regions. This is a purely functional solution that doesn't require polling a global state. Effect adopts this solution for its interruption model, which is a fully asynchronous signaling mechanism.
+2. **非同期割り込み**：非同期割り込みでは、ファイバーが他のファイバーを終了させることが許可されます。ターゲットファイバーは割り込みステータスをポーリングする責任を負いません。代わりに、クリティカルセクション中にターゲットファイバーはその領域の割り込み可能性を無効にします。これはグローバル状態のポーリングを必要としない純粋に機能的な解決策です。Effectはその割り込みモデルにこの解決策を採用しており、完全に非同期のシグナリングメカニズムです。
 
-   This mechanism overcomes the drawback of forgetting to poll regularly. It is also fully compatible with the functional paradigm because in a purely functional computation, we can abort the computation at any point, except during critical sections where interruption is disabled.
+   このメカニズムは、定期的にポーリングするのを忘れるという欠点を克服します。また、純粋に機能的な計算では、クリティカルセクション中に割り込みが無効にされている場合を除き、任意の時点で計算を中止することができるため、機能的パラダイムと完全に互換性があります。
 
-## When Does a Fiber Get Interrupted?
+## ファイバーが割り込まれるタイミング
 
-There are several ways and situations in which fibers can be interrupted. Let's explore each one and provide examples to illustrate how to reproduce these scenarios.
+ファイバーが割り込まれる方法や状況はいくつかあります。それぞれを探り、これらのシナリオを再現する方法を示す例を提供します。
 
-### Calling Effect.interrupt
+### Effect.interruptの呼び出し
 
-A fiber can be interrupted by invoking the `Effect.interrupt` operator on that particular fiber.
+特定のファイバーに対して`Effect.interrupt`オペレーターを呼び出すことで、ファイバーを割り込むことができます。
 
-Without interruptions
+割り込みなし
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -61,7 +61,7 @@ Effect.runPromise(program).catch((error) =>
   console.log(`interrupted: ${error}`)
 )
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message=start
 timestamp=... level=INFO fiber=#0 message=done
 */
@@ -82,7 +82,7 @@ Effect.runPromise(program).catch((error) =>
   console.log(`interrupted: ${error}`)
 )
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message=start
 timestamp=... level=INFO fiber=#0 message=done
 */
@@ -91,9 +91,9 @@ timestamp=... level=INFO fiber=#0 message=done
 </Tab>
 </Tabs>
 
-With interruptions
+割り込みあり
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts {6} twoslash
@@ -108,7 +108,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message=start
 {
   _id: 'Exit',
@@ -141,7 +141,7 @@ const program = Effect.log("start").pipe(
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message=start
 {
   _id: 'Exit',
@@ -163,11 +163,11 @@ timestamp=... level=INFO fiber=#0 message=start
 </Tab>
 </Tabs>
 
-### Interruption of Concurrent Effects
+### 複数のエフェクトの割り込み
 
-When we combine multiple concurrent effects using functions like `Effect.forEach`, it's important to note that if one of the effects is interrupted, all the other concurrent effects will also be interrupted. Let's take a look at an example:
+`Effect.forEach`のような関数を使って複数のエフェクトを組み合わせるとき、一つのエフェクトが割り込まれると、他のすべてのエフェクトも割り込まれることに注意が必要です。例を見てみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使う", "pipeを使う"]}>
 <Tab>
 
 ```ts twoslash
@@ -191,7 +191,7 @@ Effect.runPromiseExit(program).then((exit) =>
   console.log(JSON.stringify(exit, null, 2))
 )
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#1 message="start #1"
 timestamp=... level=INFO fiber=#2 message="start #2"
 timestamp=... level=INFO fiber=#3 message="start #3"
@@ -262,7 +262,7 @@ Effect.runPromiseExit(program).then((exit) =>
   console.log(JSON.stringify(exit, null, 2))
 )
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#1 message="start #1"
 timestamp=... level=INFO fiber=#2 message="start #2"
 timestamp=... level=INFO fiber=#3 message="start #3"
@@ -309,8 +309,8 @@ timestamp=... level=INFO fiber=#1 message="done #1"
 </Tab>
 </Tabs>
 
-In this example, we have an array `[1, 2, 3]` representing three concurrent tasks. We use `Effect.forEach` to iterate over each element and perform some operations. The `Effect.log` function is used to log messages indicating the start and completion of each task.
+この例では、3つの並行タスクを表す配列 `[1, 2, 3]` があります。`Effect.forEach` を使用して各要素を反復処理し、いくつかの操作を実行します。`Effect.log` 関数は、各タスクの開始と完了を示すメッセージをログに記録するために使用されます。
 
-Looking at the output, we can see that the task with `n = 1` starts and completes successfully. However, the task with `n = 2` is interrupted using `Effect.interrupt` before it finishes. As a result, all the fibers are interrupted, and the program terminates with the message "All fibers interrupted without errors."
+出力を見ると、`n = 1` のタスクは正常に開始して完了することがわかります。しかし、`n = 2` のタスクは完了する前に `Effect.interrupt` を使用して中断されます。その結果、すべてのファイバーが中断され、プログラムは "All fibers interrupted without errors" というメッセージとともに終了します。
 
-This example demonstrates how interruption works with concurrent effects. If one of the concurrent tasks is interrupted, it triggers the interruption of all the other concurrent tasks as well.
+この例は、並行エフェクトでの中断がどのように機能するかを示しています。並行タスクの1つが中断されると、他のすべての並行タスクの中断を引き起こします。

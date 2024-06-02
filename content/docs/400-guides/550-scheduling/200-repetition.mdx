@@ -1,16 +1,16 @@
 ---
-title: Repetition
-excerpt: Discover the significance of repetition in effect-driven software development with functions like `repeat` and `repeatOrElse`. Explore repeat policies, which enable you to execute effects multiple times according to specific criteria. Learn the syntax and examples of `repeat` and `repeatOrElse` for effective handling of repeated actions, including optional fallback strategies for errors.
+title: 繰り返し
+excerpt: `repeat`や`repeatOrElse`のような関数を使用して、エフェクト駆動型ソフトウェア開発における繰り返しの重要性を発見しましょう。特定の条件に従ってエフェクトを複数回実行できる繰り返しポリシーを探求します。エラーに対するオプションのフォールバック戦略を含む、繰り返しアクションを効果的に処理するための`repeat`と`repeatOrElse`の構文と例を学びましょう。
 bottomNavigation: pagination
 ---
 
-Repetition is a common requirement when working with effects in software development. It allows us to perform an effect multiple times according to a specific repetition policy.
+繰り返しは、ソフトウェア開発におけるエフェクトを扱う際の一般的な要件です。これにより、特定の繰り返しポリシーに従ってエフェクトを複数回実行することができます。
 
 ## repeat
 
-The `repeat` function returns a new effect that repeats the given effect according to a specified schedule or until the first failure. The scheduled recurrences are in addition to the initial execution, so `Effect.repeat(action, Schedule.once)` executes `action` once initially, and if it succeeds, repeats it an additional time.
+`repeat`関数は、指定されたスケジュールに従って、または最初の失敗まで、指定されたエフェクトを繰り返す新しいエフェクトを返します。スケジュールされた再発は初回実行に加えて行われるため、`Effect.repeat(action, Schedule.once)`は最初に`action`を1回実行し、成功すればさらに1回繰り返します。
 
-**Success Example**
+**成功例**
 
 ```ts twoslash
 import { Effect, Schedule, Console } from "effect"
@@ -23,7 +23,7 @@ const program = Effect.repeat(action, policy)
 
 Effect.runPromise(program).then((n) => console.log(`repetitions: ${n}`))
 /*
-Output:
+出力:
 success
 success
 success
@@ -31,14 +31,14 @@ repetitions: 2
 */
 ```
 
-**Failure Example**
+**失敗例**
 
 ```ts twoslash
 import { Effect, Schedule } from "effect"
 
 let count = 0
 
-// Define an async effect that simulates an action with possible failures
+// 失敗の可能性があるアクションをシミュレートする非同期エフェクトを定義する
 const action = Effect.async<string, string>((resume) => {
   if (count > 1) {
     console.log("failure")
@@ -56,7 +56,7 @@ const program = Effect.repeat(action, policy)
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 success
 success
 failure
@@ -68,9 +68,9 @@ failure
 */
 ```
 
-### Skipping the First Occurrence
+### 最初の繰り返しをスキップする
 
-If you want to skip the first occurrence of a repeat, you can use `Effect.schedule`:
+最初の繰り返しをスキップしたい場合は、`Effect.schedule`を使用できます：
 
 ```ts twoslash
 import { Effect, Schedule, Console } from "effect"
@@ -83,7 +83,7 @@ const program = Effect.schedule(action, policy)
 
 Effect.runPromise(program).then((n) => console.log(`repetitions: ${n}`))
 /*
-Output:
+出力:
 success
 success
 repetitions: 2
@@ -92,7 +92,7 @@ repetitions: 2
 
 ## repeatN
 
-The `repeatN` function returns a new effect that repeats the specified effect a given number of times or until the first failure. The repeats are in addition to the initial execution, so `Effect.repeatN(action, 1)` executes `action` once initially and then repeats it one additional time if it succeeds.
+`repeatN` 関数は、指定されたエフェクトを指定された回数だけ、または最初の失敗まで繰り返す新しいエフェクトを返します。繰り返しは初回の実行に加えて行われるため、`Effect.repeatN(action, 1)` は最初に `action` を1回実行し、その後成功すればもう1回繰り返します。
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -103,7 +103,7 @@ const program = Effect.repeatN(action, 2)
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 success
 success
 success
@@ -112,14 +112,14 @@ success
 
 ## repeatOrElse
 
-The `repeatOrElse` function returns a new effect that repeats the specified effect according to the given schedule or until the first failure. When a failure occurs, the failure value and schedule output are passed to a specified handler. Scheduled recurrences are in addition to the initial execution, so `Effect.repeat(action, Schedule.once)` executes `action` once initially and then repeats it an additional time if it succeeds.
+`repeatOrElse` 関数は、指定されたエフェクトを指定されたスケジュールに従って、または最初の失敗まで繰り返す新しいエフェクトを返します。失敗が発生した場合、失敗の値とスケジュールの出力が指定されたハンドラーに渡されます。スケジュールされた繰り返しは初回の実行に加えて行われるため、`Effect.repeat(action, Schedule.once)` は最初に `action` を1回実行し、その後成功すればもう1回繰り返します。
 
 ```ts twoslash
 import { Effect, Schedule } from "effect"
 
 let count = 0
 
-// Define an async effect that simulates an action with possible failures
+// 失敗の可能性があるアクションをシミュレートする非同期エフェクトを定義する
 const action = Effect.async<string, string>((resume) => {
   if (count > 1) {
     console.log("failure")
@@ -132,8 +132,8 @@ const action = Effect.async<string, string>((resume) => {
 })
 
 const policy = Schedule.addDelay(
-  Schedule.recurs(2), // Repeat for a maximum of 2 times
-  () => "100 millis" // Add a delay of 100 milliseconds between repetitions
+  Schedule.recurs(2), // 最大2回繰り返す
+  () => "100 millis" // 繰り返しの間に100ミリ秒の遅延を追加
 )
 
 const program = Effect.repeatOrElse(action, policy, () =>
@@ -145,7 +145,7 @@ const program = Effect.repeatOrElse(action, policy, () =>
 
 Effect.runPromise(program).then((n) => console.log(`repetitions: ${n}`))
 /*
-Output:
+出力:
 success
 success
 failure

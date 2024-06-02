@@ -1,10 +1,10 @@
 ---
-title: Parallel and Sequential Errors
-excerpt: Learn how to handle parallel and sequential errors in Effect programming. Understand the behavior of error handling in scenarios involving parallel computations and sequential operations. Explore combinator `Effect.parallelErrors` to expose and handle multiple parallel failures efficiently.
+title: 並列および逐次エラー
+excerpt: Effectプログラミングにおける並列および逐次エラーの処理方法を学びます。並列計算や逐次操作に関わるエラーハンドリングの挙動を理解します。複数の並列失敗を効率的に露出し処理するためのコンビネータ`Effect.parallelErrors`を探求します。
 bottomNavigation: pagination
 ---
 
-In a typical Effect application, when an error occurs, it usually fails with the first error encountered by the Effect runtime. Let's look at an example:
+通常のEffectアプリケーションでは、エラーが発生すると、Effectランタイムによって最初に遭遇したエラーで失敗します。例を見てみましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -19,7 +19,7 @@ const program = Effect.all([fail, die]).pipe(
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -28,11 +28,11 @@ Output:
 */
 ```
 
-In this case, the `program` will fail with the first error, which is "Oh uh!":
+この場合、`program`は最初のエラーである「Oh uh!」で失敗します。
 
-## Parallel Errors
+## 並列エラー
 
-However, in some situations, you may encounter multiple errors, especially when performing parallel computations. When parallel computations are involved, the application may fail due to multiple errors. Here's an example:
+しかし、場合によっては、特に並列計算を行う際に複数のエラーに遭遇することがあります。並列計算が関与する場合、アプリケーションは複数のエラーによって失敗することがあります。以下はその例です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -46,7 +46,7 @@ const program = Effect.all([fail, die], { concurrency: "unbounded" }).pipe(
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -60,11 +60,11 @@ Output:
 */
 ```
 
-In this example, the `program` runs both `fail` and `die` concurrently, and if both fail, it will result in multiple errors.
+この例では、`program`は`fail`と`die`の両方を並列に実行し、両方が失敗した場合、複数のエラーが発生します。
 
 ### parallelErrors
 
-Effect provides a useful combinator called `Effect.parallelErrors` that exposes all parallel failure errors in the error channel. Here's how you can use it:
+Effectは、エラーチャンネル内のすべての並列失敗エラーを公開する便利なコンビネータ`Effect.parallelErrors`を提供します。以下はその使用方法です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -79,7 +79,7 @@ const program = Effect.all([fail1, fail2, die], {
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -88,16 +88,15 @@ Output:
 */
 ```
 
-In this example, `Effect.parallelErrors` combines the errors from `fail1` and `fail2` into a single error.
+この例では、`Effect.parallelErrors`は`fail1`と`fail2`のエラーを1つのエラーに結合します。
 
 <Warning>
-  Note that this operator is **only for failures**, not defects or
-  interruptions.
+  このオペレーターは**失敗**のためのものであり、欠陥や中断のためのものではないことに注意してください。
 </Warning>
 
-## Sequential Errors
+## 逐次エラー
 
-When working with resource-safety operators like `Effect.ensuring`, you may encounter multiple sequential errors. This happens because regardless of whether the original effect has any errors or not, the finalizer is uninterruptible and will run. Here's an example:
+`Effect.ensuring`のようなリソース安全オペレーターを使用する場合、複数の逐次エラーに遭遇することがあります。これは、元のエフェクトにエラーがあるかどうかに関係なく、ファイナライザーが中断不可能で実行されるためです。以下はその例です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -109,7 +108,7 @@ const program = fail.pipe(Effect.ensuring(die))
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -123,4 +122,4 @@ Output:
 */
 ```
 
-In this case, the `program` will result in multiple sequential errors if both `fail` and the finalizer `die` encounter errors.
+この場合、`fail`とファイナライザーの`die`の両方がエラーに遭遇すると、`program`は複数の逐次エラーを引き起こします。

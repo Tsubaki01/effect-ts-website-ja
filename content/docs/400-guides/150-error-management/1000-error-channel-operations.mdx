@@ -1,16 +1,16 @@
 ---
-title: Error Channel Operations
-excerpt: Explore various operations on the error channel in Effect, including error mapping, both channel mapping, filtering success values, inspecting errors, exposing errors, merging error and success channels, and flipping error and success channels. Learn how to handle errors effectively in your Effect programming.
+title: エラーチャネル操作
+excerpt: Effectにおけるエラーチャネルのさまざまな操作について探ります。エラーマッピング、両チャネルマッピング、成功値のフィルタリング、エラーの検査、エラーの公開、エラーと成功チャネルのマージ、エラーと成功チャネルの反転などを含みます。Effectプログラミングでエラーを効果的に処理する方法を学びましょう。
 bottomNavigation: pagination
 ---
 
-In Effect you can perform various operations on the error channel of effects. These operations allow you to transform, inspect, and handle errors in different ways. Let's explore some of these operations.
+Effectでは、エフェクトのエラーチャネルに対してさまざまな操作を行うことができます。これらの操作により、エラーを変換、検査、および処理する方法が提供されます。これらの操作のいくつかを見てみましょう。
 
-## Map Operations
+## マップ操作
 
 ### mapError
 
-The `Effect.mapError` function is used when you need to **transform or modify an error** produced by an effect, without affecting the success value. This can be helpful when you want to add extra information to the error or change its type.
+`Effect.mapError`関数は、成功値に影響を与えずに、エフェクトによって生成されたエラーを**変換または修正**する必要がある場合に使用されます。これは、エラーに追加情報を加えたり、エラーの型を変更したりする場合に役立ちます。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -20,19 +20,17 @@ const simulatedTask = Effect.fail("Oh no!").pipe(Effect.as(1))
 const mapped = Effect.mapError(simulatedTask, (message) => new Error(message))
 ```
 
-We can observe that the type in the error channel of our program has changed from `string` to `Error`.
+エラーチャネルの型が`string`から`Error`に変わったことがわかります。
 
 <Info>
-  It's important to note that using the `Effect.mapError` function **does not
-  change** the overall success or failure of the effect. If the mapped effect
-  is successful, then the mapping function is ignored. In other words, the
-  `Effect.mapError` operation only applies the transformation to the error
-  channel of the effect, while leaving the success channel unchanged.
+  `Effect.mapError`関数を使用しても、エフェクトの全体的な成功または失敗は**変わりません**。
+  マッピングされたエフェクトが成功した場合、マッピング関数は無視されます。
+  言い換えれば、`Effect.mapError`操作はエフェクトのエラーチャネルにのみ変換を適用し、成功チャネルは変更されません。
 </Info>
 
 ### mapBoth
 
-The `Effect.mapBoth` function allows you to **apply transformations to both channels**: the error channel and the success channel of an effect. It takes two map functions as arguments: one for the error channel and the other for the success channel.
+`Effect.mapBoth`関数を使用すると、エフェクトのエラーチャネルと成功チャネルの**両方に変換を適用**することができます。エラーチャネル用と成功チャネル用の2つのマップ関数を引数として取ります。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -45,26 +43,24 @@ const modified = Effect.mapBoth(simulatedTask, {
 })
 ```
 
-After using `mapBoth`, we can observe that the type of our program has changed from `Effect<number, string>` to `Effect<boolean, Error>`.
+`mapBoth`を使用すると、プログラムの型が`Effect<number, string>`から`Effect<boolean, Error>`に変わったことがわかります。
 
 <Info>
-  It's important to note that using the `mapBoth` function **does not change**
-  the overall success or failure of the effect. It only transforms the values
-  in the error and success channels while preserving the effect's original
-  success or failure status.
+  `mapBoth`関数を使用しても、エフェクトの全体的な成功または失敗は**変わりません**。
+  これは、エラーチャネルと成功チャネルの値を変換するだけで、エフェクトの元の成功または失敗の状態を保持します。
 </Info>
 
-## Filtering the Success Channel
+## 成功チャネルのフィルタリング
 
-The Effect library provides several operators to **filter values on the success channel** based on a given predicate. These operators offer different strategies for handling cases where the predicate fails. Let's explore them:
+Effectライブラリは、指定された述語に基づいて**成功チャネルの値をフィルタリング**するためのいくつかのオペレーターを提供します。これらのオペレーターは、述語が失敗した場合の処理方法に関して異なる戦略を提供します。見てみましょう：
 
-| **Function**                                         | **Description**                                                                                                                                                                                                                                   |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Effect.filterOrFail`                                | This operator filters the values on the success channel based on a predicate. If the predicate fails for any value, the original effect fails with an error.                                                                                      |
-| `Effect.filterOrDie` and `Effect.filterOrDieMessage` | These operators also filter the values on the success channel based on a predicate. If the predicate fails for any value, the original effect terminates abruptly. The `filterOrDieMessage` variant allows you to provide a custom error message. |
-| `Effect.filterOrElse`                                | This operator filters the values on the success channel based on a predicate. If the predicate fails for any value, an alternative effect is executed instead.                                                                                    |
+| **関数**                                                | **説明**                                                                                                                                                                                                                               |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Effect.filterOrFail`                                   | このオペレーターは、述語に基づいて成功チャネルの値をフィルタリングします。述語が任意の値に対して失敗した場合、元のエフェクトはエラーで失敗します。                                                                                     |
+| `Effect.filterOrDie` および `Effect.filterOrDieMessage` | これらのオペレーターも述語に基づいて成功チャネルの値をフィルタリングします。述語が任意の値に対して失敗した場合、元のエフェクトは突然終了します。`filterOrDieMessage`バリアントでは、カスタムエラーメッセージを提供することができます。 |
+| `Effect.filterOrElse`                                   | このオペレーターは、述語に基づいて成功チャネルの値をフィルタリングします。述語が任意の値に対して失敗した場合、代替のエフェクトが実行されます。                                                                                         |
 
-Here's an example that demonstrates these filtering operators in action:
+これらのフィルタリングオペレーターが実際にどのように動作するかを示す例を見てみましょう：
 
 ```ts twoslash
 import { Effect, Random, Cause } from "effect"
@@ -94,46 +90,46 @@ const task4 = Effect.filterOrElse(
 )
 ```
 
-It's important to note that depending on the specific filtering operator used, the effect can either fail, terminate abruptly, or execute an alternative effect when the predicate fails. Choose the appropriate operator based on your desired error handling strategy and program logic.
+特定のフィルタリングオペレーターを使用することにより、述語が失敗した場合、エフェクトが失敗するか、突然終了するか、代替のエフェクトを実行するかのいずれかになることに注意してください。エラーハンドリングの戦略とプログラムのロジックに基づいて、適切なオペレーターを選択してください。
 
-In addition to the filtering capabilities discussed earlier, you have the option to further refine and narrow down the type of the success channel by providing a [user-defined type guard](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) to the `filterOr*` APIs. This not only enhances type safety but also improves code clarity. Let's explore this concept through an example:
+前述のフィルタリング機能に加えて、`filterOr*` APIに[ユーザー定義の型ガード](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)を提供することで、成功チャネルの型をさらに絞り込むことができます。これにより、型の安全性が向上し、コードの明確さも向上します。例を通じてこの概念を見てみましょう：
 
 ```ts twoslash
 import { Effect, pipe } from "effect"
 
-// Define a user interface
+// ユーザーインターフェースを定義する
 interface User {
   readonly name: string
 }
 
-// Assume an asynchronous authentication function
+// 非同期認証関数を仮定する
 declare const auth: () => Promise<User | null>
 
 const program = pipe(
   Effect.promise(() => auth()),
   Effect.filterOrFail(
-    // Define a guard to narrow down the type
+    // 型を絞り込むためのガードを定義する
     (user): user is User => user !== null,
     () => new Error("Unauthorized")
   ),
-  Effect.andThen((user) => user.name) // The 'user' here has type `User`, not `User | null`
+  Effect.andThen((user) => user.name) // ここでの 'user' は `User | null` ではなく、`User` 型です
 )
 ```
 
-In the example above, a guard is used within the `filterOrFail` API to ensure that the `user` is of type `User` rather than `User | null`. This refined type information improves the reliability of your code and makes it more understandable.
+上記の例では、`filterOrFail` API内でガードを使用して、`user`が`User | null`ではなく`User`型であることを保証しています。この精緻化された型情報により、コードの信頼性が向上し、理解しやすくなります。
 
-If you prefer, you can utilize a pre-made guard like [Predicate.isNotNull](https://effect-ts.github.io/effect/effect/Predicate.ts.html#isnotnull) for simplicity and consistency.
+好みに応じて、シンプルさと一貫性のために[Predicate.isNotNull](https://effect-ts.github.io/effect/effect/Predicate.ts.html#isnotnull)のような既製のガードを利用することもできます。
 
-## Inspecting Errors
+## エラーの検査
 
-Similar to [tapping](../essentials/pipeline#tap) for success values, Effect provides several operators for **inspecting error values**. These operators allow us to peek into failures or underlying defects or causes:
+成功値に対する[tapping](../essentials/pipeline#tap)と同様に、Effectは**エラー値を検査する**ためのいくつかのオペレーターを提供しています。これらのオペレーターを使用すると、失敗や根本的な欠陥、原因を覗き見ることができます：
 
 - `tapError`
 - `tapBoth`
 - `tapErrorCause`
 - `tapDefect`
 
-Let's see an example of how to use these operators:
+これらのオペレーターの使用例を見てみましょう：
 
 ```ts twoslash
 import { Effect, Random, Console } from "effect"
@@ -155,23 +151,22 @@ const tapping2 = Effect.tapBoth(task, {
 ```
 
 <Info>
-  It's important to note that tapping into error values **does not change**
-  the type of the program.
+  エラー値にタップすることは、プログラムの型を**変更しない**ことに注意してください。
 </Info>
 
-## Exposing Errors in The Success Channel
+## 成功チャネルでのエラーの公開
 
-You can use the `Effect.either` function to convert an `Effect<A, E, R>` into another effect where both its failure (`E`) and success (`A`) channels have been lifted into an [Either&lt;A, E&gt;](../../other/data-types/either) data type:
+`Effect.either`関数を使用して、`Effect<A, E, R>`を、失敗（`E`）と成功（`A`）の両方のチャネルが[Either&lt;A, E&gt;](../../other/data-types/either)データ型に持ち上げられた別のエフェクトに変換することができます：
 
 ```ts
 Effect<A, E, R> -> Effect<Either<A, E>, never, R>
 ```
 
-The resulting effect is an unexceptional effect, which means it cannot fail, because the failure case has been exposed as part of the `Either` left case. Therefore, the error parameter of the returned Effect is `never`, as it is guaranteed that the effect does not model failure.
+結果として得られるエフェクトは例外のないエフェクトであり、失敗することはありません。なぜなら、失敗のケースが`Either`の左側のケースとして公開されているからです。したがって、返されるEffectのエラーパラメータは`never`であり、エフェクトが失敗をモデル化しないことが保証されています。
 
-This function becomes especially useful when recovering from effects that may fail when using `Effect.gen`.
+この関数は、`Effect.gen`を使用して失敗する可能性のあるエフェクトから回復する際に特に有用です。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -215,11 +210,11 @@ const program = Effect.either(simulatedTask).pipe(
 </Tab>
 </Tabs>
 
-## Exposing the Cause in The Success Channel
+## 成功チャネルで原因を公開する
 
-You can use the `Effect.cause` function to **expose the cause** of an effect, which is a more detailed representation of failures, including error messages and defects.
+`Effect.cause`関数を使用して、エフェクトの原因を公開することができます。これは、エラーメッセージや欠陥を含む失敗のより詳細な表現です。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -249,9 +244,9 @@ const program = Effect.cause(simulatedTask).pipe(
 </Tab>
 </Tabs>
 
-## Merging the Error Channel into the Success Channel
+## エラーチャネルを成功チャネルに統合する
 
-Using the `Effect.merge` function, you can **merge the error channel into the success channel**, creating an effect that always succeeds with the merged value.
+`Effect.merge`関数を使用すると、**エラーチャネルを成功チャネルに統合**することができ、統合された値で常に成功するエフェクトを作成します。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -261,9 +256,9 @@ const simulatedTask = Effect.fail("Oh uh!").pipe(Effect.as(2))
 const merged = Effect.merge(simulatedTask)
 ```
 
-## Flipping Error and Success Channels
+## エラーチャネルと成功チャネルの反転
 
-Using the `Effect.flip` function, you can **flip the error and success channels** of an effect, effectively swapping their roles.
+`Effect.flip`関数を使用すると、エフェクトの**エラーチャネルと成功チャネルを反転**させ、それぞれの役割を効果的に入れ替えることができます。
 
 ```ts twoslash
 import { Effect } from "effect"

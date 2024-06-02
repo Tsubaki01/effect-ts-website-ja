@@ -1,12 +1,12 @@
 ---
-title: Schedule Combinators
-excerpt: Explore the power of combining schedules in Effect to create sophisticated recurring patterns. Learn about key combinators such as `Union`, `Intersection`, and `Sequencing`. Witness the impact of `Jittering` on scheduling by introducing randomness to delays. Understand how to `Filter` inputs or outputs and modify delays with precision. Leverage `Tapping` to effectfully process each schedule input/output, providing insights into the execution flow. Elevate your understanding of schedules for efficient and flexible handling of effectful operations.
+title: スケジュールコンビネータ
+excerpt: Effectでスケジュールを組み合わせて高度な繰り返しパターンを作成する力を探求します。`Union`、`Intersection`、`Sequencing`などの主要なコンビネータについて学びます。遅延にランダム性を導入することでスケジューリングに与える`Jittering`の影響を目の当たりにします。入力や出力を`Filter`し、遅延を精密に変更する方法を理解します。各スケジュールの入力/出力を効果的に処理するために`Tapping`を活用し、実行フローに関する洞察を提供します。効果的な操作の効率的かつ柔軟な処理のためにスケジュールの理解を深めます。
 bottomNavigation: pagination
 ---
 
-Schedules define stateful, possibly effectful, recurring schedules of events, and compose in a variety of ways. Combinators allow us to take schedules and combine them together to get other schedules.
+スケジュールは、状態を持ち、場合によっては効果的な、繰り返しのイベントのスケジュールを定義し、さまざまな方法で構成されます。コンビネータを使用すると、スケジュールを組み合わせて他のスケジュールを作成できます。
 
-To demonstrate the functionality of different schedules, we will be working with the following helper:
+さまざまなスケジュールの機能を示すために、次のヘルパーを使用します。
 
 ```twoslash include Delay
 import { Effect, Schedule, TestClock, Fiber, TestContext } from "effect"
@@ -58,19 +58,19 @@ declare const log: <A, Out>(
 
 </details>
 
-The `log` helper logs the time delay between each execution. We will use this helper to showcase the behavior of various built-in schedules.
+`log` ヘルパーは各実行間の遅延時間をログに記録します。このヘルパーを使用して、さまざまな組み込みスケジュールの動作を紹介します。
 
 ## Composition
 
-Schedules compose in the following primary ways:
+スケジュールは以下の主要な方法で構成されます：
 
-- **Union**. This performs the union of the intervals of two schedules.
-- **Intersection**. This performs the intersection of the intervals of two schedules.
-- **Sequencing**. This concatenates the intervals of one schedule onto another.
+- **Union**. これは2つのスケジュールの間隔の和集合を実行します。
+- **Intersection**. これは2つのスケジュールの間隔の積集合を実行します。
+- **Sequencing**. これは1つのスケジュールの間隔を別のスケジュールに連結します。
 
 ### Union
 
-Combines two schedules through union, by recurring if either schedule wants to recur, using the minimum of the two delays between recurrences.
+2つのスケジュールを和集合で結合し、どちらかのスケジュールが再発を希望する場合に再発し、再発間の遅延の最小値を使用します。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -88,7 +88,7 @@ const schedule = Schedule.union(
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 100  < exponential
 #2 delay: 200
@@ -103,11 +103,11 @@ delay: 0
 */
 ```
 
-When we use the combined schedule with `Effect.repeat`, we observe that the effect is executed repeatedly based on the minimum delay between the two schedules. In this case, the delay alternates between the exponential schedule (increasing delay) and the spaced schedule (constant delay).
+`Effect.repeat`を使用して結合されたスケジュールを使用すると、2つのスケジュール間の最小遅延に基づいて効果が繰り返し実行されることがわかります。この場合、遅延は指数スケジュール（遅延が増加）と間隔スケジュール（遅延が一定）の間で交互に変化します。
 
 ### Intersection
 
-Combines two schedules through the intersection, by recurring only if both schedules want to recur, using the maximum of the two delays between recurrences.
+2つのスケジュールを交差させることで、両方のスケジュールが再発を希望する場合にのみ再発し、再発間の遅延の最大値を使用します。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -125,7 +125,7 @@ const schedule = Schedule.intersect(
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 10  < exponential
 #2 delay: 20
@@ -136,11 +136,11 @@ delay: 0
 */
 ```
 
-When we use the combined schedule with `Effect.repeat`, we observe that the effect is executed repeatedly only if both schedules want it to recur. The delay between recurrences is determined by the maximum delay between the two schedules. In this case, the delay follows the progression of the exponential schedule until the maximum number of recurrences specified by the recursive schedule is reached.
+結合されたスケジュールを`Effect.repeat`で使用すると、両方のスケジュールが再発を希望する場合にのみ効果が繰り返し実行されることがわかります。再発間の遅延は、2つのスケジュール間の最大遅延によって決定されます。この場合、遅延は指数スケジュールの進行に従い、再帰スケジュールで指定された最大再発回数に達するまで続きます。
 
 ### Sequencing
 
-Combines two schedules sequentially, by following the first policy until it ends, and then following the second policy.
+2つのスケジュールを順次結合し、最初のポリシーが終了するまでそれに従い、その後に2番目のポリシーに従います。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -158,7 +158,7 @@ const schedule = Schedule.andThen(
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 0    < recurs
 #2 delay: 0
@@ -173,15 +173,15 @@ delay: 0
 */
 ```
 
-When we use the combined schedule with `Effect.repeat`, we observe that the effect follows the policy of the first schedule (recurs) until it completes the specified number of recurrences. After that, it switches to the policy of the second schedule (spaced) and continues repeating the effect with the fixed delay between recurrences.
+結合されたスケジュールを`Effect.repeat`で使用すると、最初のスケジュール（recurs）のポリシーに従い、指定された再発回数を完了するまで効果が繰り返されることがわかります。その後、2番目のスケジュール（spaced）のポリシーに切り替わり、再発間の固定遅延で効果が繰り返されます。
 
 ## Jittering
 
-A `jittered` is a combinator that takes one schedule and returns another schedule of the same type except for the delay which is applied randomly
+`jittered`は、1つのスケジュールを取り、遅延がランダムに適用されることを除いて、同じタイプの別のスケジュールを返すコンビネータです。
 
-When a resource is out of service due to overload or contention, retrying and backing off doesn't help us. If all failed API calls are backed off to the same point of time, they cause another overload or contention. Jitter adds some amount of randomness to the delay of the schedule. This helps us to avoid ending up accidentally synchronizing and taking the service down by accident.
+リソースが過負荷や競合のためにサービスを停止している場合、リトライやバックオフは役に立ちません。すべての失敗したAPIコールが同じ時間にバックオフされると、再び過負荷や競合を引き起こします。Jitterはスケジュールの遅延にランダム性を加えます。これにより、偶然に同期してサービスを停止させることを避けるのに役立ちます。
 
-[Research](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/) shows that `Schedule.jittered(0.0, 1.0)` is very suitable for retrying.
+[研究](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)によると、`Schedule.jittered(0.0, 1.0)`はリトライに非常に適しています。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -196,7 +196,7 @@ const schedule = Schedule.jittered(Schedule.exponential("10 millis"))
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 9.006765
 #2 delay: 20.549507999999996
@@ -211,11 +211,11 @@ delay: 0
 */
 ```
 
-In this example, we use the `jittered` combinator to apply jitter to an exponential schedule. The exponential schedule increases the delay between each repetition exponentially. By adding jitter to the schedule, the delays become randomly adjusted within a certain range.
+この例では、`jittered`コンビネータを使用して指数スケジュールにジッターを適用します。指数スケジュールは、各繰り返しの間の遅延を指数関数的に増加させます。スケジュールにジッターを追加することで、遅延が一定の範囲内でランダムに調整されます。
 
 ## Filtering
 
-We can filter inputs or outputs of a schedule with `whileInput` and `whileOutput`.
+スケジュールの入力や出力を`whileInput`や`while出力`でフィルタリングすることができます。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -226,24 +226,24 @@ We can filter inputs or outputs of a schedule with `whileInput` and `whileOutput
 import { Schedule, Effect } from "effect"
 import { log } from "./Delay"
 
-const schedule = Schedule.whileOutput(Schedule.recurs(5), (n) => n <= 2)
+const schedule = Schedule.while出力(Schedule.recurs(5), (n) => n <= 2)
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 0 < recurs
 #2 delay: 0
 #3 delay: 0
-(end)       < whileOutput
+(end)       < while出力
 */
 ```
 
-In this example, we create a schedule using `Schedule.recurs(5)` to repeat a certain action up to 5 times. However, we apply the `whileOutput` combinator with a predicate that filters out outputs greater than 2. As a result, the schedule stops producing outputs once the value exceeds 2, and the repetition ends.
+この例では、`Schedule.recurs(5)`を使用して、特定のアクションを最大5回繰り返すスケジュールを作成します。しかし、`while出力`コンビネータを述語と共に適用し、出力が2を超えるものをフィルタリングします。その結果、値が2を超えるとスケジュールは出力を停止し、繰り返しが終了します。
 
 ## Modifying
 
-Modifies the delay of a schedule.
+スケジュールの遅延を変更します。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -261,7 +261,7 @@ const schedule = Schedule.modifyDelay(
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 #1 delay: 100 < modifyDelay
 #2 delay: 100
@@ -278,9 +278,9 @@ delay: 0
 
 ## Tapping
 
-Whenever we need to effectfully process each schedule input/output, we can use `tapInput` and `tapOutput`.
+スケジュールの入力/出力を効果的に処理する必要がある場合、`tapInput`と`tap出力`を使用できます。
 
-We can use these two functions for logging purposes:
+これらの2つの関数をログ目的で使用できます。
 
 ```ts twoslash
 // @filename: Delay.ts
@@ -291,13 +291,13 @@ We can use these two functions for logging purposes:
 import { Schedule, Effect, Console } from "effect"
 import { log } from "./Delay"
 
-const schedule = Schedule.tapOutput(Schedule.recurs(2), (n) =>
+const schedule = Schedule.tap出力(Schedule.recurs(2), (n) =>
   Console.log(`repeating ${n}`)
 )
 const action = Effect.void
 log(action, schedule)
 /*
-Output:
+出力:
 delay: 0
 repeating 0
 #1 delay: 0

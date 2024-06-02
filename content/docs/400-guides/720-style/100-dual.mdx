@@ -1,21 +1,20 @@
 ---
 title: Dual APIs
-excerpt: Explore "data-last" and "data-first" variants of dual APIs in the Effect ecosystem, illustrated with the example of `Effect.map`. Learn how to choose between them based on your coding style and readability preferences.
+excerpt: "data-last" と "data-first" のバリアントを持つデュアルAPIを、`Effect.map` の例を用いてEffectエコシステムで探求します。コーディングスタイルや可読性の好みに基づいてどちらを選ぶかを学びましょう。
 bottomNavigation: pagination
 ---
 
-When you're working with APIs in the Effect ecosystem, you may come across two different ways to use the same API. These two ways are called the "data-last" and "data-first" variants.
+EffectエコシステムのAPIを使用していると、同じAPIを使用する2つの異なる方法に出くわすことがあります。これらの2つの方法は "data-last" と "data-first" バリアントと呼ばれます。
 
 <Info>
-  From a technical perspective, these variants are implemented using two
-  TypeScript overloads.
+  技術的な観点から見ると、これらのバリアントは2つのTypeScriptオーバーロードを使用して実装されています。
 </Info>
 
-When an API supports both variants, we call them "dual" APIs.
+APIが両方のバリアントをサポートしている場合、それらを「デュアル」APIと呼びます。
 
-Let's explore these two variants using a concrete example of a dual API: `Effect.map`.
+デュアルAPIの具体的な例として `Effect.map` を使って、これらの2つのバリアントを探ってみましょう。
 
-The `Effect.map` function is defined with two TypeScript overloads. The terms "data-last" and "data-first" refer to the position of the `self` argument (also known as the "data") in the signatures of the two overloads:
+`Effect.map` 関数は2つのTypeScriptオーバーロードで定義されています。"data-last" と "data-first" という用語は、2つのオーバーロードのシグネチャにおける `self` 引数（「データ」とも呼ばれる）の位置を指します。
 
 ```ts
 export declare const map: {
@@ -28,19 +27,19 @@ export declare const map: {
 
 ## data-last
 
-In the first overload, the `self` argument comes in the **last position**:
+最初のオーバーロードでは、`self` 引数が**最後の位置**に来ます：
 
 ```ts
 <A, B>(f: (a: A) => B): <E, R>(self: Effect<A, E, R>) => Effect<B, E, R>
 ```
 
-This is the variant we have been using with `pipe`. You pass the `Effect` as the first argument to the `pipe` function, followed by a call to `Effect.andThen`:
+このバリアントは、`pipe` と共に使用しているものです。`Effect` を最初の引数として `pipe` 関数に渡し、その後に `Effect.andThen` を呼び出します：
 
 ```ts
 const mappedEffect = pipe(effect, Effect.andThen(func))
 ```
 
-This variant is useful when you need to chain multiple computations in a long pipeline. You can continue the pipeline by adding more computations after the initial transformation:
+このバリアントは、長いパイプラインで複数の計算を連鎖させる必要がある場合に便利です。最初の変換の後にさらに計算を追加することで、パイプラインを続けることができます：
 
 ```ts
 pipe(effect, Effect.andThen(func1), Effect.andThen(func2), ...)
@@ -48,23 +47,22 @@ pipe(effect, Effect.andThen(func1), Effect.andThen(func2), ...)
 
 ## data-first
 
-In the second overload, the `self` argument comes in the **first position**:
+2つ目のオーバーロードでは、`self` 引数が**最初の位置**に来ます：
 
 ```ts
 <A, E, R, B>(self: Effect<A, E, R>, f: (a: A) => B): Effect<B, E, R>
 ```
 
-This variant doesn't require the `pipe` function. Instead, you can directly pass the `Effect` as the first argument to the `Effect.andThen` function:
+このバリアントでは、`pipe` 関数を必要としません。代わりに、`Effect` を最初の引数として `Effect.andThen` 関数に直接渡すことができます：
 
 ```ts
 const mappedEffect = Effect.andThen(effect, func)
 ```
 
-This variant is convenient when you only need to perform a single operation on the `Effect`.
+このバリアントは、`Effect` に対して単一の操作を行う必要がある場合に便利です。
 
 <Design>
-  **Choosing Between the variants**. It's important to note that both
-  overloads achieve the same result. They are simply two different ways of
-  expressing the code. You can choose the overload that best fits your coding
-  style and makes the code more readable for you and your team.
+  **バリアントの選択**。両方のオーバーロードが同じ結果を達成することに注意することが重要です。
+  これらは単にコードを表現する2つの異なる方法です。自分のコーディングスタイルに最も適したオーバーロードを選び、
+  チーム全体でコードをより読みやすくすることができます。
 </Design>

@@ -1,18 +1,17 @@
 ---
 title: SynchronizedRef
-excerpt: Discover the power of `SynchronizedRef` in Effect, a mutable reference enabling the atomic and effectful update of shared state. Building on the foundation of `Ref`, `SynchronizedRef` introduces the unique `updateEffect` function, allowing execution of effectful operations to modify the shared state. Dive into practical examples demonstrating the distinct capabilities of `SynchronizedRef`, such as parallel updates with consistent sequencing and real-world scenarios involving API requests and state updates. Elevate your understanding of concurrent state management with this advanced feature in Effect programming.
+excerpt: `SynchronizedRef`の力をEffectで発見しましょう。これは共有状態の原子的かつ効果的な更新を可能にする可変参照です。`Ref`の基盤の上に構築された`SynchronizedRef`は、共有状態を変更するための効果的な操作を実行できる独自の`updateEffect`関数を導入します。並列更新の一貫したシーケンシングやAPIリクエストと状態更新を含む実際のシナリオなど、`SynchronizedRef`の独自の機能を示す実用的な例を掘り下げてください。このEffectプログラミングの高度な機能で並行状態管理の理解を深めましょう。
 bottomNavigation: pagination
 ---
 
-`SynchronizedRef<A>` serves as a **mutable reference** to a value of type `A`. With it, we can store **immutable** data and perform updates **atomically and effectfully**.
+`SynchronizedRef<A>`は、型`A`の値への**可変参照**として機能します。これを使用すると、**不変**データを保存し、**原子的かつ効果的に**更新を行うことができます。
 
 <Info>
-  Most of the operations for `SynchronizedRef` are similar to those of `Ref`.
-  If you're not already familiar with `Ref`, it's recommended to read about
-  [the Ref concept](ref) first.
+  `SynchronizedRef`のほとんどの操作は`Ref`の操作と似ています。
+  もし`Ref`にまだ慣れていない場合は、まず[Refの概念](ref)について読むことをお勧めします。
 </Info>
 
-The distinctive function in `SynchronizedRef` is `updateEffect`. This function takes an **effectful operation** and executes it to modify the shared state. This is the key feature setting `SynchronizedRef` apart from `Ref`.
+`SynchronizedRef`の特徴的な関数は`updateEffect`です。この関数は**効果的な操作**を受け取り、それを実行して共有状態を変更します。これが`SynchronizedRef`を`Ref`と区別する主要な機能です。
 
 ```ts twoslash
 import { Effect, SynchronizedRef } from "effect"
@@ -28,21 +27,21 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program).then(console.log)
 /*
-Output:
+出力:
 update
 */
 ```
 
-In real-world applications, there are scenarios where we need to execute an effect (e.g., querying a database) and then update the shared state accordingly. This is where `SynchronizedRef` shines, allowing us to update shared state in an actor-model fashion. We have a shared mutable state, but for each distinct command or message, we want to execute our effect and update the state.
+実際のアプリケーションでは、エフェクト（例えば、データベースのクエリ）を実行し、その後共有状態を更新する必要があるシナリオがあります。ここで`SynchronizedRef`が活躍します。これにより、アクターモデルの方式で共有状態を更新することができます。共有の可変状態があり、各コマンドやメッセージごとにエフェクトを実行し、状態を更新したい場合に役立ちます。
 
-We can pass an effectful program into every single update. All of these updates will be performed in parallel, but the results will be sequenced in such a way that they only affect the state at different times, resulting in a consistent state at the end.
+エフェクトフルなプログラムを各更新に渡すことができます。これらの更新はすべて並行して実行されますが、結果は異なるタイミングで状態に影響を与えるようにシーケンスされ、最終的に一貫した状態が得られます。
 
-In the following example, we send a `getAge` request for each user, updating the state accordingly:
+次の例では、各ユーザーに対して`getAge`リクエストを送り、状態を更新します：
 
 ```ts twoslash
 import { Effect, SynchronizedRef } from "effect"
 
-// Simulate API
+// APIをシミュレートする
 const getAge = (userId: number) =>
   Effect.succeed({ userId, age: userId * 10 })
 
@@ -81,7 +80,7 @@ const meanAge = Effect.gen(function* () {
 
 Effect.runPromise(meanAge).then(console.log)
 /*
-Output:
+出力:
 ... fiber=#1 message="task 4 get: 0"
 ... fiber=#2 message="task 3 get: 40"
 ... fiber=#3 message="task 1 get: 70"

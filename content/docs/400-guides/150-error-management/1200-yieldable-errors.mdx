@@ -1,14 +1,14 @@
 ---
-title: Yieldable Errors
-excerpt: Learn about "Yieldable Errors" in Effect programming, a convenient way to handle custom errors within generator functions. Explore the `Data.Error` and `Data.TaggedError` constructors for creating base and tagged yieldable errors, simplifying error handling in your code.
+title: イールド可能なエラー
+excerpt: Effectプログラミングにおける「Yieldable Errors」について学びましょう。これはジェネレータ関数内でカスタムエラーを扱う便利な方法です。`Data.Error`と`Data.TaggedError`コンストラクタを使って、基本的およびタグ付きのyieldableエラーを作成し、コード内のエラー処理を簡素化します。
 bottomNavigation: pagination
 ---
 
-"Yieldable Errors" are special types of errors that can be yielded within a [generator function](../essentials/using-generators) used by `Effect.gen`. The unique feature of these errors is that you don't need to use the `Effect.fail` API explicitly to handle them. They offer a more intuitive and convenient way to work with custom errors in your code.
+「Yieldable Errors」は、`Effect.gen`で使用される[ジェネレータ関数](../essentials/using-generators)内でyieldできる特別な種類のエラーです。これらのエラーのユニークな特徴は、`Effect.fail` APIを明示的に使用する必要がないことです。これにより、カスタムエラーをより直感的かつ便利に扱うことができます。
 
 ## Data.Error
 
-The `Data.Error` constructor enables you to create a base yieldable error class. This class can be used to represent different types of errors in your code. Here's how you can use it:
+`Data.Error`コンストラクタを使用すると、基本的なyieldableエラークラスを作成できます。このクラスは、コード内のさまざまな種類のエラーを表現するために使用できます。以下はその使用方法です：
 
 ```ts twoslash
 import { Effect, Data } from "effect"
@@ -16,12 +16,12 @@ import { Effect, Data } from "effect"
 class MyError extends Data.Error<{ message: string }> {}
 
 export const program = Effect.gen(function* () {
-  yield* new MyError({ message: "Oh no!" }) // same as yield* Effect.fail(new MyError({ message: "Oh no!" })
+  yield* new MyError({ message: "Oh no!" }) // これは yield* Effect.fail(new MyError({ message: "Oh no!" }) と同じです
 })
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -32,17 +32,17 @@ Output:
 
 ## Data.TaggedError
 
-The `Data.TaggedError` constructor is useful for creating tagged yieldable errors. These errors bear a distinct property named `_tag`, which acts as their unique identifier, allowing you to differentiate them from one another. Here's how you can use it:
+`Data.TaggedError`コンストラクタは、タグ付きのyieldableエラーを作成するのに便利です。これらのエラーは、ユニークな識別子として機能する`_tag`という特別なプロパティを持ち、エラーを区別することができます。以下はその使用方法です：
 
 ```ts twoslash
 import { Effect, Data, Random } from "effect"
 
-// An error with _tag: "Foo"
+// _tagが"Foo"のエラー
 class FooError extends Data.TaggedError("Foo")<{
   message: string
 }> {}
 
-// An error with _tag: "Bar"
+// _tagが"Bar"のエラー
 class BarError extends Data.TaggedError("Bar")<{
   randomNumber: number
 }> {}
@@ -63,9 +63,9 @@ export const program = Effect.gen(function* () {
 
 Effect.runPromise(program).then(console.log, console.error)
 /*
-Example Output (n < 0.2):
+例の出力 (n < 0.2):
 Foo error: Oh no!
 */
 ```
 
-In this example, we create `FooError` and `BarError` classes with distinct tags ("Foo" and "Bar"). These tags help identify the type of error when handling errors in your code.
+この例では、異なるタグ ("Foo" と "Bar") を持つ `FooError` と `BarError` クラスを作成します。これらのタグは、コード内でエラーを処理する際にエラーの種類を識別するのに役立ちます。

@@ -1,12 +1,12 @@
 ---
-title: Guidelines
-excerpt: Guidelines
+title: ガイドライン
+excerpt: ガイドライン
 bottomNavigation: pagination
 ---
 
-## Using `runMain`
+## `runMain`の使用
 
-In Effect, `runMain` serves as the primary entry point for running an Effect application on Node:
+Effectでは、`runMain`はNode上でEffectアプリケーションを実行するための主要なエントリーポイントとして機能します。
 
 ```ts
 import { Effect, Console, Schedule, pipe } from "effect"
@@ -23,27 +23,27 @@ const program = pipe(
   Effect.scoped
 )
 
-// Effect.runFork(program) // no graceful teardown with CTRL+C
+// Effect.runFork(program) // CTRL+Cでは優雅な終了ができません
 
-NodeRuntime.runMain(program) // graceful teardown with CTRL+C
+NodeRuntime.runMain(program) // CTRL+Cで優雅な終了ができます
 ```
 
-The `runMain` function is responsible for finding all fibers and interrupting them. Internally, it adds an observer for the fiber by listening to `sigint` and interrupts all fibers.
+`runMain`関数は、すべてのファイバーを見つけて中断する役割を持っています。内部的には、`sigint`をリッスンすることでファイバーのオブザーバーを追加し、すべてのファイバーを中断します。
 
-It's important to note that teardown should be on the main effect. If you kill the fiber that runs the application/server, the teardown of everything will occur. This is precisely what `runMain` from the `platform-node` package does.
+重要なのは、テアダウンはメインエフェクトで行うべきだということです。アプリケーションやサーバーを実行しているファイバーを終了させると、すべてのテアダウンが行われます。これがまさに`platform-node`パッケージの`runMain`が行うことです。
 
-## Avoid Tacit usage
+## Tacit使用を避ける
 
-> Avoid tacit function calls like `map(f)` and using `flow`
+> `map(f)`や`flow`のような暗黙的な関数呼び出しを避ける
 
-In Effect, it's recommended not to use functions point-free, meaning avoiding tacit usage.
+Effectでは、関数をポイントフリーで使用しないこと、つまり暗黙的な使用を避けることが推奨されています。
 
-While you're free to use tacit functions if you prefer, it's important to know that it can cause issues. It's safer to use `(x) => fn(x)` instead.
+暗黙的な関数を使用することは自由ですが、それが問題を引き起こす可能性があることを知っておくことが重要です。代わりに`(x) => fn(x)`を使用する方が安全です。
 
-Using functions tacitly, especially with optional parameters, can be unsafe. If a function has overloads, using it tacitly might erase all generics, leading to bugs. For example, check out this X thread: [link to thread](https://twitter.com/MichaelArnaldi/status/1670715270845935616).
+特にオプションのパラメータを持つ関数を暗黙的に使用することは安全ではありません。関数にオーバーロードがある場合、暗黙的に使用するとすべてのジェネリックが消去され、バグが発生する可能性があります。例えば、このXスレッドをチェックしてください: [link to thread](https://twitter.com/MichaelArnaldi/status/1670715270845935616)。
 
-TypeScript inference can also be compromised when using tacit functions, which can lead to unexpected errors. So, it's not just a matter of style; it's a protective measure to avoid mistakes.
+TypeScriptの推論も暗黙的な関数を使用することで損なわれ、予期しないエラーが発生する可能性があります。したがって、これは単なるスタイルの問題ではなく、ミスを避けるための保護策です。
 
-Additionally, stack traces may not be as clear when tacit usage is involved. It's risky without much benefit, as TypeScript may not properly check arguments, especially with optional ones, leading to potential issues.
+さらに、暗黙的な使用が関与している場合、スタックトレースが明確でないことがあります。特にオプションの引数を持つ場合、TypeScriptが引数を適切にチェックしない可能性があり、潜在的な問題を引き起こすリスクがあります。
 
-It's worth trying without tacit usage, especially when dealing with generic functions with overloads, as using them tacitly can result in losing the generics.
+特にオーバーロードを持つジェネリック関数を扱う場合、暗黙的な使用を避けることを試みる価値があります。暗黙的に使用するとジェネリックが失われる可能性があるためです。

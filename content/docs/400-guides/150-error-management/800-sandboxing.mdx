@@ -1,28 +1,28 @@
 ---
-title: Sandboxing
-excerpt: Learn how to utilize the powerful `Effect.sandbox` function to encapsulate and understand the causes of errors in your code. This guide explores error sandboxing, allowing you to expose detailed causes of errors, and demonstrates how to handle specific error conditions effectively using standard error-handling operators like `Effect.catchAll` and `Effect.catchTags`.
+title: サンドボックス化
+excerpt: 強力な `Effect.sandbox` 関数を利用して、コード内のエラーの原因をカプセル化し理解する方法を学びます。このガイドではエラーのサンドボックス化を探求し、エラーの詳細な原因を明らかにし、`Effect.catchAll` や `Effect.catchTags` などの標準的なエラーハンドリングオペレーターを使用して特定のエラー条件を効果的に処理する方法を示します。
 bottomNavigation: pagination
 ---
 
-Errors are a common part of programming, and they can happen for various reasons, such as failures, defects, fiber interruptions, or even a combination of these factors. In this guide, we'll explore how to use the `Effect.sandbox` function to isolate and understand the causes of errors in your code.
+エラーはプログラミングの一般的な一部であり、失敗、欠陥、ファイバーの中断、またはこれらの要因の組み合わせなど、さまざまな理由で発生する可能性があります。このガイドでは、`Effect.sandbox` 関数を使用してコード内のエラーの原因を分離し理解する方法を探ります。
 
-## sandbox
+## サンドボックス
 
-The `Effect.sandbox` function is a valuable tool that allows you to encapsulate all the potential causes of an error in an effect. It exposes the full cause of an effect, whether it's due to a failure, defect, fiber interruption, or a combination of these factors.
+`Effect.sandbox` 関数は、エラーのすべての潜在的な原因をエフェクト内にカプセル化するための貴重なツールです。失敗、欠陥、ファイバーの中断、またはこれらの要因の組み合わせによるものであっても、エフェクトの完全な原因を明らかにします。
 
-Here's the signature of the `Effect.sandbox` function:
+こちらが `Effect.sandbox` 関数のシグネチャです：
 
 ```ts
 sandbox: Effect<A, E, R> -> Effect<A, Cause<E>, R>
 ```
 
-In simple terms, it takes an effect `Effect<A, E, R>` and transforms it into an effect `Effect<A, Cause<E>, R>` where the error channel now contains a detailed cause of the error.
+簡単に言うと、`Effect<A, E, R>` というエフェクトを `Effect<A, Cause<E>, R>` というエフェクトに変換し、エラーチャンネルにエラーの詳細な原因を含めることができます。
 
-By using the `Effect.sandbox` function, you gain access to the underlying causes of exceptional effects. These causes are represented as a type of `Cause<E>` and are available in the error channel of the `Effect` data type.
+`Effect.sandbox` 関数を使用することで、例外的なエフェクトの根本的な原因にアクセスできます。これらの原因は `Cause<E>` 型として表され、`Effect` データ型のエラーチャンネルで利用可能です。
 
-Once you have exposed the causes, you can utilize standard error-handling operators like `Effect.catchAll` and `Effect.catchTags` to handle errors more effectively. These operators allow you to respond to specific error conditions.
+原因を明らかにしたら、`Effect.catchAll` や `Effect.catchTags` などの標準的なエラーハンドリングオペレーターを利用して、エラーをより効果的に処理できます。これらのオペレーターを使用すると、特定のエラー条件に対応することができます。
 
-Let's walk through an example to illustrate how error sandboxing works:
+エラーのサンドボックス化がどのように機能するかを示す例を見てみましょう：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -50,10 +50,10 @@ const main = Effect.unsandbox(program)
 
 Effect.runPromise(main).then(console.log)
 /*
-Output:
+出力:
 Caught a defect: Oh uh!
 fallback result on failure
 */
 ```
 
-In this example, we expose the full cause of an effect using `Effect.sandbox`. Then, we handle specific error conditions using `Effect.catchTags`. Finally, if needed, we can undo the sandboxing operation with `Effect.unsandbox`.
+この例では、`Effect.sandbox` を使用してエフェクトの完全な原因を明らかにします。次に、`Effect.catchTags` を使用して特定のエラー条件を処理します。最後に、必要に応じて `Effect.unsandbox` を使ってサンドボックス化の操作を元に戻すことができます。

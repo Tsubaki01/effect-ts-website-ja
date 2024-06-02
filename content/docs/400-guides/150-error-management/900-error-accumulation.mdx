@@ -1,12 +1,12 @@
 ---
-title: Error Accumulation
-excerpt: Discover how to handle errors in your Effect programming by exploring sequential combinators, such as `Effect.zip` and `Effect.forEach`. Learn about the "fail fast" policy and explore alternative approaches for error accumulation using functions like `Effect.validate`, `Effect.validateAll`, `Effect.validateFirst`, and `Effect.partition`.
+title: エラー蓄積
+excerpt: `Effect.zip`や`Effect.forEach`などのシーケンシャルコンビネータを探索することで、Effectプログラミングにおけるエラー処理方法を発見しましょう。「フェイルファスト」ポリシーについて学び、`Effect.validate`、`Effect.validateAll`、`Effect.validateFirst`、`Effect.partition`などの関数を使用してエラーを蓄積するための代替アプローチを探りましょう。
 bottomNavigation: pagination
 ---
 
-Sequential combinators such as `Effect.zip` and `Effect.forEach` have a "fail fast" policy when it comes to error management. This means that they stop and return immediately when they encounter the first error.
+`Effect.zip`や`Effect.forEach`などのシーケンシャルコンビネータは、エラー管理において「フェイルファスト」ポリシーを持っています。これは、最初のエラーに遭遇した時点で停止し、直ちに返すことを意味します。
 
-Let's take a look at an example using the `Effect.zip` operator. In this example, we can see that `Effect.zip` will fail as soon as it encounters the first failure. As a result, only the first error is displayed:
+`Effect.zip`オペレータを使用した例を見てみましょう。この例では、`Effect.zip`が最初の失敗に遭遇した時点で失敗することがわかります。その結果、最初のエラーのみが表示されます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -24,12 +24,12 @@ const program = task1.pipe(
 
 Effect.runPromise(program).then(console.log, console.error)
 /*
-Output:
+出力:
 (FiberFailure) Error: Oh uh!
 */
 ```
 
-The `Effect.forEach` function behaves similarly. It takes a collection and an effectful operation, and tries to apply the operation to all elements of the collection. However, it also follows the "fail fast" policy and fails when it encounters the first error:
+`Effect.forEach`関数も同様に動作します。これは、コレクションと効果的な操作を受け取り、コレクションのすべての要素に対して操作を適用しようとします。しかし、最初のエラーに遭遇した時点で失敗する「フェイルファスト」ポリシーに従います。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -44,16 +44,16 @@ const program = Effect.forEach([1, 2, 3, 4, 5], (n) => {
 
 Effect.runPromise(program).then(console.log, console.error)
 /*
-Output:
+出力:
 (FiberFailure) Error: 4 is not less that 4
 */
 ```
 
-However, there are situations where we may need to collect all potential errors in a computation instead of failing fast. In such cases, we can use operators that accumulate errors as well as successes.
+しかし、フェイルファストではなく、計算中のすべての潜在的なエラーを収集する必要がある状況もあります。そのような場合には、エラーと成功の両方を蓄積するオペレータを使用できます。
 
 ## validate
 
-The `Effect.validate` function is similar to `Effect.zip`, but if it encounters an error, it continues the zip operation instead of stopping. It combines the effects and accumulates both errors and successes:
+`Effect.validate` 関数は `Effect.zip` に似ていますが、エラーに遭遇しても停止せずに zip 操作を続行します。これにより、エフェクトを結合し、エラーと成功の両方を蓄積します：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -71,17 +71,17 @@ const program = task1.pipe(
 
 Effect.runPromise(program).then(console.log, console.error)
 /*
-Output:
+出力:
 (FiberFailure) Error: Oh uh!
 Error: Oh no!
 */
 ```
 
-With `Effect.validate`, we can collect all the errors encountered during the computation instead of stopping at the first error. This allows us to have a complete picture of all the potential errors and successes in our program.
+`Effect.validate`を使用すると、最初のエラーで停止するのではなく、計算中に遭遇したすべてのエラーを収集できます。これにより、プログラム内のすべての潜在的なエラーと成功の全体像を把握することができます。
 
 ## validateAll
 
-The `Effect.validateAll` function is similar to the `Effect.forEach` function. It transforms all elements of a collection using the provided effectful operation, but it collects all errors in the error channel, as well as the success values in the success channel.
+`Effect.validateAll`関数は`Effect.forEach`関数に似ています。これは、提供された効果的な操作を使用してコレクションのすべての要素を変換しますが、エラーチャネルにすべてのエラーを収集し、成功チャネルに成功値を収集します。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -96,21 +96,21 @@ const program = Effect.validateAll([1, 2, 3, 4, 5], (n) => {
 
 Effect.runPromise(program).then(console.log, console.error)
 /*
-Output:
+出力:
 (FiberFailure) Error: ["4 is not less that 4","5 is not less that 4"]
 */
 ```
 
 <Warning>
-  Note that this function is lossy, which means that if there are any errors,
-  all successes will be lost. If you need a function that preserves both
-  successes and failures, please refer to the [partition](#partition)
-  function.
+  この関数は損失があることに注意してください。
+  つまり、エラーが発生した場合、すべての成功が失われます。
+  成功と失敗の両方を保持する関数が必要な場合は、[partition](#partition)
+  関数を参照してください。
 </Warning>
 
 ## validateFirst
 
-The `Effect.validateFirst` function is similar to `Effect.validateAll` but it will return the first success (or all the failures):
+`Effect.validateFirst` 関数は `Effect.validateAll` に似ていますが、最初の成功（またはすべての失敗）を返します。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -124,14 +124,14 @@ const program = Effect.validateFirst([1, 2, 3, 4, 5], (n) => {
 })
 
 Effect.runPromise(program).then(console.log, console.error)
-// Output: 4
+// 出力: 4
 ```
 
-Please note that the return type is `number` instead of `number[]`, as in the case of `validateAll`.
+戻り値の型が `validateAll` の場合の `number[]` ではなく、`number` であることに注意してください。
 
 ## partition
 
-The `Effect.partition` function takes an iterable and an effectful function that transforms each value of the iterable. It then creates a tuple of both failures and successes in the success channel:
+`Effect.partition` 関数は、イテラブルとそのイテラブルの各値を変換する効果的な関数を受け取ります。次に、成功チャネルに失敗と成功の両方のタプルを作成します。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -145,7 +145,7 @@ const program = Effect.partition([0, 1, 2, 3, 4], (n) => {
 })
 
 Effect.runPromise(program).then(console.log, console.error)
-// Output: [ [ '1 is not even', '3 is not even' ], [ 0, 2, 4 ] ]
+// 出力: [ [ '1 is not even', '3 is not even' ], [ 0, 2, 4 ] ]
 ```
 
-Please note that this operator is an unexceptional effect, which means that the type of the error channel is `never`. Therefore, if we encounter a failure case, the whole effect doesn't fail.
+このオペレーターは例外のないエフェクトであることに注意してください。つまり、エラーチャネルの型は `never` です。したがって、失敗ケースに遭遇しても、全体のエフェクトは失敗しません。

@@ -1,22 +1,22 @@
 ---
-title: Layer Memoization
-excerpt: Understand the power of layer memoization in Effect. Discover how layers can be efficiently created once and reused in the dependency graph, optimizing performance. Explore global and local memoization strategies, and learn to manually memoize layers for precise control in your Effect applications.
+title: レイヤーのメモ化
+excerpt: Effectにおけるレイヤーのメモ化の力を理解しましょう。レイヤーが一度効率的に作成され、依存関係グラフ内で再利用されることで、パフォーマンスが最適化される方法を発見します。グローバルおよびローカルのメモ化戦略を探り、Effectアプリケーションでの正確な制御のためにレイヤーを手動でメモ化する方法を学びましょう。
 bottomNavigation: pagination
 ---
 
-Layer memoization allows a layer to be created once and used multiple times in the dependency graph. If we use the same layer twice, for example
+レイヤーのメモ化により、レイヤーは一度作成され、依存関係グラフ内で複数回使用することができます。例えば、同じレイヤーを2回使用する場合
 
 ```ts
 Layer.merge(Layer.provide(b, a), Layer.provide(c, a))
 ```
 
-then the `a` layer will be allocated only once.
+その場合、`a` レイヤーは一度だけ割り当てられます。
 
-## Memoization When Providing Globally
+## グローバルに提供する際のメモ化
 
-One important feature of an Effect application is that layers are shared by default. This means that if the same layer is used twice, and if we provide the layer globally, the layer will only be allocated a single time. For every layer in our dependency graph, there is only one instance of it that is shared between all the layers that depend on it.
+Effectアプリケーションの重要な特徴の一つは、レイヤーがデフォルトで共有されることです。つまり、同じレイヤーが二度使用される場合でも、グローバルに提供されると、そのレイヤーは一度だけ割り当てられます。依存関係グラフ内のすべてのレイヤーに対して、それに依存するすべてのレイヤー間で共有されるインスタンスは一つだけです。
 
-For example, assume we have the three services `A`, `B`, and `C`. The implementation of both `B` and `C` is dependent on the `A` service:
+例えば、`A`、`B`、`C`の三つのサービスがあると仮定します。`B`と`C`の実装はどちらも`A`サービスに依存しています：
 
 ```ts twoslash
 import { Effect, Context, Layer } from "effect"
@@ -60,16 +60,16 @@ const runnable = Effect.provide(
 
 Effect.runPromise(runnable)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#2 message=initialized
 */
 ```
 
-Although both `b` and `c` layers require the `a` layer, the `a` layer is instantiated only once. It is shared with both `b` and `c`.
+`b`と`c`のレイヤーはどちらも`a`レイヤーを必要としますが、`a`レイヤーは一度だけインスタンス化され、`b`と`c`の両方で共有されます。
 
-## Acquiring a Fresh Version
+## 新しいバージョンの取得
 
-If we don't want to share a module, we should create a fresh, non-shared version of it through `Layer.fresh`.
+モジュールを共有したくない場合は、`Layer.fresh`を使用して新しい、共有されないバージョンを作成する必要があります。
 
 ```ts twoslash
 import { Effect, Context, Layer } from "effect"
@@ -117,17 +117,17 @@ const runnable = Effect.provide(
 
 Effect.runPromise(runnable)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#2 message=initialized
 timestamp=... level=INFO fiber=#3 message=initialized
 */
 ```
 
-## No Memoization When Providing Locally
+## ローカルに提供する場合のメモ化なし
 
-If we don't provide a layer globally but instead provide them locally, that layer doesn't support memoization by default.
+レイヤーをグローバルに提供せずにローカルに提供する場合、そのレイヤーはデフォルトでメモ化をサポートしません。
 
-In the following example, we provided the `a` layer two times locally, and Effect doesn't memoize the construction of the `a` layer. So, it will be initialized two times:
+次の例では、`a` レイヤーをローカルに2回提供していますが、Effectは `a` レイヤーの構築をメモ化しません。そのため、2回初期化されます：
 
 ```ts twoslash
 import { Effect, Context, Layer } from "effect"
@@ -146,15 +146,15 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message=initialized
 timestamp=... level=INFO fiber=#0 message=initialized
 */
 ```
 
-## Manual Memoization
+## 手動メモ化
 
-We can memoize the `a` layer manually using the `Layer.memoize` operator. It will return a scoped effect that, if evaluated, will return the lazily computed result of this layer:
+`Layer.memoize` オペレーターを使用して `a` レイヤーを手動でメモ化することができます。これにより、評価された場合、このレイヤーの遅延計算された結果を返すスコープ付きエフェクトが返されます：
 
 ```ts twoslash
 import { Effect, Context, Layer } from "effect"
@@ -179,7 +179,7 @@ const program = Effect.scoped(
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#0 message=initialized
 */
 ```

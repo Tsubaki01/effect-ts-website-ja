@@ -1,23 +1,23 @@
 ---
-title: Introduction to Scheduling
-excerpt: Explore the fundamental concepts of scheduling in Effect using `Schedule<Out, In, Context>`. These immutable values define recurring patterns for executing effects based on input values and internal state. Learn about the composability of schedules, allowing you to create sophisticated recurrence patterns by combining and modifying existing schedules.
+title: スケジューリング入門
+excerpt: `Schedule<Out, In, Context>`を使用してEffectのスケジューリングの基本概念を探求します。これらの不変値は、入力値と内部状態に基づいてエフェクトを実行するための繰り返しパターンを定義します。既存のスケジュールを組み合わせたり修正したりすることで、洗練された再発パターンを作成するためのスケジュールの合成性について学びます。
 bottomNavigation: pagination
 ---
 
-Scheduling is an important concept in Effect that allows you to define recurring effectful operations. It involves the use of `Schedule<Out, In, Context>`, which is an **immutable value** that describes a scheduled pattern for executing effects.
+スケジューリングは、Effectにおいて重要な概念であり、繰り返しのエフェクト操作を定義することができます。これには、エフェクトを実行するためのスケジュールパターンを記述する**不変値**である`Schedule<Out, In, Context>`の使用が含まれます。
 
-A `Schedule` operates by consuming values of type `In` (such as errors in the case of `retry`, or values in the case of `repeat`) and producing values of type `Out`. It determines when to halt or continue the execution based on input values and its internal state.
+`Schedule`は、`In`型の値（例えば、`retry`の場合はエラー、`repeat`の場合は値）を消費し、`Out`型の値を生成することで動作します。入力値と内部状態に基づいて、実行を停止するか続行するかを決定します。
 
-The inclusion of a `Context` parameter allows the schedule to leverage additional services or resources as needed.
+`Context`パラメータを含めることで、スケジュールは必要に応じて追加のサービスやリソースを活用することができます。
 
-Schedules are defined as a collection of intervals spread out over time. Each interval represents a window during which the recurrence of an effect is possible.
+スケジュールは、時間の経過に伴って広がる間隔の集合として定義されます。各間隔は、エフェクトの再発が可能なウィンドウを表します。
 
-## Retrying and Repetition
+## RetryingとRepetition
 
-In the realm of scheduling, there are two related concepts: [Retrying](../error-management/retrying) and [Repetition](repetition). While they share the same underlying idea, they differ in their focus. Retrying aims to handle failures by executing an effect again, while repetition focuses on executing an effect repeatedly to achieve a desired outcome.
+スケジューリングの領域には、[Retrying](../error-management/retrying)と[Repetition](repetition)という2つの関連する概念があります。これらは同じ基本的なアイデアを共有していますが、焦点が異なります。Retryingはエフェクトを再実行することで失敗を処理することを目的とし、Repetitionは望ましい結果を達成するためにエフェクトを繰り返し実行することに焦点を当てています。
 
-When using schedules for retrying or repetition, each interval's starting boundary determines when the effect will be executed again. For example, in retrying, if an error occurs, the schedule defines when the effect should be retried.
+RetryingやRepetitionのためにスケジュールを使用する場合、各間隔の開始境界がエフェクトが再実行されるタイミングを決定します。例えば、Retryingではエラーが発生した場合、スケジュールはエフェクトを再試行するタイミングを定義します。
 
-## Composability of Schedules
+## スケジュールの合成性
 
-Schedules are composable, meaning you can combine simple schedules to create more complex recurrence patterns. Operators like `union` or `intersect` allow you to build sophisticated schedules by combining and modifying existing ones. This flexibility enables you to tailor the scheduling behavior to meet specific requirements.
+スケジュールは合成可能であり、単純なスケジュールを組み合わせてより複雑な再発パターンを作成することができます。`union`や`intersect`のような演算子を使用することで、既存のスケジュールを組み合わせたり修正したりして洗練されたスケジュールを構築することができます。この柔軟性により、特定の要件に合わせたスケジューリング動作を調整することが可能です。

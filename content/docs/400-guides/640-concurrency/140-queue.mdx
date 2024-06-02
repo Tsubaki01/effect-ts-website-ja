@@ -1,20 +1,20 @@
 ---
 title: Queue
-excerpt: Explore the lightweight, in-memory `Queue` in Effect, designed for composable and transparent back-pressure. Learn about its fully asynchronous, purely-functional, and type-safe characteristics. Delve into basic operations, creating different types of queues, and efficiently adding and consuming items. Discover how to shut down a queue gracefully and handle exclusive capabilities with offer-only and take-only queues. Enhance your understanding of `Queue` and leverage its power for seamless coordination in your asynchronous workflows.
+excerpt: Effectの軽量でインメモリの`Queue`を探求し、合成可能で透明なバックプレッシャーを設計します。その完全非同期、純粋関数型、安全な型の特性について学びます。基本操作、さまざまな種類のキューの作成、アイテムの効率的な追加と消費について掘り下げます。キューを優雅にシャットダウンし、offer-onlyおよびtake-onlyキューで排他的な機能を処理する方法を発見します。`Queue`の理解を深め、その力を活用して非同期ワークフローのシームレスな調整を実現しましょう。
 bottomNavigation: pagination
 ---
 
-A `Queue` is a lightweight in-memory queue built on Effect with composable and transparent back-pressure.
-It is fully asynchronous (no locks or blocking), purely-functional and type-safe.
+`Queue`は、Effect上に構築された軽量なインメモリキューで、合成可能で透明なバックプレッシャーを提供します。
+完全非同期（ロックやブロッキングなし）、純粋関数型、安全な型です。
 
-## Basic Operations
+## 基本操作
 
-A `Queue<A>` stores values of type `A` and provides two fundamental operations:
+`Queue<A>`は型`A`の値を格納し、2つの基本操作を提供します：
 
-- `Queue.offer`: This operation adds a value of type `A` to the `Queue`.
-- `Queue.take`: It removes and returns the oldest value from the `Queue`.
+- `Queue.offer`: この操作は型`A`の値を`Queue`に追加します。
+- `Queue.take`: 最も古い値を削除して返します。
 
-Here's an example demonstrating these basic operations:
+以下はこれらの基本操作を示す例です：
 
 ```ts twoslash
 import { Effect, Queue } from "effect"
@@ -26,71 +26,71 @@ const program = Effect.gen(function* () {
   return value
 })
 
-Effect.runPromise(program).then(console.log) // Output: 1
+Effect.runPromise(program).then(console.log) // 出力: 1
 ```
 
-## Creating a Queue
+## Queueの作成
 
-A `Queue` can have bounded (limited capacity) or unbounded storage. Depending on your requirements, you can choose from various strategies to handle new values when the queue reaches its capacity.
+`Queue`は、制限付き（容量制限あり）または無制限のストレージを持つことができます。要件に応じて、キューが容量に達したときに新しい値を処理するためのさまざまな戦略を選択できます。
 
 ### Bounded Queue
 
-A bounded queue provides back-pressure when it's full. This means that if the queue is full, any attempt to add more items will be suspended until there's space available.
+Bounded Queueは、満杯になるとバックプレッシャーを提供します。つまり、キューが満杯の場合、スペースが利用可能になるまでアイテムを追加しようとする試みは一時停止されます。
 
 ```ts twoslash
 import { Queue } from "effect"
 
-// Creating a bounded queue with a capacity of 100
+// 容量100のbounded queueを作成する
 const boundedQueue = Queue.bounded<number>(100)
 ```
 
 ### Dropping Queue
 
-A dropping queue simply drops new items when it's full. It doesn't wait for space to become available.
+Dropping Queueは、満杯になると新しいアイテムを単純に捨てます。スペースが利用可能になるのを待ちません。
 
 ```ts twoslash
 import { Queue } from "effect"
 
-// Creating a dropping queue with a capacity of 100
+// 容量100のDropping Queueを作成する
 const droppingQueue = Queue.dropping<number>(100)
 ```
 
 ### Sliding Queue
 
-A sliding queue removes old items when it's full to accommodate new ones.
+Sliding Queueは、満杯になると古いアイテムを削除して新しいアイテムを収容します。
 
 ```ts twoslash
 import { Queue } from "effect"
 
-// Creating a sliding queue with a capacity of 100
+// 容量100のSliding Queueを作成する
 const slidingQueue = Queue.sliding<number>(100)
 ```
 
 ### Unbounded Queue
 
-An unbounded queue has no capacity limit.
+Unbounded Queueは容量制限がありません。
 
 ```ts twoslash
 import { Queue } from "effect"
 
-// Creating an unbounded queue
+// Unbounded Queueを作成する
 const unboundedQueue = Queue.unbounded<number>()
 ```
 
-## Adding Items to a Queue
+## Queueにアイテムを追加する
 
-To add a value to the queue, you can use the `Queue.offer` operation:
+Queueに値を追加するには、`Queue.offer`操作を使用できます。
 
 ```ts twoslash
 import { Effect, Queue } from "effect"
 
 const program = Effect.gen(function* () {
   const queue = yield* Queue.bounded<number>(100)
-  yield* Queue.offer(queue, 1) // put 1 in the queue
+  yield* Queue.offer(queue, 1) // キューに1を追加する
 })
 ```
 
-If you're using a back-pressured queue and it's full, the `offer` operation might suspend. In such cases, you can use `Effect.fork` to wait in a different execution context (fiber).
+バックプレッシャー付きのキューを使用していて、それが満杯の場合、`offer`操作は一時停止することがあります。そのような場合には、`Effect.fork`を使用して別の実行コンテキスト（ファイバー）で待機することができます。
 
 ```ts twoslash
 import { Effect, Queue, Fiber } from "effect"
@@ -104,7 +104,7 @@ const program = Effect.gen(function* () {
 })
 ```
 
-You can also add multiple values at once using `Queue.offerAll`:
+`Queue.offerAll`を使用して、一度に複数の値を追加することもできます。
 
 ```ts twoslash
 import { Effect, Queue, Array } from "effect"
@@ -116,12 +116,12 @@ const program = Effect.gen(function* () {
   return yield* Queue.size(queue)
 })
 
-Effect.runPromise(program).then(console.log) // Output: 10
+Effect.runPromise(program).then(console.log) // 出力: 10
 ```
 
-## Consuming Items from a Queue
+## Queueからアイテムを消費する
 
-The `Queue.take` operation removes the oldest item from the queue and returns it. If the queue is empty, it will suspend and resume only when an item is added to the queue. You can also use `Effect.fork` to wait for the value in a different execution context (fiber).
+`Queue.take`操作はキューから最も古いアイテムを削除して返します。キューが空の場合、アイテムがキューに追加されるまで一時停止し、再開します。また、`Effect.fork`を使用して別の実行コンテキスト（ファイバー）で値を待機することもできます。
 
 ```ts twoslash
 import { Effect, Queue, Fiber } from "effect"
@@ -134,10 +134,10 @@ const oldestItem = Effect.gen(function* () {
   return value
 })
 
-Effect.runPromise(oldestItem).then(console.log) // Output: something
+Effect.runPromise(oldestItem).then(console.log) // 出力: something
 ```
 
-You can retrieve the first item using `Queue.poll`. If the queue is empty, you'll get `None`; otherwise, the top item will be wrapped in `Some`.
+最初のアイテムは `Queue.poll` を使用して取得できます。キューが空の場合は `None` が返され、そうでない場合は最上位のアイテムが `Some` にラップされて返されます。
 
 ```ts twoslash
 import { Effect, Queue } from "effect"
@@ -152,7 +152,7 @@ const polled = Effect.gen(function* () {
 
 Effect.runPromise(polled).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Option",
   _tag: "Some",
@@ -161,7 +161,7 @@ Output:
 */
 ```
 
-You can retrieve multiple items at once using `Queue.takeUpTo`. If the queue doesn't have enough items to return, it will return all the available items without waiting for more offers.
+`Queue.takeUpTo` を使用して一度に複数のアイテムを取得できます。キューに十分なアイテムがない場合、追加のオファーを待たずに利用可能なすべてのアイテムを返します。
 
 ```ts twoslash
 import { Effect, Queue } from "effect"
@@ -177,7 +177,7 @@ const polled = Effect.gen(function* () {
 
 Effect.runPromise(polled).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 10, 20 ]
@@ -185,7 +185,7 @@ Output:
 */
 ```
 
-Similarly, you can retrieve all items at once using `Queue.takeAll`. It returns immediately, providing an empty collection if the queue is empty.
+同様に、`Queue.takeAll` を使用してすべてのアイテムを一度に取得できます。これは即座に返され、キューが空の場合は空のコレクションを提供します。
 
 ```ts twoslash
 import { Effect, Queue } from "effect"
@@ -201,7 +201,7 @@ const polled = Effect.gen(function* () {
 
 Effect.runPromise(polled).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 10, 20, 30 ]
@@ -209,9 +209,9 @@ Output:
 */
 ```
 
-## Shutting Down a Queue
+## キューのシャットダウン
 
-With `Queue.shutdown`, you can interrupt all fibers that are suspended on `offer*` or `take*`. It also empties the queue and causes all future `offer*` and `take*` calls to terminate immediately.
+`Queue.shutdown` を使用すると、`offer*` や `take*` で中断されているすべてのファイバーを中断できます。また、キューを空にし、将来の `offer*` および `take*` 呼び出しを即座に終了させます。
 
 ```ts twoslash
 import { Effect, Queue, Fiber } from "effect"
@@ -219,12 +219,12 @@ import { Effect, Queue, Fiber } from "effect"
 const program = Effect.gen(function* () {
   const queue = yield* Queue.bounded<number>(3)
   const fiber = yield* Effect.fork(Queue.take(queue))
-  yield* Queue.shutdown(queue) // will interrupt fiber
-  yield* Fiber.join(fiber) // will terminate
+  yield* Queue.shutdown(queue) // ファイバーを中断します
+  yield* Fiber.join(fiber) // 終了します
 })
 ```
 
-You can use `Queue.awaitShutdown` to execute an effect when the queue is shut down. This function waits until the queue is shut down, and if it's already shut down, it resumes immediately.
+`Queue.awaitShutdown` を使用すると、キューがシャットダウンされたときにエフェクトを実行できます。この関数はキューがシャットダウンされるまで待機し、すでにシャットダウンされている場合は即座に再開します。
 
 ```ts twoslash
 import { Effect, Queue, Fiber, Console } from "effect"
@@ -240,20 +240,20 @@ const program = Effect.gen(function* () {
   yield* Fiber.join(fiber)
 })
 
-Effect.runPromise(program) // Output: shutting down
+Effect.runPromise(program) // 出力: shutting down
 ```
 
 ## Offer-only / Take-only Queues
 
-In some situations, you may need specific parts of your code to have exclusive capabilities, such as only offering values (`Enqueue`) or only taking values (`Dequeue`) from a queue. Effect provides a straightforward way to achieve this.
+特定の状況では、コードの一部に対して、キューに値を提供する (`Enqueue`) だけ、またはキューから値を取得する (`Dequeue`) だけの排他的な機能が必要になることがあります。Effectはこれを実現するための簡単な方法を提供します。
 
-All operations related to offering values are defined by the `Enqueue` interface. Here's an example of how to use it:
+値を提供する操作はすべて `Enqueue` インターフェースによって定義されています。以下はその使用例です：
 
 ```ts twoslash
 import { Queue } from "effect"
 
 const send = (offerOnlyQueue: Queue.Enqueue<number>, value: number) => {
-  // This enqueue can only be used to offer values
+  // このenqueueは値を提供するためだけに使用できます
 
   // @ts-expect-error
   Queue.take(offerOnlyQueue)
@@ -263,13 +263,13 @@ const send = (offerOnlyQueue: Queue.Enqueue<number>, value: number) => {
 }
 ```
 
-Similarly, all operations related to taking values are defined by the `Dequeue` interface. Here's an example:
+同様に、値を取得する操作はすべて `Dequeue` インターフェースによって定義されています。以下はその使用例です：
 
 ```ts twoslash
 import { Queue } from "effect"
 
 const receive = (takeOnlyQueue: Queue.Dequeue<number>) => {
-  // This dequeue can only be used to take values
+  // このdequeueは値を取得するためだけに使用できます
 
   // @ts-expect-error
   Queue.offer(takeOnlyQueue, 1)
@@ -279,7 +279,7 @@ const receive = (takeOnlyQueue: Queue.Dequeue<number>) => {
 }
 ```
 
-The `Queue` type extends both `Enqueue` and `Dequeue`, allowing you to conveniently pass it to different parts of your code where you want to enforce either `Enqueue` or `Dequeue` behavior:
+`Queue` 型は `Enqueue` と `Dequeue` の両方を拡張しており、コードの異なる部分に `Enqueue` または `Dequeue` の動作を強制したい場合に便利に渡すことができます。
 
 ```ts twoslash
 import { Effect, Queue } from "effect"
@@ -295,18 +295,18 @@ const receive = (takeOnlyQueue: Queue.Dequeue<number>) => {
 const program = Effect.gen(function* () {
   const queue = yield* Queue.unbounded<number>()
 
-  // Offer values to the queue
+  // キューに値を提供する
   yield* send(queue, 1)
   yield* send(queue, 2)
 
-  // Take values from the queue
+  // キューから値を取得する
   console.log(yield* receive(queue))
   console.log(yield* receive(queue))
 })
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 1
 2
 */

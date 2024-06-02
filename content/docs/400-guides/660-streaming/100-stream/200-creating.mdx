@@ -1,16 +1,16 @@
 ---
-title: Creating Streams
-excerpt: Explore diverse methods for crafting `Stream`s in Effect, tailored to your specific needs. Learn about common constructors like `make`, `empty`, `unit`, `range`, `iterate`, and `scoped`. Discover how to generate streams from success and failure using `succeed` and `fail` functions, and construct streams from chunks, effects, asynchronous callbacks, iterables, repetitions, unfolding, pagination, queues, pub/sub, and schedules. Dive into practical examples and gain insights into the nuances of each method, enabling you to harness the full power of Effect's streaming capabilities.
+title: Streamの作成
+excerpt: `Stream`をEffectで作成するための多様な方法を探求し、あなたの特定のニーズに合わせてカスタマイズします。`make`、`empty`、`unit`、`range`、`iterate`、`scoped`などの一般的なコンストラクタについて学びます。`succeed`と`fail`関数を使用して成功と失敗からストリームを生成し、チャンク、エフェクト、非同期コールバック、イテラブル、繰り返し、展開、ページネーション、キュー、pub/sub、スケジュールからストリームを構築する方法を発見します。実践的な例を通じて各メソッドのニュアンスを理解し、Effectのストリーミング機能を最大限に活用できるようになります。
 bottomNavigation: pagination
 ---
 
-In this section, we'll explore various methods for creating Effect `Stream`s. These methods will help you generate streams tailored to your needs.
+このセクションでは、Effectの`Stream`を作成するためのさまざまな方法を探ります。これらの方法は、あなたのニーズに合わせたストリームを生成するのに役立ちます。
 
-## Common Constructors
+## 一般的なコンストラクタ
 
 ### make
 
-You can create a pure stream by using the `Stream.make` constructor. This constructor accepts a variable list of values as its arguments.
+`Stream.make`コンストラクタを使用して純粋なストリームを作成できます。このコンストラクタは、可変リストの値を引数として受け取ります。
 
 ```ts twoslash
 import { Stream } from "effect"
@@ -20,7 +20,7 @@ const stream = Stream.make(1, 2, 3)
 
 ### empty
 
-Sometimes, you may require a stream that doesn't produce any values. In such cases, you can use `Stream.empty`. This constructor creates a stream that remains empty.
+場合によっては、値を生成しないストリームが必要になることがあります。そのような場合には、`Stream.empty`を使用できます。このコンストラクタは、空のままのストリームを作成します。
 
 ```ts twoslash
 import { Stream } from "effect"
@@ -30,7 +30,7 @@ const stream = Stream.empty
 
 ### void
 
-If you need a stream that contains a single `void` value, you can use `Stream.void`. This constructor is handy when you want to represent a stream with a single event or signal.
+単一の`void`値を含むストリームが必要な場合は、`Stream.void`を使用できます。このコンストラクタは、単一のイベントやシグナルを表現したいときに便利です。
 
 ```ts twoslash
 import { Stream } from "effect"
@@ -40,34 +40,34 @@ const stream = Stream.void
 
 ### range
 
-To create a stream of integers within a specified range `[min, max]` (including both endpoints, `min` and `max`), you can use `Stream.range`. This is particularly useful for generating a stream of sequential numbers.
+指定された範囲 `[min, max]`（両端の `min` と `max` を含む）内の整数のストリームを作成するには、`Stream.range` を使用できます。これは、連続した数値のストリームを生成するのに特に便利です。
 
 ```ts twoslash
 import { Stream } from "effect"
 
-// Creating a stream of numbers from 1 to 5
-const stream = Stream.range(1, 5) // Produces 1, 2, 3, 4, 5
+// 1から5までの数値のストリームを作成する
+const stream = Stream.range(1, 5) // 1, 2, 3, 4, 5を生成します
 ```
 
 ### iterate
 
-With `Stream.iterate`, you can generate a stream by applying a function iteratively to an initial value. The initial value becomes the first element produced by the stream, followed by subsequent values produced by `f(init)`, `f(f(init))`, and so on.
+`Stream.iterate`を使用すると、初期値に関数を繰り返し適用することでストリームを生成できます。初期値はストリームによって生成される最初の要素となり、その後は`f(init)`、`f(f(init))`などのように続きます。
 
 ```ts twoslash
 import { Stream } from "effect"
 
-// Creating a stream of incrementing numbers
-const stream = Stream.iterate(1, (n) => n + 1) // Produces 1, 2, 3, ...
+// インクリメントする数値のストリームを作成する
+const stream = Stream.iterate(1, (n) => n + 1) // 1, 2, 3, ...を生成します
 ```
 
 ### scoped
 
-`Stream.scoped` is used to create a single-valued stream from a scoped resource. It can be handy when dealing with resources that require explicit acquisition, usage, and release.
+`Stream.scoped`はスコープされたリソースから単一の値を持つストリームを作成するために使用されます。明示的な取得、使用、および解放が必要なリソースを扱う際に便利です。
 
 ```ts twoslash
 import { Stream, Effect, Console } from "effect"
 
-// Creating a single-valued stream from a scoped resource
+// スコープされたリソースから単一の値を持つストリームを作成する
 const stream = Stream.scoped(
   Effect.acquireUseRelease(
     Console.log("acquire"),
@@ -77,28 +77,28 @@ const stream = Stream.scoped(
 )
 ```
 
-## From Success and Failure
+## 成功と失敗から
 
-Much like the `Effect` data type, you can generate a `Stream` using the `fail` and `succeed` functions:
+`Effect`データ型と同様に、`fail`および`succeed`関数を使用して`Stream`を生成することができます：
 
 ```ts twoslash
 import { Stream } from "effect"
 
-// Creating a stream that can emit errors
+// エラーを発生させることができるストリームを作成する
 const streamWithError: Stream.Stream<never, string> = Stream.fail("Uh oh!")
 
-// Creating a stream that emits a numeric value
+// 数値を発生させるストリームを作成する
 const streamWithNumber: Stream.Stream<number> = Stream.succeed(5)
 ```
 
 ## From Chunks
 
-You can construct a stream from a `Chunk` like this:
+`Chunk`からストリームを構築することができます：
 
 ```ts twoslash
 import { Stream, Chunk } from "effect"
 
-// Creating a stream with values from a single Chunk
+// 単一のChunkから値を持つストリームを作成する
 const stream = Stream.fromChunk(Chunk.make(1, 2, 3))
 ```
 
@@ -107,13 +107,13 @@ Moreover, you can create a stream from multiple `Chunk`s as well:
 ```ts twoslash
 import { Stream, Chunk } from "effect"
 
-// Creating a stream with values from multiple Chunks
+// 複数のChunkから値を持つストリームを作成する
 const stream = Stream.fromChunks(Chunk.make(1, 2, 3), Chunk.make(4, 5, 6))
 ```
 
-## From Effect
+## Effectから
 
-You can generate a stream from an Effect workflow by employing the `Stream.fromEffect` constructor. For instance, consider the following stream, which generates a single random number:
+`Stream.fromEffect`コンストラクタを使用して、Effectワークフローからストリームを生成することができます。例えば、次のストリームは単一のランダムな数値を生成します：
 
 ```ts twoslash
 import { Stream, Random } from "effect"
@@ -121,13 +121,13 @@ import { Stream, Random } from "effect"
 const stream = Stream.fromEffect(Random.nextInt)
 ```
 
-This method allows you to seamlessly transform the output of an Effect into a stream, providing a straightforward way to work with asynchronous operations within your streams.
+このメソッドを使用すると、Effectの出力をシームレスにストリームに変換でき、ストリーム内で非同期操作を簡単に扱うことができます。
 
-## From Asynchronous Callback
+## 非同期コールバックから
 
-Imagine you have an asynchronous function that relies on callbacks. If you want to capture the results emitted by those callbacks as a stream, you can use the `Stream.async` function. This function is designed to adapt functions that invoke their callbacks multiple times and emit the results as a stream.
+コールバックに依存する非同期関数があるとします。そのコールバックによって発生する結果をストリームとしてキャプチャしたい場合、`Stream.async`関数を使用できます。この関数は、コールバックを複数回呼び出す関数を適応させ、その結果をストリームとして発生させるように設計されています。
 
-Let's break down how to use it in the following example:
+次の例でその使い方を説明します：
 
 ```ts twoslash
 import { Stream, Effect, Chunk, Option, StreamEmit } from "effect"
@@ -150,7 +150,7 @@ const stream = Stream.async(
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 1, 2 ]
@@ -158,21 +158,21 @@ Output:
 */
 ```
 
-The `StreamEmit.Emit<R, E, A, void>` type represents an asynchronous callback that can be called multiple times. This callback takes a value of type `Effect<Chunk<A>, Option<E>, R>`. Here's what each of the possible outcomes means:
+`StreamEmit.Emit<R, E, A, void>`型は、複数回呼び出すことができる非同期コールバックを表します。このコールバックは`Effect<Chunk<A>, Option<E>, R>`型の値を受け取ります。以下は各結果の意味です：
 
-- When the value provided to the callback results in a `Chunk<A>` upon success, it signifies that the specified elements should be emitted as part of the stream.
+- コールバックに提供された値が成功して`Chunk<A>`を返す場合、それは指定された要素がストリームの一部として発生することを意味します。
 
-- If the value passed to the callback results in a failure with `Some<E>`, it indicates the termination of the stream with the specified error.
+- コールバックに提供された値が`Some<E>`で失敗した場合、それは指定されたエラーでストリームが終了することを示します。
 
-- When the value passed to the callback results in a failure with `None`, it serves as a signal for the end of the stream, essentially terminating it.
+- コールバックに提供された値が`None`で失敗した場合、それはストリームの終了を示す信号として機能し、実質的にストリームを終了させます。
 
-To put it simply, this type allows you to specify how your asynchronous callback interacts with the stream, determining when to emit elements, when to terminate with an error, or when to signal the end of the stream.
+簡単に言えば、この型は非同期コールバックがストリームとどのように相互作用するかを指定することができ、要素を発生させるタイミング、エラーで終了するタイミング、またはストリームの終了を示すタイミングを決定します。
 
-## From Iterables
+## Iterableから
 
 ### fromIterable
 
-You can create a pure stream from an `Iterable` of values using the `Stream.fromIterable` constructor. It's a straightforward way to convert a collection of values into a stream.
+`Stream.fromIterable`コンストラクタを使用して、値の`Iterable`から純粋なストリームを作成できます。これは、値のコレクションをストリームに変換する簡単な方法です。
 
 ```ts twoslash
 import { Stream } from "effect"
@@ -184,9 +184,9 @@ const stream = Stream.fromIterable(numbers)
 
 ### fromIterableEffect
 
-When you have an effect that produces a value of type `Iterable`, you can employ the `Stream.fromIterableEffect` constructor to generate a stream from that effect.
+`Iterable`型の値を生成するエフェクトがある場合、`Stream.fromIterableEffect`コンストラクタを使用して、そのエフェクトからストリームを生成できます。
 
-For instance, let's say you have a database operation that retrieves a list of users. Since this operation involves effects, you can utilize `Stream.fromIterableEffect` to convert the result into a `Stream`:
+例えば、ユーザーのリストを取得するデータベース操作があるとしましょう。この操作にはエフェクトが伴うため、`Stream.fromIterableEffect`を利用してその結果を`Stream`に変換することができます：
 
 ```ts twoslash
 import { Stream, Effect, Context } from "effect"
@@ -203,11 +203,11 @@ const getUsers = Database.pipe(Effect.andThen((_) => _.getUsers))
 const users = Stream.fromIterableEffect(getUsers)
 ```
 
-This enables you to work seamlessly with effects and convert their results into streams for further processing.
+これにより、エフェクトとシームレスに連携し、その結果をストリームに変換してさらに処理することができます。
 
 ### fromAsyncIterable
 
-Async iterables are another type of data source that can be converted into a stream. With the `Stream.fromAsyncIterable` constructor, you can work with asynchronous data sources and handle potential errors gracefully.
+Async iterablesは、ストリームに変換できる別のタイプのデータソースです。`Stream.fromAsyncIterable`コンストラクタを使用すると、非同期データソースを扱い、潜在的なエラーを優雅に処理することができます。
 
 ```ts twoslash
 import { Stream } from "effect"
@@ -219,17 +219,17 @@ const myAsyncIterable = async function* () {
 
 const stream = Stream.fromAsyncIterable(
   myAsyncIterable(),
-  (e) => new Error(String(e)) // Error Handling
+  (e) => new Error(String(e)) // エラーハンドリング
 )
 ```
 
-In this code, we define an async iterable and then create a stream named `stream` from it. Additionally, we provide an error handler function to manage any potential errors that may occur during the conversion.
+このコードでは、非同期イテラブルを定義し、それから`stream`という名前のストリームを作成します。さらに、変換中に発生する可能性のあるエラーを管理するためのエラーハンドラ関数を提供しています。
 
-## From Repetition
+## 繰り返しから
 
-### Repeating a Single Value
+### 単一の値を繰り返す
 
-You can create a stream that endlessly repeats a specific value using the `Stream.repeatValue` constructor:
+`Stream.repeatValue`コンストラクタを使用して、特定の値を無限に繰り返すストリームを作成できます：
 
 ```ts twoslash
 import { Stream } from "effect"
@@ -237,22 +237,22 @@ import { Stream } from "effect"
 const repeatZero = Stream.repeatValue(0)
 ```
 
-### Repeating a Stream's Content
+### ストリームの内容を繰り返す
 
-`Stream.repeat` allows you to create a stream that repeats a specified stream's content according to a schedule. This can be useful for generating recurring events or values.
+`Stream.repeat`を使用すると、指定されたストリームの内容をスケジュールに従って繰り返すストリームを作成できます。これは、定期的なイベントや値を生成するのに役立ちます。
 
 ```ts twoslash
 import { Stream, Schedule } from "effect"
 
-// Creating a stream that repeats a value indefinitely
+// 特定の値を無限に繰り返すストリームを作成する
 const repeatingStream = Stream.repeat(Stream.succeed(1), Schedule.forever)
 ```
 
-### Repeating an Effect's Result
+### エフェクトの結果を繰り返す
 
-Imagine you have an effectful API call, and you want to use the result of that call to create a stream. You can achieve this by creating a stream from the effect and repeating it indefinitely.
+エフェクトを伴うAPI呼び出しがあり、その結果を使用してストリームを作成したいと想像してください。これを実現するには、エフェクトからストリームを作成し、それを無限に繰り返すことができます。
 
-Here's an example of generating a stream of random numbers:
+以下は、ランダムな数値のストリームを生成する例です：
 
 ```ts twoslash
 import { Stream, Random } from "effect"
@@ -260,11 +260,11 @@ import { Stream, Random } from "effect"
 const randomNumbers = Stream.repeatEffect(Random.nextInt)
 ```
 
-### Repeating an Effect with Termination
+### 効果を繰り返して終了する
 
-You can repeatedly evaluate a given effect and terminate the stream based on specific conditions.
+特定の条件に基づいてストリームを終了させるために、特定の効果を繰り返し評価することができます。
 
-In this example, we're draining an `Iterator` to create a stream from it:
+この例では、`Iterator`を使ってストリームを作成しています：
 
 ```ts twoslash
 import { Stream, Effect, Option } from "effect"
@@ -282,9 +282,9 @@ const drainIterator = <A>(it: Iterator<A>): Stream.Stream<A> =>
   )
 ```
 
-### Generating Ticks
+### Ticksの生成
 
-You can create a stream that emits `void` values at specified intervals using the `Stream.tick` constructor. This is useful for creating periodic events.
+`Stream.tick`コンストラクタを使用すると、指定された間隔で`void`値を発行するストリームを作成できます。これは、定期的なイベントを作成するのに役立ちます。
 
 ```ts twoslash
 import { Stream } from "effect"
@@ -292,19 +292,19 @@ import { Stream } from "effect"
 const stream = Stream.tick("2 seconds")
 ```
 
-## From Unfolding/Pagination
+## Unfolding/Paginationから
 
-In functional programming, the concept of `unfold` can be thought of as the counterpart to `fold`.
+関数型プログラミングでは、`unfold`の概念は`fold`の対になるものと考えることができます。
 
-With `fold`, we process a data structure and produce a return value. For example, we can take an `Array<number>` and calculate the sum of its elements.
+`fold`では、データ構造を処理して戻り値を生成します。例えば、`Array<number>`を取り、その要素の合計を計算することができます。
 
-On the other hand, `unfold` represents an operation where we start with an initial value and generate a recursive data structure, adding one element at a time using a specified state function. For example, we can create a sequence of natural numbers starting from `1` and using the `increment` function as the state function.
+一方、`unfold`は初期値から始めて、指定された状態関数を使用して1つずつ要素を追加しながら再帰的なデータ構造を生成する操作を表します。例えば、`1`から始めて、状態関数として`increment`関数を使用して自然数のシーケンスを作成することができます。
 
 ### Unfold
 
 #### unfold
 
-The Stream module includes an `unfold` function defined as follows:
+Streamモジュールには、次のように定義された`unfold`関数が含まれています：
 
 ```ts
 declare const unfold: <S, A>(
@@ -313,12 +313,12 @@ declare const unfold: <S, A>(
 ) => Stream<A>
 ```
 
-Here's how it works:
+このように動作します：
 
-- **initialState**. This is the initial state value.
-- **step**. The state function `step` takes the current state `s` as input. If the result of this function is `None`, the stream ends. If it's `Some<[A, S]>`, the next element in the stream is `A`, and the state `S` is updated for the next step process.
+- **initialState**. これは初期状態の値です。
+- **step**. 状態関数 `step` は現在の状態 `s` を入力として受け取ります。この関数の結果が `None` であれば、ストリームは終了します。結果が `Some<[A, S]>` であれば、ストリームの次の要素は `A` であり、状態 `S` は次のステップのために更新されます。
 
-For example, let's create a stream of natural numbers using `Stream.unfold`:
+例えば、`Stream.unfold` を使用して自然数のストリームを作成してみましょう：
 
 ```ts twoslash
 import { Stream, Option } from "effect"
@@ -328,9 +328,9 @@ const nats = Stream.unfold(1, (n) => Option.some([n, n + 1]))
 
 #### unfoldEffect
 
-Sometimes, we may need to perform effectful state transformations during the unfolding operation. This is where `Stream.unfoldEffect` comes in handy. It allows us to work with effects while generating streams.
+時々、unfold操作中に効果的な状態変換を行う必要がある場合があります。ここで役立つのが`Stream.unfoldEffect`です。これにより、ストリームを生成しながらエフェクトを扱うことができます。
 
-Here's an example of creating an infinite stream of random `1` and `-1` values using `Stream.unfoldEffect`:
+以下は、`Stream.unfoldEffect`を使用してランダムな`1`と`-1`の無限ストリームを作成する例です：
 
 ```ts twoslash
 import { Stream, Random, Effect, Option } from "effect"
@@ -342,17 +342,17 @@ const ints = Stream.unfoldEffect(1, (n) =>
 )
 ```
 
-#### Additional Variants
+#### 追加のバリアント
 
-There are also similar operations like `Stream.unfoldChunk` and `Stream.unfoldChunkEffect` tailored for working with `Chunk` data types.
+`Stream.unfoldChunk`や`Stream.unfoldChunkEffect`のように、`Chunk`データ型を扱うための類似の操作もあります。
 
 ### Pagination
 
 #### paginate
 
-`Stream.paginate` is similar to `Stream.unfold` but allows emitting values one step further.
+`Stream.paginate`は`Stream.unfold`に似ていますが、もう一歩進んで値を出力することができます。
 
-For example, the following stream emits `0, 1, 2, 3` elements:
+例えば、次のストリームは`0, 1, 2, 3`の要素を出力します：
 
 ```ts twoslash
 import { Stream, Option } from "effect"
@@ -363,20 +363,20 @@ const stream = Stream.paginate(0, (n) => [
 ])
 ```
 
-Here's how it works:
+このように動作します：
 
-- We start with an initial value of `0`.
-- The provided function takes the current value `n` and returns a tuple. The first element of the tuple is the value to emit (`n`), and the second element determines whether to continue (`Option.some(n + 1)`) or stop (`Option.none()`).
+- 初期値として `0` を開始します。
+- 提供された関数は現在の値 `n` を受け取り、タプルを返します。タプルの最初の要素は出力する値 (`n`) で、2番目の要素は続行するか (`Option.some(n + 1)`) 停止するか (`Option.none()`) を決定します。
 
-#### Additional Variants
+#### 追加のバリアント
 
-There are also similar operations like `Stream.paginateChunk` and `Stream.paginateChunkEffect` tailored for working with `Chunk` data types.
+`Stream.paginateChunk` や `Stream.paginateChunkEffect` のように、`Chunk` データ型を扱うための類似の操作もあります。
 
-### Unfolding vs. Pagination
+### Unfolding と Pagination の違い
 
-You might wonder about the difference between the `unfold` and `paginate` combinators and when to use one over the other. Let's explore this by diving into an example.
+`unfold` と `paginate` のコンビネータの違いと、どちらを使用すべきかについて疑問に思うかもしれません。例を通じてこれを探ってみましょう。
 
-Imagine we have a paginated API that provides a substantial amount of data in a paginated manner. When we make a request to this API, it returns a `ResultPage` object containing the results for the current page and a flag indicating whether it's the last page or if there's more data to retrieve on the next page. Here's a simplified representation of our API:
+大量のデータをページネーション形式で提供する API があると想像してください。この API にリクエストを送ると、現在のページの結果と、それが最後のページか次のページに取得するデータがあるかを示すフラグを含む `ResultPage` オブジェクトが返されます。以下はこの API の簡略化された表現です：
 
 ```twoslash include domain
 import { Chunk, Effect } from "effect"
@@ -401,7 +401,7 @@ export const listPaginated = (
         Chunk.range(1, pageSize),
         (index) => `Result ${pageNumber}-${index}`
       ),
-      pageNumber === 2 // Return 3 pages
+      pageNumber === 2 // 3ページを返す
     )
   )
 }
@@ -411,7 +411,7 @@ export const listPaginated = (
 // @include: domain
 ```
 
-Our goal is to convert this paginated API into a stream of `RowData` events. For our initial attempt, we might think that using the `Stream.unfold` operation is the way to go:
+私たちの目標は、このページネーションされたAPIを`RowData`イベントのストリームに変換することです。最初の試みとして、`Stream.unfold`操作を使用するのが良いと考えるかもしれません：
 
 ```ts filename="firstAttempt.ts" twoslash
 // @filename: domain.ts
@@ -444,7 +444,7 @@ Effect.runPromise(Stream.runCollect(firstAttempt)).then(console.log)
 */
 ```
 
-However, this approach has a drawback, it doesn't include the results from the last page. To work around this, we perform an extra API call to include those missing results:
+しかし、このアプローチには欠点があります。最後のページの結果が含まれていません。この問題を解決するために、欠落している結果を含めるために追加のAPIコールを行います。
 
 ```ts filename="secondAttempt.ts" twoslash
 // @filename: domain.ts
@@ -459,9 +459,9 @@ const secondAttempt: Stream.Stream<RawData, Error> = Stream.unfoldChunkEffect(
   Option.some(0),
   (pageNumber) =>
     Option.match(pageNumber, {
-      // We already hit the last page
+      // すでに最後のページに到達しました
       onNone: () => Effect.succeed(Option.none()),
-      // We did not hit the last page yet
+      // まだ最後のページに到達していません
       onSome: (pageNumber) =>
         listPaginated(pageNumber).pipe(
           Effect.map((page) =>
@@ -483,9 +483,9 @@ Effect.runPromise(Stream.runCollect(secondAttempt)).then(console.log)
 */
 ```
 
-While this approach works, it's clear that `Stream.unfold` isn't the most friendly option for retrieving data from paginated APIs. It requires additional workarounds to include the results from the last page.
+このアプローチは機能しますが、`Stream.unfold`はページネーションされたAPIからデータを取得するための最も使いやすいオプションではないことは明らかです。最後のページの結果を含めるために追加の回避策が必要です。
 
-This is where `Stream.paginate` comes to the rescue. It provides a more ergonomic way to convert a paginated API into an Effect stream. Let's rewrite our solution using `Stream.paginate`:
+ここで`Stream.paginate`が登場します。これはページネーションされたAPIをEffectストリームに変換するためのよりエルゴノミックな方法を提供します。`Stream.paginate`を使用してソリューションを書き直しましょう：
 
 ```ts filename="finalAttempt.ts" twoslash
 // @filename: domain.ts
@@ -517,18 +517,18 @@ Effect.runPromise(Stream.runCollect(finalAttempt)).then(console.log)
 */
 ```
 
-## From Queue and PubSub
+## QueueとPubSubから
 
-In Effect, there are two essential asynchronous messaging data types: [Queue](../../concurrency/queue) and [PubSub](../../concurrency/pubsub). You can easily transform these data types into `Stream`s by utilizing `Stream.fromQueue` and `Stream.fromPubSub`, respectively.
+Effectには、2つの重要な非同期メッセージングデータ型があります：[Queue](../../concurrency/queue)と[PubSub](../../concurrency/pubsub)です。これらのデータ型は、それぞれ`Stream.fromQueue`と`Stream.fromPubSub`を利用することで簡単に`Stream`に変換できます。
 
-## From Schedule
+## Scheduleから
 
-We can create a stream from a `Schedule` that does not require any further input. The stream will emit an element for each value output from the schedule, continuing for as long as the schedule continues:
+追加の入力を必要としない`Schedule`からストリームを作成することができます。このストリームは、スケジュールから出力される各値に対して要素を発行し、スケジュールが続く限り発行を続けます：
 
 ```ts twoslash
 import { Stream, Schedule, Effect } from "effect"
 
-// Emits values every 1 second for a total of 10 emissions
+// 1秒ごとに値を発行し、合計で10回発行します
 const schedule = Schedule.spaced("1 second").pipe(
   Schedule.compose(Schedule.recurs(10))
 )
@@ -537,7 +537,7 @@ const stream = Stream.fromSchedule(schedule)
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Chunk",
   values: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]

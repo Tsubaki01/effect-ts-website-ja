@@ -1,12 +1,12 @@
 ---
-title: Fallback
-excerpt: Explore techniques for handling failures and fallbacks in Effect, including `orElse` to try alternate effects, `orElseFail` and `orElseSucceed` to modify failures, and `firstSuccessOf` to retrieve the result of the first successful effect. Learn how to gracefully handle errors and create fallback mechanisms in your Effect programs.
+title: フォールバック
+excerpt: `orElse`を使用して代替エフェクトを試みる、`orElseFail`および`orElseSucceed`で失敗を修正する、`firstSuccessOf`で最初に成功したエフェクトの結果を取得するなど、Effectにおける失敗とフォールバックの処理技術を探ります。エラーを優雅に処理し、Effectプログラムでフォールバックメカニズムを作成する方法を学びます。
 bottomNavigation: pagination
 ---
 
 ## orElse
 
-We can attempt one effect, and if it fails, we can try another effect using the `Effect.orElse` combinator:
+一つのエフェクトを試みて、それが失敗した場合、`Effect.orElse`コンビネータを使用して別のエフェクトを試みることができます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -16,17 +16,17 @@ const failure = Effect.fail("failure")
 const fallback = Effect.succeed("fallback")
 
 const program1 = Effect.orElse(success, () => fallback)
-console.log(Effect.runSync(program1)) // Output: "success"
+console.log(Effect.runSync(program1)) // 出力: "success"
 
 const program2 = Effect.orElse(failure, () => fallback)
-console.log(Effect.runSync(program2)) // Output: "fallback"
+console.log(Effect.runSync(program2)) // 出力: "fallback"
 ```
 
 ## orElseFail / orElseSucceed
 
-These two operators modify the original failure by replacing it with constant succeed or failure values.
+これらの2つのオペレータは、元の失敗を定数の成功または失敗の値に置き換えます。
 
-The `Effect.orElseFail` will always replace the original failure with the new one:
+`Effect.orElseFail`は常に元の失敗を新しい失敗に置き換えます：
 
 ```twoslash include validate
 import { Effect } from "effect"
@@ -60,7 +60,7 @@ const validate = (
 const program1 = Effect.orElseFail(validate(3), () => "invalid age")
 ```
 
-The `Effect.orElseSucceed` will always replace the original failure with a success value, so the resulting effect cannot fail:
+`Effect.orElseSucceed`は常に元の失敗を成功の値に置き換えるため、結果として得られるエフェクトは失敗することがありません。
 
 ```ts twoslash
 // @include: validate
@@ -70,11 +70,11 @@ const program2 = Effect.orElseSucceed(validate(3), () => 0)
 
 ## firstSuccessOf
 
-The `firstSuccessOf` operator simplifies running a series of effects and returns the result of the first one that succeeds. If none of the effects succeed, the resulting effect will fail with the error of the last effect in the series.
+`firstSuccessOf`オペレータは、一連のエフェクトを実行し、最初に成功したエフェクトの結果を返すことを簡素化します。どのエフェクトも成功しなかった場合、結果として得られるエフェクトは、シリーズ内の最後のエフェクトのエラーで失敗します。
 
-This operator utilizes `Effect.orElse` to combine multiple effects into a single effect.
+このオペレータは、複数のエフェクトを単一のエフェクトに結合するために`Effect.orElse`を利用します。
 
-In the following example, we attempt to retrieve a configuration from different nodes. If retrieving from the primary node fails, we successively try retrieving from the next available nodes until we find a successful result:
+次の例では、異なるノードから設定を取得しようとします。プライマリノードからの取得が失敗した場合、次に利用可能なノードから順次取得を試み、成功する結果が見つかるまで続けます：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -114,6 +114,5 @@ Config for node3 found
 ```
 
 <Warning>
-  If the collection provided to the `Effect.firstSuccessOf` function is empty,
-  it will throw an `IllegalArgumentException` error.
+  `Effect.firstSuccessOf`関数に提供されたコレクションが空の場合、`IllegalArgumentException`エラーがスローされます。
 </Warning>

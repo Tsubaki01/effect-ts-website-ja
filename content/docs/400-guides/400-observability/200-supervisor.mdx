@@ -1,28 +1,28 @@
 ---
-title: Supervisor
-excerpt: Learn about Effect's `Supervisor` for managing fibers, creating supervisors with `Supervisor.track`, and supervising effects with `Effect.supervised`. Explore an example that demonstrates periodic monitoring of fibers throughout an application's lifecycle using supervisors.
+title: スーパーバイザー
+excerpt: Effectの`Supervisor`を使用してファイバーを管理し、`Supervisor.track`でスーパーバイザーを作成し、`Effect.supervised`でエフェクトを監視する方法を学びます。スーパーバイザーを使用してアプリケーションのライフサイクル全体でファイバーを定期的に監視する例を探ります。
 bottomNavigation: pagination
 ---
 
-A `Supervisor<A>` is a tool that manages the creation and termination of fibers, producing some visible value of type `A` based on its supervision.
+`Supervisor<A>`は、ファイバーの作成と終了を管理し、その監視に基づいて型`A`の可視値を生成するツールです。
 
-## Creating
+## 作成
 
 ### track
 
-To create a supervisor, you can use the `Supervisor.track` function. It generates a new supervisor that keeps track of its child fibers in a set.
+スーパーバイザーを作成するには、`Supervisor.track`関数を使用します。これにより、子ファイバーをセットで追跡する新しいスーパーバイザーが生成されます。
 
-## Supervising
+## 監視
 
 ### supervised
 
-Whenever you need to supervise an effect, you can employ the `Effect.supervised` function. This function takes a supervisor and returns an effect that behaves the same as the original effect. However, all child fibers forked within this effect are reported to the specified supervisor.
+エフェクトを監視する必要がある場合は、`Effect.supervised`関数を使用できます。この関数はスーパーバイザーを受け取り、元のエフェクトと同じように動作するエフェクトを返します。ただし、このエフェクト内でフォークされたすべての子ファイバーは指定されたスーパーバイザーに報告されます。
 
-By doing this, you associate the behavior of child fibers with the provided supervisor, giving you access to all the information about these child fibers through the supervisor.
+これにより、子ファイバーの動作を提供されたスーパーバイザーに関連付け、スーパーバイザーを通じてこれらの子ファイバーに関するすべての情報にアクセスできるようになります。
 
-## Example
+## 例
 
-In the following example, we will periodically monitor the number of fibers throughout our application's lifecycle:
+次の例では、アプリケーションのライフサイクル全体でファイバーの数を定期的に監視します。
 
 ```ts twoslash
 import { Effect, Supervisor, Schedule, Fiber, FiberStatus } from "effect"
@@ -72,7 +72,7 @@ const fib = (n: number): Effect.Effect<number> =>
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 number of fibers: 0
 number of fibers: 2
 number of fibers: 6

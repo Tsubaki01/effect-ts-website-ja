@@ -1,16 +1,16 @@
 ---
 title: Semaphore
-excerpt: Discover the power of semaphores in Effect, a synchronization mechanism that regulates access to shared resources and coordinates tasks in an asynchronous and concurrent environment. Delve into the fundamental concept of semaphores, learn how they function in Effect, and explore real-world examples showcasing their application in controlling asynchronous tasks. Gain insights into precise control over concurrency using permits and understand how semaphores elevate your ability to manage resources effectively.
+excerpt: Effectにおけるセマフォの力を発見し、共有リソースへのアクセスを調整し、非同期および並行環境でタスクを調整する同期メカニズムを学びましょう。セマフォの基本概念を掘り下げ、Effectでの機能を学び、非同期タスクの制御における実際の例を探求します。許可証を使用して並行性を正確に制御する方法を理解し、セマフォがリソース管理能力をどのように向上させるかについての洞察を得ましょう。
 bottomNavigation: pagination
 ---
 
-A semaphore, in the context of programming, is a synchronization mechanism that allows you to control access to a shared resource. In Effect, semaphores are used to manage access to resources or coordinate tasks in an asynchronous and concurrent environment. Let's dive into the concept of semaphores and how they work in Effect.
+プログラミングの文脈におけるセマフォは、共有リソースへのアクセスを制御するための同期メカニズムです。Effectでは、セマフォはリソースへのアクセスを管理したり、非同期および並行環境でタスクを調整したりするために使用されます。セマフォの概念とEffectでの動作について詳しく見ていきましょう。
 
-## What is a Semaphore?
+## セマフォとは？
 
-A semaphore is a generalization of a mutex. It has a certain number of **permits**, which can be held and released concurrently by different parties. Think of permits as tickets that allow entities (e.g., tasks or fibers) to access a shared resource or perform a specific operation. If there are no permits available and an entity tries to acquire one, it will be suspended until a permit becomes available.
+セマフォはミューテックスの一般化です。セマフォには一定数の**許可証**があり、異なるパーティが同時に保持および解放することができます。許可証を、エンティティ（例：タスクやファイバー）が共有リソースにアクセスしたり、特定の操作を実行したりするためのチケットと考えてください。許可証が利用できない場合、エンティティが取得しようとすると、許可証が利用可能になるまで一時停止されます。
 
-Let's take a look at an example using asynchronous tasks:
+非同期タスクを使用した例を見てみましょう：
 
 ```ts filename="mutex.ts" twoslash
 import { Effect } from "effect"
@@ -33,7 +33,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#1 message=start elapsed=3ms
 timestamp=... level=INFO fiber=#1 message=end elapsed=2010ms
 timestamp=... level=INFO fiber=#2 message=start elapsed=2012ms
@@ -43,9 +43,9 @@ timestamp=... level=INFO fiber=#3 message=end elapsed=6026ms
 */
 ```
 
-Here, we synchronize and control the execution of asynchronous tasks using a semaphore with one permit. When all permits are in use, additional tasks attempting to acquire permits will wait until some become available.
+ここでは、1つの許可証を持つセマフォを使用して非同期タスクの実行を同期および制御しています。すべての許可証が使用中の場合、追加のタスクは許可証が利用可能になるまで待機します。
 
-In another scenario, we create a semaphore with five permits. We then utilize `withPermits(n)` to acquire and release varying numbers of permits for each task:
+別のシナリオでは、5つの許可証を持つセマフォを作成します。次に、`withPermits(n)`を利用して、各タスクに対して異なる数の許可証を取得および解放します：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -67,7 +67,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 timestamp=... level=INFO fiber=#1 message="process: 1" elasped=2011ms
 timestamp=... level=INFO fiber=#2 message="process: 2" elasped=2017ms
 timestamp=... level=INFO fiber=#3 message="process: 3" elasped=4020ms
@@ -76,6 +76,6 @@ timestamp=... level=INFO fiber=#5 message="process: 5" elasped=8034ms
 */
 ```
 
-In this example, we show that you can acquire and release any number of permits with `withPermits(n)`. This flexibility allows for precise control over concurrency.
+この例では、`withPermits(n)`を使用して任意の数の許可証を取得および解放できることを示しています。この柔軟性により、並行性を正確に制御することができます。
 
-One crucial aspect to remember is that `withPermits` ensures that each acquisition is matched with an equivalent number of releases, regardless of whether the task succeeds, fails, or gets interrupted.
+重要な点として、`withPermits`は、タスクが成功するか失敗するか中断されるかに関係なく、各取得が同等の数の解放と一致することを保証します。

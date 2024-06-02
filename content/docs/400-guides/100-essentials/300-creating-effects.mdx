@@ -1,15 +1,15 @@
 ---
-title: Creating Effects
-excerpt: Learn various methods to create effects in the Effect ecosystem. Understand the drawbacks of throwing errors in traditional programming and explore constructors like `Effect.succeed` and `Effect.fail` for explicit success and failure handling. Dive into modeling synchronous effects with `Effect.sync` and `Effect.try`, and asynchronous effects with `Effect.promise` and `Effect.tryPromise`. Explore `Effect.async` for callback-based APIs and `Effect.suspend` for deferred effect evaluation. Check out a cheatsheet summarizing available constructors.
+title: Effectの作成
+excerpt: EffectエコシステムでEffectを作成するさまざまな方法を学びます。従来のプログラミングでエラーをスローすることの欠点を理解し、明示的な成功と失敗の処理のための`Effect.succeed`や`Effect.fail`のようなコンストラクタを探ります。`Effect.sync`や`Effect.try`を使用して同期Effectをモデル化し、`Effect.promise`や`Effect.tryPromise`を使用して非同期Effectをモデル化します。コールバックベースのAPIには`Effect.async`を、遅延Effect評価には`Effect.suspend`を探ります。利用可能なコンストラクタをまとめたチートシートもチェックしてください。
 bottomNavigation: pagination
 ---
 
-Effect provides different ways to create effects, which are units of computation that encapsulate side effects.
-In this guide, we will cover some of the common methods that you can use to create effects.
+Effectは副作用をカプセル化する計算単位であるEffectを作成するさまざまな方法を提供します。
+このガイドでは、Effectを作成するために使用できる一般的な方法のいくつかを紹介します。
 
-## Why Not Throw Errors?
+## なぜエラーをスローしないのか？
 
-In traditional programming, when an error occurs, it is often handled by throwing an exception:
+従来のプログラミングでは、エラーが発生した場合、例外をスローして処理することがよくあります。
 
 ```ts twoslash
 const divide = (a: number, b: number): number => {
@@ -20,13 +20,13 @@ const divide = (a: number, b: number): number => {
 }
 ```
 
-However, throwing errors can be problematic. The type signatures of functions do not indicate that they can throw exceptions, making it difficult to reason about potential errors.
+しかし、エラーをスローすることには問題があります。関数の型シグネチャは例外をスローする可能性があることを示していないため、潜在的なエラーを推論するのが難しくなります。
 
-To address this issue, Effect introduces dedicated constructors for creating effects that represent both success and failure: `Effect.succeed` and `Effect.fail`. These constructors allow you to explicitly handle success and failure cases while **leveraging the type system to track errors**.
+この問題に対処するために、Effectは成功と失敗の両方を表現するEffectを作成するための専用のコンストラクタを導入しています：`Effect.succeed`と`Effect.fail`です。これらのコンストラクタを使用することで、成功と失敗のケースを明示的に処理し、**型システムを活用してエラーを追跡**することができます。
 
 ### succeed
 
-To create an effect that represents a successful computation, you can use the `Effect.succeed` constructor. It takes a value as input and produces an effect that succeeds with that value. Here's an example:
+成功した計算を表すEffectを作成するには、`Effect.succeed`コンストラクタを使用できます。これは値を入力として受け取り、その値で成功するEffectを生成します。以下はその例です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -34,15 +34,15 @@ import { Effect } from "effect"
 const success = Effect.succeed(42)
 ```
 
-The `success` value has the type `Effect<number>` and can be interpreted as an effect that:
+`success`の値は`Effect<number>`型を持ち、次のように解釈できます：
 
-- succeeds with a value of type `number`
-- does not produce any expected error (`never`)
-- does not require any context (`never`)
+- `number`型の値で成功する
+- 予期されるエラーを生成しない（`never`）
+- コンテキストを必要としない（`never`）
 
 ### fail
 
-To create an effect that represents a failure, you can use the `Effect.fail` constructor. It takes an error value as input and produces an effect that fails with that error. Here's an example:
+失敗を表すEffectを作成するには、`Effect.fail`コンストラクタを使用できます。これはエラー値を入力として受け取り、そのエラーで失敗するEffectを生成します。以下はその例です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -50,15 +50,15 @@ import { Effect } from "effect"
 const failure = Effect.fail("my error")
 ```
 
-The `failure` value has the type `Effect<never, string, never>` and can be interpreted as an effect that:
+`failure`の値は`Effect<never, string, never>`型を持ち、次のように解釈できます：
 
-- does not produce any value (`never`)
-- fails with an expected error of type `string`
-- does not require any context (`never`)
+- 値を生成しない（`never`）
+- 予期されるエラーとして`string`型のエラーで失敗する
+- コンテキストを必要としない（`never`）
 
-With `Effect.succeed` and `Effect.fail`, you can explicitly handle success and failure cases and the type system will ensure that errors are tracked and accounted for.
+`Effect.succeed`と`Effect.fail`を使用することで、成功と失敗のケースを明示的に処理でき、型システムがエラーの追跡と管理を保証します。
 
-Let's see an example of rewriting the `divide` function using Effect to make the error handling explicit:
+Effectを使用してエラー処理を明示的にするために`divide`関数を書き直す例を見てみましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -69,23 +69,21 @@ const divide = (a: number, b: number): Effect.Effect<number, Error> =>
     : Effect.succeed(a / b)
 ```
 
-In this example, the `divide` function explicitly indicates that it can produce an effect that either fails with an `Error` or succeeds with a `number` value. The type signature makes it clear how errors are handled and ensures that callers are aware of the possible outcomes.
+この例では、`divide`関数が`Error`で失敗するか、`number`値で成功するEffectを生成することを明示的に示しています。型シグネチャはエラーの処理方法を明確にし、呼び出し側が可能な結果を認識できるようにします。
 
-## Modeling Synchronous Effects
+## 同期Effectのモデリング
 
-In JavaScript, you can delay the execution of synchronous computations using "thunks".
+JavaScriptでは、「thunks」を使用して同期計算の実行を遅らせることができます。
 
-<Info>
-  A "thunk" is a function that takes no arguments and may return some value.
-</Info>
+<Info>「thunks」とは、引数を取らず、何らかの値を返す関数のことです。</Info>
 
-Thunks are useful for delaying the computation of a value until it is needed.
+thunksは、値の計算を必要になるまで遅らせるのに役立ちます。
 
-To model synchronous side effects, Effect provides the `Effect.sync` and `Effect.try` constructors, which accept a thunk.
+同期的な副作用をモデリングするために、Effectはthunksを受け取る`Effect.sync`と`Effect.try`コンストラクタを提供しています。
 
 ### sync
 
-If you're working with synchronous side effects and you're confident that they will **never throw errors**, you can use the `Effect.sync` constructor:
+同期的な副作用を扱っていて、それが**決してエラーをスローしない**と確信している場合は、`Effect.sync`コンストラクタを使用できます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -98,19 +96,21 @@ const log = (message: string) =>
 const program = log("Hello, World!")
 ```
 
-In the above example, `Effect.sync` is used to defer the side-effect of writing to the console.
+上記の例では、`Effect.sync`を使用してコンソールへの書き込みという副作用を遅延させています。
 
-The `program` value has the type `Effect<void>` since the thunk doesn't return any value.
+`program`の値は`Effect<void>`型を持ちます。これは、thunkが値を返さないためです。
 
-Note that nothing is logged to the console yet when you inspect it.
-This is because `program` represents the action of writing to the console, but nothing happens until you explicitly [run your program](running-effects).
+コンソールを確認しても、まだ何もログに記録されていないことに注意してください。
+これは、`program`がコンソールに書き込むアクションを表しているだけで、明示的に[プログラムを実行](running-effects)するまで何も起こらないためです。
 
-<Error>The thunk passed to `Effect.sync` should never throw errors.</Error>
+<Error>
+  `Effect.sync`に渡されるthunkは決してエラーをスローしてはいけません。
+</Error>
 
 ### try
 
-If the synchronous computation within the thunk may throw an error, you can use the `Effect.try` constructor.
-If an error is caught, it will be propagated to the error channel as `UnknownException`:
+thunk内の同期計算がエラーをスローする可能性がある場合は、`Effect.try`コンストラクタを使用できます。
+エラーがキャッチされると、それは`UnknownException`としてエラーチャネルに伝播されます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -123,7 +123,7 @@ const parse = (input: string) =>
 const program = parse("")
 ```
 
-If you want more control over what gets propagated to the error channel, you can use an overload of `Effect.try` that takes a remapping function:
+エラーチャネルに伝播される内容をより細かく制御したい場合は、リマッピング関数を取る`Effect.try`のオーバーロードを使用できます：
 
 ```ts {6} twoslash
 import { Effect } from "effect"
@@ -137,7 +137,7 @@ const parse = (input: string) =>
 const program = parse("")
 ```
 
-You can think of this as a similar pattern to the traditional try-catch block in JavaScript:
+これは、JavaScriptの従来のtry-catchブロックと似たパターンと考えることができます：
 
 ```ts
 try {
@@ -147,16 +147,15 @@ try {
 }
 ```
 
-## Modeling Asynchronous Effects
+## 非同期Effectのモデリング
 
-In traditional programming, we often use `Promise`s to handle asynchronous computations. However, dealing with errors in promises can be problematic. By default, `Promise<Value>` only provides the type `Value` for the resolved value, which means errors are not reflected in the type system. This limits the expressiveness and makes it challenging to handle and track errors effectively.
+従来のプログラミングでは、非同期計算を処理するために`Promise`をよく使用します。しかし、Promiseのエラー処理は問題を引き起こすことがあります。デフォルトでは、`Promise<Value>`は解決された値の型`Value`のみを提供するため、エラーは型システムに反映されません。これにより、表現力が制限され、エラーの処理と追跡が難しくなります。
 
-To overcome these limitations, Effect introduces dedicated constructors for creating effects that represent both success and failure in an asynchronous context: `Effect.promise` and `Effect.tryPromise`. These constructors allow you to explicitly handle success and failure cases while **leveraging the type system to track errors**.
+これらの制限を克服するために、Effectは非同期コンテキストで成功と失敗の両方を表現するEffectを作成するための専用のコンストラクタを導入しています：`Effect.promise`と`Effect.tryPromise`。これらのコンストラクタを使用することで、成功と失敗のケースを明示的に処理し、**型システムを活用してエラーを追跡**することができます。
 
 ### promise
 
-This constructor is similar to a regular `Promise`, where you're confident that the asynchronous operation will **always succeed**.
-It allows you to create an `Effect` that represents successful completion without considering potential errors. However, it's essential to ensure that the underlying Promise never rejects.
+このコンストラクタは通常の`Promise`に似ており、非同期操作が**常に成功する**と確信している場合に使用します。これにより、潜在的なエラーを考慮せずに、成功の完了を表す`Effect`を作成できます。ただし、基礎となるPromiseが決して拒否されないことを確認することが重要です。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -174,24 +173,23 @@ const delay = (message: string) =>
 const program = delay("Async operation completed successfully!")
 ```
 
-The `program` value has the type `Effect<string, never, never>` and can be interpreted as an effect that:
+`program`の値は`Effect<string, never, never>`型を持ち、次のように解釈できます：
 
-- succeeds with a value of type `string`
-- does not produce any expected error (`never`)
-- does not require any context (`never`)
+- `string`型の値で成功する
+- 予期されるエラーを生成しない（`never`）
+- コンテキストを必要としない（`never`）
 
 <Error>
-  The `Promise` within the thunk passed to `Effect.promise` should never
-  reject.
+  `Effect.promise`に渡されるthunk内の`Promise`は決して拒否されるべきではありません。
 </Error>
 
-If, despite precautions, the thunk passed to `Effect.promise` does reject, an `Effect` containing a ["defect"](../error-management/unexpected-errors) is created, similar to what happens when using the [Effect.die](../error-management/unexpected-errors#die-diemessage) function.
+もし、注意を払ってもなお`Effect.promise`に渡されたthunkが拒否された場合、["欠陥"](../error-management/unexpected-errors)を含む`Effect`が作成されます。これは[Effect.die](../error-management/unexpected-errors#die-diemessage)関数を使用した場合と似ています。
 
 ### tryPromise
 
-Unlike `Effect.promise`, this constructor is suitable when the underlying `Promise` **might reject**.
-It provides a way to catch errors and handle them appropriately.
-By default if an error occurs, it will be caught and propagated to the error channel as as an `UnknownException`.
+`Effect.promise`とは異なり、このコンストラクタは基礎となる`Promise`が**拒否される可能性がある**場合に適しています。
+エラーをキャッチして適切に処理する方法を提供します。
+デフォルトでは、エラーが発生した場合、それはキャッチされ、`UnknownException`としてエラーチャネルに伝播されます。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -204,13 +202,13 @@ const getTodo = (id: number) =>
 const program = getTodo(1)
 ```
 
-The `program` value has the type `Effect<Response, UnknownException, never>` and can be interpreted as an effect that:
+`program`の値は`Effect<Response, UnknownException, never>`型を持ち、次のように解釈できます：
 
-- succeeds with a value of type `Response`
-- might produce an error (`UnknownException`)
-- does not require any context (`never`)
+- `Response`型の値で成功する
+- エラー（`UnknownException`）が発生する可能性がある
+- コンテキストを必要としない（`never`）
 
-If you want more control over what gets propagated to the error channel, you can use an overload of `Effect.tryPromise` that takes a remapping function:
+エラーチャネルに伝播される内容をより細かく制御したい場合は、エラーの再マッピング関数を取る`Effect.tryPromise`のオーバーロードを使用できます：
 
 ```ts {7} twoslash
 import { Effect } from "effect"
@@ -225,12 +223,12 @@ const getTodo = (id: number) =>
 const program = getTodo(1)
 ```
 
-## From a callback
+## コールバックから
 
-Sometimes you have to work with APIs that don't support `async/await` or `Promise` and instead use the callback style.
-To handle callback-based APIs, Effect provides the `Effect.async` constructor.
+時々、`async/await`や`Promise`をサポートしないAPIを使用しなければならないことがあります。その代わりにコールバックスタイルを使用します。
+コールバックベースのAPIを処理するために、Effectは`Effect.async`コンストラクタを提供します。
 
-For example, let's wrap the `readFile` async API from the Node.js `fs` module with Effect (ensure you have `@types/node` installed):
+例えば、Node.jsの`fs`モジュールの`readFile`非同期APIをEffectでラップしてみましょう（`@types/node`がインストールされていることを確認してください）：
 
 ```ts twoslash
 // @types: node
@@ -251,30 +249,27 @@ const readFile = (filename: string) =>
 const program = readFile("todos.txt")
 ```
 
-In the above example, we manually annotate the types when calling `Effect.async` because TypeScript cannot infer the type parameters for a callback
-based on the return value inside the callback body. Annotating the types ensures that the values provided to `resume` match the expected types.
+上記の例では、`Effect.async`を呼び出す際に手動で型を注釈しています。これは、TypeScriptがコールバック内の戻り値に基づいてコールバックの型パラメータを推論できないためです。型を注釈することで、`resume`に提供される値が期待される型と一致することを保証します。
 
 <Idea>
-  You can seamlessly mix synchronous and asynchronous code within the Effect
-  framework. Everything becomes an Effect, enabling you to handle different
-  types of side effects in a unified way.
+  Effectフレームワーク内では、同期コードと非同期コードをシームレスに混在させることができます。すべてがEffectになるため、さまざまな種類の副作用を統一された方法で処理できます。
 </Idea>
 
-## Suspended Effects
+## サスペンドされたEffect
 
-`Effect.suspend` is used to delay the creation of an effect.
-It allows you to defer the evaluation of an effect until it is actually needed.
-The `Effect.suspend` function takes a thunk that represents the effect, and it wraps it in a suspended effect.
+`Effect.suspend`はEffectの作成を遅延させるために使用されます。
+これにより、Effectが実際に必要になるまでその評価を遅らせることができます。
+`Effect.suspend`関数はEffectを表すthunkを受け取り、それをサスペンドされたEffectでラップします。
 
 ```ts
 const suspendedEffect = Effect.suspend(() => effect)
 ```
 
-Let's explore some common scenarios where `Effect.suspend` proves useful:
+`Effect.suspend`が役立つ一般的なシナリオをいくつか見てみましょう。
 
-1. **Lazy Evaluation**. When you want to defer the evaluation of an effect until it is required. This can be useful for optimizing the execution of effects, especially when they are not always needed or when their computation is expensive.
+1. **遅延評価**。Effectの評価を必要になるまで遅らせたい場合に使用します。これは、Effectが常に必要とされるわけではない場合や、その計算が高価な場合に、Effectの実行を最適化するのに役立ちます。
 
-   Also, when effects with side effects or scoped captures are created, use `Effect.suspend` to re-execute on each invocation.
+   また、副作用やスコープキャプチャを伴うEffectが作成される場合、`Effect.suspend`を使用して各呼び出し時に再実行します。
 
    ```ts twoslash
    import { Effect } from "effect"
@@ -285,19 +280,19 @@ Let's explore some common scenarios where `Effect.suspend` proves useful:
 
    const good = Effect.suspend(() => Effect.succeed(i++))
 
-   console.log(Effect.runSync(bad)) // Output: 0
-   console.log(Effect.runSync(bad)) // Output: 0
+   console.log(Effect.runSync(bad)) // 出力: 0
+   console.log(Effect.runSync(bad)) // 出力: 0
 
-   console.log(Effect.runSync(good)) // Output: 1
-   console.log(Effect.runSync(good)) // Output: 2
+   console.log(Effect.runSync(good)) // 出力: 1
+   console.log(Effect.runSync(good)) // 出力: 2
    ```
 
-   In this example, `Effect.succeed(i++)` creates a new numeric value and consistently returns the same number. On the other hand, `Effect.suspend(() => Effect.succeed(i++))` generates a new number with each invocation.
+   この例では、`Effect.succeed(i++)`は新しい数値を作成し、常に同じ数値を返します。一方、`Effect.suspend(() => Effect.succeed(i++))`は呼び出しごとに新しい数値を生成します。
 
-   This example utilizes `Effect.runSync` to execute effects and display their results (refer to [Running Effects](./running-effects##runsync) for more details).
+   この例では、`Effect.runSync`を使用してEffectを実行し、その結果を表示しています（詳細は[Effectの実行](./running-effects##runsync)を参照してください）。
 
-2. **Handling Circular Dependencies**. `Effect.suspend` is helpful in managing circular dependencies between effects, where one effect depends on another, and vice versa.
-   For example it's fairly common for `Effect.suspend` to be used in recursive functions to escape an eager call. For instance:
+2. **循環依存関係の処理**。`Effect.suspend`は、Effect間の循環依存関係を管理するのに役立ちます。一方のEffectがもう一方に依存している場合などです。
+   例えば、再帰関数で早期呼び出しを回避するために`Effect.suspend`が使用されることがよくあります。例えば：
 
    ```ts twoslash
    import { Effect } from "effect"
@@ -318,10 +313,10 @@ Let's explore some common scenarios where `Effect.suspend` proves useful:
            (a, b) => a + b
          )
 
-   console.log(Effect.runSync(allGood(32))) // Output: 3524578
+   console.log(Effect.runSync(allGood(32))) // 出力: 3524578
    ```
 
-3. **Unifying Return Type**. In situations where TypeScript struggles to unify the returned effect type, `Effect.suspend` can be employed to resolve this issue. For example:
+3. **戻り値の型の統一**。TypeScriptが返されるEffectの型を統一するのに苦労する状況では、`Effect.suspend`を使用してこの問題を解決できます。例えば：
 
    ```ts twoslash
    import { Effect } from "effect"
@@ -339,11 +334,11 @@ Let's explore some common scenarios where `Effect.suspend` proves useful:
      )
    ```
 
-## Cheatsheet
+## チートシート
 
-The table provides a summary of the available constructors, along with their input and output types, allowing you to choose the appropriate function based on your needs.
+この表は、利用可能なコンストラクタとその入力および出力型の概要を提供し、ニーズに応じて適切な関数を選択できるようにします。
 
-| **Function**            | **Given**                          | **To**                        |
+| **関数**                | **入力**                           | **出力**                      |
 | ----------------------- | ---------------------------------- | ----------------------------- |
 | `succeed`               | `A`                                | `Effect<A>`                   |
 | `fail`                  | `E`                                | `Effect<never, E>`            |
@@ -356,7 +351,7 @@ The table provides a summary of the available constructors, along with their inp
 | `async`                 | `(Effect<A, E> => void) => void`   | `Effect<A, E>`                |
 | `suspend`               | `() => Effect<A, E, R>`            | `Effect<A, E, R>`             |
 
-You can find the complete list of constructors [here](https://effect-ts.github.io/effect/effect/Effect.ts.html#constructors).
+コンストラクタの完全なリストは[こちら](https://effect-ts.github.io/effect/effect/Effect.ts.html#constructors)で確認できます。
 
-Now that we know how to create effects, it's time to learn how to run them.
-Check out the next guide on [Running Effects](running-effects) to find out more.
+Effectの作成方法がわかったので、次はそれを実行する方法を学びましょう。
+詳細は次のガイド[Effectの実行](running-effects)をご覧ください。

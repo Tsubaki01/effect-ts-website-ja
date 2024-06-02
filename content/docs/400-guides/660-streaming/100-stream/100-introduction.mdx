@@ -1,66 +1,66 @@
 ---
-title: Introduction to Streams
-excerpt: Discover the power of `Stream<A, E, R>` in Effect, a program description that goes beyond the capabilities of `Effect`. Unlike an `Effect` that always produces a single result, a `Stream` can emit zero or more values of type `A`, making it a versatile tool for various tasks. Explore scenarios such as empty streams, single-element streams, finite streams, and infinite streams. Learn how to use `Stream` to handle a wide range of tasks, from processing finite lists to dealing with infinite sequences.
+title: Streamsの紹介
+excerpt: Effectの`Stream<A, E, R>`の力を発見しましょう。これは、`Effect`の能力を超えたプログラム記述です。常に単一の結果を生成する`Effect`とは異なり、`Stream`は型`A`の値をゼロ個以上出力することができ、さまざまなタスクに対して柔軟なツールとなります。空のストリーム、単一要素のストリーム、有限ストリーム、無限ストリームなどのシナリオを探求しましょう。有限リストの処理から無限シーケンスの取り扱いまで、幅広いタスクに対処するための`Stream`の使い方を学びましょう。
 bottomNavigation: pagination
 ---
 
-In this guide, we'll explore the concept of a `Stream<A, E, R>`. A `Stream` is a program description that, when executed, can emit **zero or more values** of type `A`, handle errors of type `E`, and operates within a context of type `R`.
+このガイドでは、`Stream<A, E, R>`の概念を探ります。`Stream`は、実行時に型`A`の**ゼロ個以上の値**を出力し、型`E`のエラーを処理し、型`R`のコンテキスト内で動作するプログラム記述です。
 
-## Use Cases
+## 使用例
 
-Streams are particularly handy whenever you're dealing with sequences of values over time. They can serve as replacements for observables, node streams, and AsyncIterables.
+Streamsは、時間の経過とともに値のシーケンスを扱う場合に特に便利です。Observables、Node Streams、AsyncIterablesの代替として機能することができます。
 
-## What is a Stream?
+## Streamとは何か？
 
-Think of a `Stream` as an extension of an `Effect`. While an `Effect<A, E, R>` represents a program that requires a context of type `R`, may encounter an error of type `E`, and always produces a single result of type `A`, a `Stream<A, E, R>` takes this further by allowing the emission of zero or more values of type `A`.
+`Stream`を`Effect`の拡張と考えてください。`Effect<A, E, R>`が型`R`のコンテキストを必要とし、型`E`のエラーに遭遇する可能性があり、常に型`A`の単一の結果を生成するプログラムを表すのに対し、`Stream<A, E, R>`はこれをさらに進めて、型`A`のゼロ個以上の値を出力することができます。
 
-To clarify, let's examine some examples using `Effect`:
+明確にするために、`Effect`を使用したいくつかの例を見てみましょう：
 
 ```ts twoslash
 import { Effect, Chunk, Option } from "effect"
 
-// An Effect that fails with a string error
+// 文字列エラーで失敗するEffect
 const failedEffect = Effect.fail("fail!")
 
-// An Effect that produces a single number
+// 単一の数値を生成するEffect
 const oneNumberValue = Effect.succeed(3)
 
-// An Effect that produces a chunk of numbers
+// 数値のチャンクを生成するEffect
 const oneListValue = Effect.succeed(Chunk.make(1, 2, 3))
 
-// An Effect that produces an optional number
+// オプションの数値を生成するEffect
 const oneOption = Effect.succeed(Option.some(1))
 ```
 
-In each case, the `Effect` always ends with **exactly one value**. There is no variability; you always get one result.
+各ケースにおいて、`Effect`は常に**正確に一つの値**で終了します。変動はなく、常に一つの結果が得られます。
 
-## Understanding Streams
+## Streamsの理解
 
-Now, let's shift our focus to `Stream`. A `Stream` represents a program description that shares similarities with `Effect`, it requires a context of type `R`, may signal errors of type `E`, and yields values of type `A`. However, the key distinction is that it can yield **zero or more values**.
+さて、`Stream`に焦点を移しましょう。`Stream`は`Effect`と類似したプログラム記述を表します。型`R`のコンテキストを必要とし、型`E`のエラーを通知し、型`A`の値を生成します。しかし、重要な違いは、**ゼロ個以上の値**を生成できることです。
 
-Here are the possible scenarios for a `Stream`:
+`Stream`の可能なシナリオは次のとおりです：
 
-- **An Empty Stream**: It can end up empty, representing a stream with no values.
-- **A Single-Element Stream**: It can represent a stream with just one value.
-- **A Finite Stream of Elements**: It can represent a stream with a finite number of values.
-- **An Infinite Stream of Elements**: It can represent a stream that continues indefinitely, essentially an infinite stream.
+- **空のStream**: 値がないストリームを表し、空で終了することがあります。
+- **単一要素のStream**: 一つの値だけを持つストリームを表すことができます。
+- **有限要素のStream**: 有限数の値を持つストリームを表すことができます。
+- **無限要素のStream**: 無限に続くストリームを表し、本質的に無限のストリームです。
 
-Let's see these scenarios in action:
+これらのシナリオを実際に見てみましょう：
 
 ```ts twoslash
 import { Stream } from "effect"
 
-// An empty Stream
+// 空のStream
 const emptyStream = Stream.empty
 
-// A Stream with a single number
+// 単一の数値を持つStream
 const oneNumberValueStream = Stream.succeed(3)
 
-// A Stream with a range of numbers from 1 to 10
+// 1から10までの範囲の数値を持つStream
 const finiteNumberStream = Stream.range(1, 10)
 
-// An infinite Stream of numbers starting from 1 and incrementing
+// 1から始まり、インクリメントする無限のStream
 const infiniteNumberStream = Stream.iterate(1, (n) => n + 1)
 ```
 
-In summary, a `Stream` is a versatile tool for representing programs that may yield multiple values, making it suitable for a wide range of tasks, from processing finite lists to handling infinite sequences.
+まとめると、`Stream`は複数の値を生成するプログラムを表現するための多用途なツールであり、有限リストの処理から無限シーケンスの取り扱いまで、幅広いタスクに適しています。

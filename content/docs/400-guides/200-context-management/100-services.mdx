@@ -1,50 +1,50 @@
 ---
-title: Managing Services
-excerpt: Understand the concept of services in Effect programming, reusable components designed to provide specific capabilities across an application. Learn how to manage services with effects, create service interfaces, and provide service implementations. Explore the use of optional services for added flexibility in handling scenarios where a service may or may not be available.
+title: サービスの管理
+excerpt: Effectプログラミングにおけるサービスの概念、アプリケーション全体で特定の機能を提供するために設計された再利用可能なコンポーネントについて理解します。エフェクトを使用してサービスを管理する方法、サービスインターフェースを作成する方法、およびサービス実装を提供する方法を学びます。サービスが利用可能かどうかに応じて柔軟に対応するためのオプションサービスの使用についても探ります。
 bottomNavigation: pagination
 ---
 
-In the context of programming, a **service** refers to a reusable component or functionality that can be used by different parts of an application.
-Services are designed to provide specific capabilities and can be shared across multiple modules or components.
+プログラミングの文脈では、**サービス**とはアプリケーションの異なる部分で使用できる再利用可能なコンポーネントや機能を指します。
+サービスは特定の機能を提供するように設計されており、複数のモジュールやコンポーネント間で共有することができます。
 
-Services often encapsulate common tasks or operations that are needed by different parts of an application.
-They can handle complex operations, interact with external systems or APIs, manage data, or perform other specialized tasks.
+サービスは、アプリケーションの異なる部分で必要とされる共通のタスクや操作をカプセル化することがよくあります。
+これらは複雑な操作を処理したり、外部システムやAPIとやり取りしたり、データを管理したり、その他の専門的なタスクを実行したりすることができます。
 
-Services are typically designed to be modular and decoupled from the rest of the application.
-This allows them to be easily maintained, tested, and replaced without affecting the overall functionality of the application.
+サービスは通常、モジュール化されており、アプリケーションの他の部分から分離されています。
+これにより、アプリケーションの全体的な機能に影響を与えることなく、簡単に保守、テスト、および交換することができます。
 
-When working with services in Effect, it is important to understand the concept of **context**: in the type `Effect<Success, Error, Requirements>`, the parameter `Requirements` represents the services required by the effect to be executed.
-These services are stored in a collection called `Context`.
+Effectでサービスを扱う際には、**コンテキスト**の概念を理解することが重要です。`Effect<Success, Error, Requirements>`という型において、`Requirements`パラメータはエフェクトを実行するために必要なサービスを表します。
+これらのサービスは`Context`と呼ばれるコレクションに格納されます。
 
-## Managing Services with Effects
+## エフェクトを使用したサービスの管理
 
-So far, we have been working with effects that don't require any specific service. In those cases, the `Requirements` parameter in the `Effect<Success, Error, Requirements>` type has always been of type `never`.
+これまで、特定のサービスを必要としないエフェクトを扱ってきました。その場合、`Effect<Success, Error, Requirements>`型の`Requirements`パラメータは常に`never`型でした。
 
-However, there are situations where we need to work with effects that depend on specific services.
+しかし、特定のサービスに依存するエフェクトを扱う必要がある状況もあります。
 
-These services are stored in a collection called `Context`.
+これらのサービスは`Context`と呼ばれるコレクションに格納されます。
 
-The `Context` acts as a container for all the services an effect might need. By leveraging this context, you can manage requirements effectively, ensuring that each part of your application has access to the necessary services without tight coupling.
+`Context`は、エフェクトが必要とするすべてのサービスのコンテナとして機能します。このコンテキストを活用することで、要件を効果的に管理し、アプリケーションの各部分が必要なサービスにアクセスできるようにしながら、密結合を避けることができます。
 
-In this guide, we will learn how to:
+このガイドでは、以下のことを学びます：
 
-- Create Effects that depend on a specific context.
-- Work with Effects that require a context.
-- Provide the required context to the Effect.
+- 特定のコンテキストに依存するエフェクトを作成する方法。
+- コンテキストを必要とするエフェクトを扱う方法。
+- エフェクトに必要なコンテキストを提供する方法。
 
-## Creating a Simple Service
+## シンプルなサービスの作成
 
-Let's start by creating a service for generating random numbers.
+まず、ランダムな数値を生成するサービスを作成してみましょう。
 
-To create a new service, you need two things:
+新しいサービスを作成するには、次の2つの要素が必要です：
 
-- A unique identifier.
-- A type describing the possible operations of the service.
+- 一意の識別子。
+- サービスの可能な操作を記述する型。
 
-Let's define our first service:
+最初のサービスを定義してみましょう：
 
-- We'll use the string `"MyRandomService"` as the unique identifier.
-- The service type will have a single operation called `next` that returns a random number.
+- 一意の識別子として文字列`"MyRandomService"`を使用します。
+- サービス型には、ランダムな数値を返す単一の操作`next`が含まれます。
 
 ```ts twoslash
 import { Effect, Context } from "effect"
@@ -55,51 +55,52 @@ class Random extends Context.Tag("MyRandomService")<
 >() {}
 ```
 
-The exported `Random` value is known as a **tag** in Effect. It acts as a representation of the service and allows Effect to locate and use this service at runtime.
+エクスポートされた`Random`値は、Effectにおいて**タグ**として知られています。これはサービスの表現として機能し、Effectが実行時にこのサービスを見つけて使用することを可能にします。
 
-The service will be stored in a collection called `Context`, which can be thought of as a `Map` where the keys are tags and the values are services: `Context = Map<Tag, Service>`.
+サービスは`Context`と呼ばれるコレクションに格納されます。これは、キーがタグで値がサービスである`Map`のように考えることができます：`Context = Map<Tag, Service>`。
 
 <Info>
-You need to specify an identifier (in this case, the string `"MyRandomService"`) to make the tag global. This ensures that two tags with the same identifier refer to the same instance.
+タグをグローバルにするためには、識別子（この場合は文字列`"MyRandomService"`）を指定する必要があります。これにより、同じ識別子を持つ2つのタグが同じインスタンスを参照することが保証されます。
 
-Using a unique identifier is particularly useful in scenarios where live reloads can occur, as it helps preserve the instance across reloads. It ensures there is no duplication of instances (although it shouldn't happen, some bundlers and frameworks can behave unpredictably)
+一意の識別子を使用することは、ライブリロードが発生するシナリオで特に有用です。これにより、リロードをまたいでインスタンスが保持されるのを助け、インスタンスの重複が発生しないようにします（通常は発生しませんが、一部のバンドラーやフレームワークは予測不可能な動作をすることがあります）。
 
 </Info>
 
-**Summary**
+**まとめ**
 
-In the Effect, understanding services, tags, and context is essential for managing requirements and building modular applications.
+Effectにおいて、サービス、タグ、およびコンテキストを理解することは、要件を管理し、モジュール化されたアプリケーションを構築するために不可欠です。
 
-| **Concept** | **Description**                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------- |
-| **Service** | A reusable component providing specific functionality, used across different parts of an application.   |
-| **Tag**     | A unique identifier representing a **service**, allowing Effect to locate and use it.                   |
-| **Context** | A collection storing services, functioning like a map with **tags** as keys and **services** as values. |
+| **概念**         | **説明**                                                                                           |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| **サービス**     | アプリケーションの異なる部分で使用される特定の機能を提供する再利用可能なコンポーネント。           |
+| **タグ**         | **サービス**を表す一意の識別子で、Effectがそれを見つけて使用することを可能にします。               |
+| **コンテキスト** | サービスを格納するコレクションで、**タグ**をキー、**サービス**を値とするマップのように機能します。 |
 
-## Using the Service
+## サービスの使用
 
-Now that we have our service tag defined, let's see how we can use it by building a simple program.
+サービスタグが定義されたので、簡単なプログラムを作成してその使用方法を見てみましょう。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts twoslash
 import { Effect, Context } from "effect"
 
 class Random extends Context.Tag("MyRandomService")<
-  Random,
-  { readonly next: Effect.Effect<number> }
->() {}
+Random,
+{ readonly next: Effect.Effect<number> }
+
+> () {}
 
 const program = Effect.gen(function* () {
-  const random = yield* Random
-  const randomNumber = yield* random.next
-  console.log(`random number: ${randomNumber}`)
+const random = yield* Random
+const randomNumber = yield\* random.next
+console.log(`random number: ${randomNumber}`)
 })
 ```
 
-In the code above, we can observe that we are able to yield the `Random` tag as if it were an `Effect` itself.
-This allows us to access the `next` operation of the service.
+上記のコードでは、`Random`タグをまるで`Effect`そのもののようにyieldできることがわかります。
+これにより、サービスの`next`操作にアクセスすることが可能になります。
 
 </Tab>
 <Tab>
@@ -120,18 +121,18 @@ const program = Random.pipe(
 )
 ```
 
-In the code above, we can observe that we are able to flat-map over the `Random` Tag as if it were an Effect itself.
-This allows us to access the `next` operation of the service within the `Effect.andThen` callback.
-We then use the `Console.log` utility to log the generated random number.
+上記のコードでは、`Random`タグをまるで`Effect`そのもののようにフラットマップできることがわかります。
+これにより、`Effect.andThen`コールバック内でサービスの`next`操作にアクセスすることが可能になります。
+次に、`Console.log`ユーティリティを使用して生成されたランダムな数値をログに記録します。
 
 </Tab>
 </Tabs>
 
-It's worth noting that the type of the `program` variable includes `Random` in the `Requirements` type parameter: `Effect<void, never, Random>`.
+注目すべき点は、`program`変数の型が`Requirements`型パラメータに`Random`を含んでいることです：`Effect<void, never, Random>`。
 
-This indicates that our program requires the `Random` service to be provided in order to execute successfully.
+これは、プログラムを正常に実行するために`Random`サービスが提供される必要があることを示しています。
 
-If we attempt to execute the effect without providing the necessary service we will encounter a type-checking error:
+必要なサービスを提供せずにエフェクトを実行しようとすると、型チェックエラーが発生します：
 
 ```ts twoslash
 // @errors: 2345
@@ -152,13 +153,13 @@ const program = Effect.gen(function* () {
 Effect.runSync(program)
 ```
 
-To resolve this error and successfully execute the program, we need to provide an actual implementation of the `Random` service.
+このエラーを解決し、プログラムを正常に実行するためには、`Random`サービスの実際の実装を提供する必要があります。
 
-In the next section, we will explore how to implement and provide the `Random` service to our program, enabling us to run it successfully.
+次のセクションでは、`Random`サービスを実装し、プログラムに提供する方法を探ります。これにより、プログラムを正常に実行できるようになります。
 
-## Providing a Service implementation
+## サービス実装の提供
 
-In order to provide an actual implementation of the `Random` service, we can utilize the `Effect.provideService` function.
+`Random`サービスの実際の実装を提供するために、`Effect.provideService`関数を利用できます。
 
 ```ts twoslash
 import { Effect, Context } from "effect"
@@ -181,27 +182,27 @@ const runnable = Effect.provideService(program, Random, {
 
 Effect.runPromise(runnable)
 /*
-Output:
+出力:
 random number: 0.8241872233134417
 */
 ```
 
-In the code snippet above, we call the `program` that we defined earlier and provide it with an implementation of the `Random` service.
-We use the `Effect.provideService` function to associate the `Random` tag with its implementation, an object with a `next` operation that generates a random number.
+上記のコードスニペットでは、先に定義した`program`を呼び出し、`Random`サービスの実装を提供しています。
+`Effect.provideService`関数を使用して、`Random`タグとその実装（ランダムな数値を生成する`next`操作を持つオブジェクト）を関連付けます。
 
-Notice that the `Requirements` type parameter of the `runnable` effect is now `never`. This indicates that the effect no longer requires any service to be provided. With the implementation of the `Random` service in place, we are able to run the program without any further requirements.
+`runnable`エフェクトの`Requirements`型パラメータが`never`になっていることに注目してください。これは、エフェクトがもはや提供されるべきサービスを必要としないことを示しています。`Random`サービスの実装が整ったことで、追加の要件なしにプログラムを実行できるようになります。
 
-## Using Multiple Services
+## 複数のサービスを使用する
 
-When we require the usage of more than one service, the process remains similar to what we've learned in defining a service, repeated for each service needed. Let's examine an example where we need two services, namely `Random` and `Logger`:
+複数のサービスを使用する必要がある場合、プロセスは必要な各サービスに対して繰り返されるため、サービスを定義する際に学んだことと同様です。`Random`と`Logger`という2つのサービスが必要な例を見てみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
 import { Effect, Context } from "effect"
 
-// Create a tag for the 'Random' service
+// 'Random'サービスのタグを作成する
 class Random extends Context.Tag("MyRandomService")<
   Random,
   {
@@ -209,7 +210,7 @@ class Random extends Context.Tag("MyRandomService")<
   }
 >() {}
 
-// Create a tag for the 'Logger' service
+// 'Logger'サービスのタグを作成する
 class Logger extends Context.Tag("MyLoggerService")<
   Logger,
   {
@@ -218,14 +219,14 @@ class Logger extends Context.Tag("MyLoggerService")<
 >() {}
 
 const program = Effect.gen(function* () {
-  // Acquire instances of the 'Random' and 'Logger' services
+  // 'Random'サービスと'Logger'サービスのインスタンスを取得する
   const random = yield* Random
   const logger = yield* Logger
 
-  // Generate a random number using the 'Random' service
+  // 'Random'サービスを使用してランダムな数値を生成する
   const randomNumber = yield* random.next
 
-  // Log the random number using the 'Logger' service
+  // 'Logger'サービスを使用してランダムな数値をログに記録する
   return yield* logger.log(String(randomNumber))
 })
 ```
@@ -236,7 +237,7 @@ const program = Effect.gen(function* () {
 ```ts twoslash
 import { Effect, Context } from "effect"
 
-// Create a tag for the 'Random' service
+// 'Random'サービスのタグを作成する
 class Random extends Context.Tag("MyRandomService")<
   Random,
   {
@@ -244,7 +245,7 @@ class Random extends Context.Tag("MyRandomService")<
   }
 >() {}
 
-// Create a tag for the 'Logger' service
+// 'Logger'サービスのタグを作成する
 class Logger extends Context.Tag("MyLoggerService")<
   Logger,
   {
@@ -253,13 +254,13 @@ class Logger extends Context.Tag("MyLoggerService")<
 >() {}
 
 const program =
-  // Acquire instances of the 'Random' and 'Logger' services
+  // 'Random'サービスと'Logger'サービスのインスタンスを取得する
   Effect.all([Random, Logger]).pipe(
     Effect.andThen(([random, logger]) =>
-      // Generate a random number using the 'Random' service
+      // 'Random'サービスを使用してランダムな数値を生成する
       random.next.pipe(
         Effect.andThen((randomNumber) =>
-          // Log the random number using the 'Logger' service
+          // 'Logger'サービスを使用してランダムな数値をログに記録する
           logger.log(String(randomNumber))
         )
       )
@@ -270,9 +271,9 @@ const program =
 </Tab>
 </Tabs>
 
-The `program` effect now has a `Requirements` type parameter of `Random | Logger`, indicating that it requires both the `Random` and `Logger` services to be provided.
+`program`エフェクトには、`Random | Logger`という`Requirements`型パラメータが追加されており、`Random`サービスと`Logger`サービスの両方が提供される必要があることを示しています。
 
-To execute the `program`, we need to provide implementations for both services:
+`program`を実行するには、両方のサービスの実装を提供する必要があります。
 
 ```ts twoslash
 import { Effect, Context } from "effect"
@@ -299,7 +300,7 @@ const program = Effect.gen(function* () {
 })
 
 // ---cut---
-// Provide service implementations for 'Random' and 'Logger'
+// 'Random'と'Logger'のサービス実装を提供する
 const runnable1 = program.pipe(
   Effect.provideService(Random, {
     next: Effect.sync(() => Math.random())
@@ -310,7 +311,7 @@ const runnable1 = program.pipe(
 )
 ```
 
-Alternatively, instead of calling `provideService` multiple times, we can combine the service implementations into a single `Context` and then provide the entire context using the `Effect.provide` function:
+代わりに、`provideService`を複数回呼び出すのではなく、サービスの実装を単一の`Context`にまとめてから、`Effect.provide`関数を使用して全体のコンテキストを提供することができます。
 
 ```ts twoslash
 import { Effect, Context } from "effect"
@@ -337,7 +338,7 @@ const program = Effect.gen(function* () {
 })
 
 // ---cut---
-// Combine service implementations into a single 'Context'
+// サービスの実装を単一の 'Context' にまとめる
 const context = Context.empty().pipe(
   Context.add(Random, { next: Effect.sync(() => Math.random()) }),
   Context.add(Logger, {
@@ -345,26 +346,26 @@ const context = Context.empty().pipe(
   })
 )
 
-// Provide the entire context to the 'program'
+// 'program' に全体のコンテキストを提供する
 const runnable2 = Effect.provide(program, context)
 ```
 
-By providing the necessary implementations for each service, we ensure that the runnable effect can access and utilize both services when it is executed.
+各サービスの必要な実装を提供することで、実行可能なエフェクトが実行時に両方のサービスにアクセスして利用できるようにします。
 
-## Optional Services
+## オプションサービス
 
-There are situations where we may want to access a service implementation only if it is available.
-In such cases, we can use the `Effect.serviceOption` function to handle this scenario.
+サービスの実装を利用可能な場合にのみアクセスしたい状況があります。
+そのような場合には、`Effect.serviceOption`関数を使用してこのシナリオを処理できます。
 
-The `Effect.serviceOption` function returns an implementation that can is available only if it is actually provided before executing this effect.
-To represent this optionality it returns an [Option](../../other/data-types/option) of the implementation.
+`Effect.serviceOption`関数は、このエフェクトを実行する前に実際に提供されている場合にのみ利用可能な実装を返します。
+このオプション性を表現するために、実装の[Option](../../other/data-types/option)を返します。
 
-Let's take a look at an example that demonstrates the usage of optional services:
+オプションサービスの使用例を見てみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
-To determine what action to take, we can use the `Option.isNone` function provided by the Option module. This function allows us to check if the service is available or not by returning `true` when the service is not available.
+どのアクションを取るかを決定するために、Optionモジュールが提供する`Option.isNone`関数を使用できます。この関数は、サービスが利用可能かどうかをチェックし、サービスが利用できない場合に`true`を返します。
 
 ```ts twoslash
 import { Effect, Context, Option } from "effect"
@@ -377,9 +378,9 @@ class Random extends Context.Tag("MyRandomService")<
 const program = Effect.gen(function* () {
   const maybeRandom = yield* Effect.serviceOption(Random)
   const randomNumber = Option.isNone(maybeRandom)
-    ? // the service is not available, return a default value
+    ? // サービスが利用できない場合、デフォルト値を返す
       -1
-    : // the service is available
+    : // サービスが利用可能な場合
       yield* maybeRandom.value.next
   console.log(randomNumber)
 })
@@ -388,7 +389,7 @@ const program = Effect.gen(function* () {
 </Tab>
 <Tab>
 
-To determine if we can use the service, we can use the `Option.match` function provided by the `Option` module. This function allows us to perform different actions based on whether the service is available or not. It takes two callbacks as arguments: one for the case when the service is not available, and another for the case when it is available.
+サービスを利用できるかどうかを判断するために、`Option`モジュールが提供する`Option.match`関数を使用できます。この関数は、サービスが利用可能かどうかに基づいて異なるアクションを実行することができます。引数として2つのコールバックを取ります。1つはサービスが利用できない場合のコールバック、もう1つはサービスが利用できる場合のコールバックです。
 
 ```ts twoslash
 import { Effect, Context, Option, Console } from "effect"
@@ -401,9 +402,9 @@ class Random extends Context.Tag("MyRandomService")<
 const program = Effect.serviceOption(Random).pipe(
   Effect.andThen((maybeRandom) =>
     Option.match(maybeRandom, {
-      // the service is not available, return a default value
+      // サービスが利用できない場合、デフォルト値を返す
       onNone: () => Effect.succeed(-1),
-      // the service is available
+      // サービスが利用可能な場合
       onSome: (random) => random.next
     })
   ),
@@ -414,18 +415,18 @@ const program = Effect.serviceOption(Random).pipe(
 </Tab>
 </Tabs>
 
-In the code above, we can observe that the `Requirements` type parameter of the `program` effect is `never`, even though we are working with a service. This allows us to access something from the context only if it is actually provided before executing this effect.
+上記のコードでは、サービスを使用しているにもかかわらず、`program`エフェクトの`Requirements`型パラメータが`never`であることがわかります。これにより、このエフェクトを実行する前に実際に提供されている場合にのみ、コンテキストから何かにアクセスすることができます。
 
-When we run the `program` effect without providing the `Random` service:
+`Random`サービスを提供せずに`program`エフェクトを実行すると:
 
 ```ts
 Effect.runPromise(program).then(console.log)
-// Output: -1
+// 出力: -1
 ```
 
-We see that the log message contains `-1`, which is the default value we provided when the service was not available.
+ログメッセージには、サービスが利用できない場合に提供したデフォルト値である `-1` が含まれていることがわかります。
 
-However, if we provide the `Random` service implementation:
+しかし、`Random` サービスの実装を提供すると：
 
 ```ts
 Effect.runPromise(
@@ -433,9 +434,9 @@ Effect.runPromise(
     next: Effect.sync(() => Math.random())
   })
 ).then(console.log)
-// Output: 0.9957979486841035
+// 出力: 0.9957979486841035
 ```
 
-We can observe that the log message now contains a random number generated by the `next` operation of the `Random` service.
+ログメッセージには、`Random`サービスの`next`操作によって生成されたランダムな数値が含まれていることがわかります。
 
-By using the `Effect.serviceOption` function, we can gracefully handle scenarios where a service may or may not be available, providing flexibility in our programs.
+`Effect.serviceOption`関数を使用することで、サービスが利用可能かどうかにかかわらず、柔軟にプログラムを扱うことができます。

@@ -1,25 +1,25 @@
 ---
-title: Retrying
-excerpt: Learn how to enhance the resilience of your applications by mastering the retrying capabilities of Effect. Explore `retry`, `retryN`, and `retryOrElse` functions, along with scheduling policies, to automatically handle transient failures. Whether dealing with network requests, database interactions, or other error-prone operations, discover how Effect simplifies the implementation of robust retry strategies.
+title: リトライ
+excerpt: Effectのリトライ機能をマスターして、アプリケーションの回復力を向上させる方法を学びましょう。`retry`、`retryN`、および `retryOrElse` 関数とスケジューリングポリシーを探求し、一時的な失敗を自動的に処理します。ネットワークリクエスト、データベースのやり取り、その他のエラーが発生しやすい操作に対処する際に、Effectがどのように堅牢なリトライ戦略の実装を簡素化するかを発見してください。
 bottomNavigation: pagination
 ---
 
-In software development, it's common to encounter situations where an operation may fail temporarily due to various factors such as network issues, resource unavailability, or external dependencies. In such cases, it's often desirable to retry the operation automatically, allowing it to succeed eventually.
+ソフトウェア開発では、ネットワークの問題、リソースの利用不可、外部依存関係などのさまざまな要因により、一時的に操作が失敗する状況に遭遇することがよくあります。そのような場合、操作を自動的に再試行し、最終的に成功させることが望ましいことがよくあります。
 
-Retrying is a powerful mechanism to handle transient failures and ensure the successful execution of critical operations. In Effect retrying is made simple and flexible with built-in functions and scheduling strategies.
+リトライは、一時的な失敗を処理し、重要な操作を確実に実行するための強力なメカニズムです。Effectでは、組み込みの関数とスケジューリング戦略を使用して、リトライを簡単かつ柔軟に行うことができます。
 
-In this guide, we will explore the concept of retrying in Effect and learn how to use the `retry` and `retryOrElse` functions to handle failure scenarios. We'll see how to define retry policies using schedules, which dictate when and how many times the operation should be retried.
+このガイドでは、Effectにおけるリトライの概念を探り、失敗シナリオを処理するために `retry` および `retryOrElse` 関数を使用する方法を学びます。スケジュールを使用してリトライポリシーを定義する方法を見ていきます。これにより、操作が再試行されるタイミングと回数を決定します。
 
-Whether you're working on network requests, database interactions, or any other potentially error-prone operations, mastering the retrying capabilities of Effect can significantly enhance the resilience and reliability of your applications.
+ネットワークリクエスト、データベースのやり取り、その他のエラーが発生しやすい操作に取り組んでいる場合でも、Effectのリトライ機能をマスターすることで、アプリケーションの回復力と信頼性を大幅に向上させることができます。
 
-To demonstrate the functionality of different retry functions, we will be working with the following helper that simulates an effect with possible failures:
+さまざまなリトライ関数の機能を示すために、次のような失敗の可能性があるエフェクトをシミュレートするヘルパーを使用します：
 
 ```twoslash include fake
 import { Effect } from "effect"
 
 let count = 0
 
-// Simulates an effect with possible failures
+// 失敗の可能性があるエフェクトをシミュレートします
 export const effect = Effect.async<string, Error>((resume) => {
   if (count <= 2) {
     count++
@@ -38,7 +38,7 @@ export const effect = Effect.async<string, Error>((resume) => {
 
 ## retry
 
-The basic syntax of `retry` is as follows:
+`retry` の基本構文は次のとおりです：
 
 ```ts
 Effect.retry(effect, policy)
@@ -55,14 +55,14 @@ Effect.retry(effect, policy)
 import { Effect, Schedule } from "effect"
 import { effect } from "./fake"
 
-// Define a repetition policy using a fixed delay between retries
+// リトライ間の固定遅延を使用して繰り返しポリシーを定義します
 const policy = Schedule.fixed("100 millis")
 
 const repeated = Effect.retry(effect, policy)
 
 Effect.runPromise(repeated).then(console.log)
 /*
-Output:
+出力:
 failure
 failure
 failure
@@ -73,7 +73,7 @@ yay!
 
 ## retry n times
 
-There is a shortcut when the policy is trivial and the failed effect is immediately retried:
+ポリシーが単純で失敗したエフェクトが即座にリトライされる場合のショートカットがあります：
 
 ```ts twoslash
 // @filename: fake.ts
@@ -86,7 +86,7 @@ import { effect } from "./fake"
 
 Effect.runPromise(Effect.retry(effect, { times: 5 }))
 /*
-Output:
+出力:
 failure
 failure
 failure
@@ -96,17 +96,17 @@ success
 
 ## retryOrElse
 
-There is another version of `retry` that allows us to define a fallback strategy in case of errors.
-If something goes wrong, we can handle it using the `retryOrElse` function.
-It lets us add an `orElse` callback that will run when the repetition fails.
+`retry` の別バージョンとして、エラーが発生した場合にフォールバック戦略を定義できる `retryOrElse` があります。
+何か問題が発生した場合、`retryOrElse` 関数を使用してそれを処理できます。
+この関数を使うと、繰り返しが失敗したときに実行される `orElse` コールバックを追加できます。
 
-The basic syntax of `retryOrElse` is as follows:
+`retryOrElse` の基本的な構文は次のとおりです：
 
 ```ts
 Effect.retryOrElse(effect, policy, fallback)
 ```
 
-**Example**
+**例**
 
 ```ts twoslash
 // @filename: fake.ts
@@ -118,19 +118,19 @@ import { Effect, Schedule, Console } from "effect"
 import { effect } from "./fake"
 
 const policy = Schedule.addDelay(
-  Schedule.recurs(2), // Retry for a maximum of 2 times
-  () => "100 millis" // Add a delay of 100 milliseconds between retries
+  Schedule.recurs(2), // 最大2回リトライする
+  () => "100ミリ秒" // リトライ間に100ミリ秒の遅延を追加する
 )
 
-// Create a new effect that retries the effect with the specified policy,
-// and provides a fallback effect if all retries fail
+// 指定されたポリシーでエフェクトをリトライし、
+// すべてのリトライが失敗した場合にフォールバックエフェクトを提供する新しいエフェクトを作成します
 const repeated = Effect.retryOrElse(effect, policy, () =>
   Console.log("orElse").pipe(Effect.as("default value"))
 )
 
 Effect.runPromise(repeated).then(console.log)
 /*
-Output:
+出力:
 failure
 failure
 failure

@@ -1,40 +1,37 @@
 ---
-title: Two Types of Errors
-excerpt: Explore the distinction between expected and unexpected errors in Effect programs. Learn how developers handle anticipated errors, known as "expected errors," and discover the nature of "unexpected errors" that occur outside the normal program flow. Understand how Effect provides detailed failure messages to aid in error recovery.
+title: 二種類のエラー
+excerpt: Effectプログラムにおける予期されたエラーと予期しないエラーの違いを探ります。開発者が「予期されたエラー」として知られる予期されたエラーをどのように処理するかを学び、通常のプログラムフローの外で発生する「予期しないエラー」の性質を発見します。Effectがエラー回復を支援するために詳細な失敗メッセージを提供する方法を理解します。
 bottomNavigation: pagination
 ---
 
-Just like any other program, Effect programs may fail for expected or unexpected reasons.
-The difference between a non-Effect program and an Effect program is in the detail provided to you when your program fails.
-Effect attempts to preserve as much information as possible about what caused your program to fail to produce a detailed,
-comprehensive, and human readable failure message.
+他のプログラムと同様に、Effectプログラムも予期された理由や予期しない理由で失敗することがあります。
+非EffectプログラムとEffectプログラムの違いは、プログラムが失敗したときに提供される詳細にあります。
+Effectは、プログラムが失敗した原因に関する情報をできるだけ多く保持し、詳細で包括的かつ人間が読みやすい失敗メッセージを生成しようとします。
 
-In an Effect program, there are two possible ways for a program to fail:
+Effectプログラムでは、プログラムが失敗する可能性がある方法は2つあります：
 
-- **Expected Errors**: These are errors that developers anticipate and expect as part of normal program execution.
+- **予期されたエラー**: これらは、開発者が通常のプログラム実行の一部として予期し、期待するエラーです。
 
-- **Unexpected Errors**: These are errors that occur unexpectedly and are not part of the intended program flow.
+- **予期しないエラー**: これらは予期せず発生し、意図されたプログラムフローの一部ではないエラーです。
 
-## Expected Errors
+## 予期されたエラー
 
-These errors, also referred to as _failures_, _typed errors_
-or _recoverable errors_, are errors that developers anticipate as part of the normal program execution.
-They serve a similar purpose to checked exceptions and play a role in defining the program's domain and control flow.
+これらのエラーは、_失敗_、_型付きエラー_、または*回復可能なエラー*とも呼ばれ、開発者が通常のプログラム実行の一部として予期するエラーです。
+これらはチェックされた例外と同様の目的を果たし、プログラムのドメインと制御フローを定義する役割を果たします。
 
-Expected errors **are tracked** at the type level by the `Effect` data type in the "Error" channel.
+予期されたエラーは、"Error"チャネルの`Effect`データ型によって**型レベルで追跡されます**。
 
-In the following example, it is evident from the type that the program can fail with an error of type `HttpError`:
+次の例では、プログラムが`HttpError`型のエラーで失敗する可能性があることが型から明らかです：
 
 ```ts
 Effect<string, HttpError>
 ```
 
-## Unexpected Errors
+## 予期しないエラー
 
-Unexpected errors, also referred to as _defects_, _untyped errors_, or _unrecoverable errors_, are errors that developers
-do not anticipate occurring during normal program execution.
-Unlike expected errors, which are considered part of a program's domain and control flow,
-unexpected errors resemble unchecked exceptions and lie outside the expected behavior of the program.
+予期しないエラーは、_欠陥_、_型なしエラー_、または*回復不能なエラー*とも呼ばれ、開発者が通常のプログラム実行中に発生することを予期しないエラーです。
+予期されたエラーとは異なり、これらはプログラムのドメインや制御フローの一部とは見なされません。
+予期しないエラーは、チェックされていない例外に似ており、プログラムの期待される動作の範囲外にあります。
 
-Since these errors are not expected, Effect **does not track** them at the type level.
-However, the Effect runtime does keep track of these errors and provides several methods to aid in recovering from unexpected errors.
+これらのエラーは予期されていないため、Effectは**型レベルで追跡しません**。
+しかし、Effectランタイムはこれらのエラーを追跡し、予期しないエラーから回復するためのいくつかの方法を提供します。

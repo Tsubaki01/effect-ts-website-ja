@@ -1,64 +1,62 @@
 ---
-title: Myths
-excerpt: Discuss common misconceptions about Effect.
+title: 誤解
+excerpt: Effectに関する一般的な誤解について議論します。
 bottomNavigation: pagination
 ---
 
-## Effect heavily relies on generators and generators are slow!
+## Effectはジェネレータに大きく依存しており、ジェネレータは遅い！
 
-Effect's internals are not built on generators, we only use generators to provide an API which closely mimics async-await. Internally async-await uses the same mechanics as generators and they are equally performant. So if you don't have a problem with async-await you won't have a problem with Effect's generators.
+Effectの内部はジェネレータで構築されているわけではありません。ジェネレータはasync-awaitに非常に似たAPIを提供するために使用しています。内部的にはasync-awaitはジェネレータと同じメカニズムを使用しており、パフォーマンスも同等です。したがって、async-awaitに問題がなければ、Effectのジェネレータにも問題はありません。
 
-Where generators and iterables are unacceptably slow is in transforming collections of data, for that try to use plain arrays as much as possible.
+ジェネレータとイテラブルが許容できないほど遅いのは、データのコレクションを変換する場合です。そのため、可能な限りプレーンな配列を使用するようにしてください。
 
-## Effect will make your code 500x slower!
+## Effectはコードを500倍遅くします！
 
-Effect does perform 500x slower if you are comparing:
+Effectは、次のように比較すると500倍遅くなります。
 
 ```ts
 const result = 1 + 1
 ```
 
-to 
+to
 
 ```ts
-const result = Effect.runSync(Effect.zipWith(
-  Effect.succeed(1),
-  Effect.succeed(1),
-  (a, b) => a + b
-))
+const result = Effect.runSync(
+  Effect.zipWith(Effect.succeed(1), Effect.succeed(1), (a, b) => a + b)
+)
 ```
 
-The reason is one operation is optimized by the JIT compiler to be a direct CPU instruction and the other isn't. 
+理由は、一方の操作はJITコンパイラによって直接CPU命令に最適化されているのに対し、もう一方はそうではないからです。
 
-In reality you'd never use Effect in such cases, Effect is an app-level library to tame concurrency, error handling, and much more! 
+実際には、このような場合にEffectを使用することはありません。Effectは、並行処理やエラーハンドリングなどを制御するためのアプリレベルのライブラリです。
 
-You'd use Effect to coordinate your thunks of code, and you can build your thunks of code in the best perfoming manner as you see fit while still controlling execution through Effect.
+Effectを使用してコードのスンクを調整し、Effectを通じて実行を制御しながら、最もパフォーマンスの良い方法でスンクを構築することができます。
 
-## Effect has a huge performance overhead!
+## Effectは大きなパフォーマンスオーバーヘッドがあります！
 
-Depends what you mean by performance, many times performance bottlenecks in JS are due to bad management of concurrency.
+パフォーマンスの意味によりますが、多くの場合、JSのパフォーマンスボトルネックは並行処理の管理が悪いために発生します。
 
-Thanks to structured concurrency and observability it becomes much easier to spot and optimize those issues. 
+構造化された並行処理と観測可能性のおかげで、これらの問題を見つけて最適化するのがはるかに簡単になります。
 
-There are apps in frontend running at 120fps that use Effect intensively, so most likely effect won't be your perf problem. 
+フロントエンドで120fpsで動作するアプリもあり、Effectを集中的に使用していますので、Effectがパフォーマンスの問題になることはほとんどありません。
 
-In regards of memory, it doesn't use much more memory than a normal program would, there are a few more allocations compared to non Effect code but usually this is no longer the case when the non Effect code does the same thing as the Effect code.
+メモリに関しては、通常のプログラムと比べてそれほど多くのメモリを使用しません。非Effectコードと同じことを行う場合、通常は非Effectコードと比べていくつかの追加のメモリ割り当てがありますが、これはもはや問題ではありません。
 
-The advise would be start using it and monitor your code, optimise out of need not out of thought, optimizing too early is the root of all evils in software design.
+アドバイスとしては、まず使用してみてコードを監視し、必要に応じて最適化することです。考えなしに最適化するのではなく、必要に応じて最適化することがソフトウェア設計のすべての悪の根源です。
 
-## The bundle size is HUGE!
+## バンドルサイズが巨大です！
 
-Effect's minimum cost is about 25k of gzipped code, that chunk contains the Effect Runtime and already includes almost all the functions that you'll need in a normal app-code scenario.
+Effectの最小コストは約25kのgzip圧縮コードです。このチャンクにはEffect Runtimeが含まれており、通常のアプリコードシナリオで必要なほとんどの関数がすでに含まれています。
 
-From that point on Effect is tree-shaking friendly so you'll only include what you use.
+その時点から、Effectはツリーシェイキングに対応しているため、使用するものだけを含めることができます。
 
-Also when using Effect your own code becomes shorter and terser, so the overall cost is amortized with usage, we have apps where adopting Effect in the majority of the codebase led to reduction of the final bundle.
+また、Effectを使用すると自分のコードが短くなり、全体のコストが使用とともに相殺されます。コードベースの大部分でEffectを採用した結果、最終的なバンドルが減少したアプリもあります。
 
-## Effect is impossible to learn, there are so many functions and modules!
+## Effectは学ぶのが不可能です。関数やモジュールが多すぎます！
 
-True, the full Effect ecosystem is quite large and some modules contain 1000s of functions, the reality is that you don't need to know them all to start being productive, you can safely start using Effect knowing just 10-20 functions and progressively discover the rest, just like you can start using TypeScript without knowing every single NPM package.
+確かに、Effectのエコシステム全体は非常に大きく、一部のモジュールには数千の関数が含まれています。しかし、すべてを知る必要はなく、10〜20の関数を知っていれば生産的に使用を開始でき、徐々に他の関数を発見していくことができます。これは、すべてのNPMパッケージを知らなくてもTypeScriptを使い始めることができるのと同じです。
 
-A short list of commonly used functions to begin are:
+一般的に使用される関数の短いリストは次のとおりです：
 
 - Effect.succeed
 - Effect.fail
@@ -76,7 +74,7 @@ A short list of commonly used functions to begin are:
 - Effect.map
 - Effect.tap
 
-A short list of commonly used modules:
+一般的に使用されるモジュールの短いリスト：
 
 - Effect
 - Context
@@ -86,31 +84,30 @@ A short list of commonly used modules:
 - Array
 - Match
 
-## Effect is the same as RxJS and shares its problems
+## EffectはRxJSと同じで、その問題を共有しています
 
-This is a sensitive topic, let's start by saying that RxJS is a great project and that it has helped millions of developers write reliable software and we all should be thankful to the developers who contributed to such an amazing project.
+これはデリケートなトピックです。まず、RxJSは素晴らしいプロジェクトであり、何百万もの開発者が信頼性の高いソフトウェアを書くのを助けてきたことに感謝すべきです。
 
-Discussing the scope of the projects, RxJS aims to make working with Observables easy and wants to provide reactive extensions to JS, Effect instead wants to make writing production-grade TypeScript easy. While the intersection is non-empty the projects have fundamentally different objectives and strategies.
+プロジェクトの範囲を議論すると、RxJSはObservablesを扱いやすくし、JSにリアクティブ拡張を提供することを目指しています。一方、EffectはプロダクションレベルのTypeScriptを書くのを容易にすることを目指しています。交差する部分はありますが、プロジェクトの目的と戦略は根本的に異なります。
 
-Sometimes people refer to RxJS in bad light, and the reason isn't RxJS in itself but rather usage of RxJS in problem domains where RxJS wasn't thought to be used.
+時々、RxJSが悪い光で見られることがありますが、その理由はRxJS自体ではなく、RxJSが意図されていない問題領域で使用されることにあります。
 
-Namely the idea that "everything is a stream" is theoretically true but it leads to fundamental limitations on developer experience, the primary issue being that streams are multi-shot (emit potentially multiple elements, or zero) and mutable delimited continuations (JS Generators) are known to be only good to represent single-shot effects (that emit a single value).
+具体的には、「すべてがストリームである」という考え方は理論的には正しいですが、開発者の経験に根本的な制限をもたらします。主な問題は、ストリームがマルチショット（複数の要素を発行する可能性がある）であり、可変の区切られた継続（JSジェネレータ）は単一ショットのエフェクト（単一の値を発行する）を表現するのに適していることです。
 
-In short it means that writing in imperative style (think of async/await) is practically impossible with stream primitives (practically because there would be the option of replaying the generator at every element and at every step, but this tends to be inefficient and the semantics of it are counter-intuitive, it would only work under the assumption that the full body is free of side-effects), forcing the developer to use declarative approaches such as pipe to represent all of their code.
+要するに、命令型スタイル（async/awaitを考えてください）で書くことは、ストリームプリミティブでは実質的に不可能です（実際には、ジェネレータを各要素および各ステップで再生するオプションがありますが、これは非効率的であり、その意味は直感に反します。完全な本体が副作用のないことを前提とする場合にのみ機能します）。これにより、開発者はすべてのコードを表現するために宣言型アプローチ（pipeなど）を使用することを余儀なくされます。
 
-Effect has a Stream module (which is pull-based instead of push-based in order to be memory constant), but the basic Effect type is single-shot and it is optimised to act as a smart & lazy Promise that enables imperative programming, so when using Effect you're not forced to use a declarative style for everything and you can program using a model which is similar to async-await.
+EffectにはStreamモジュールがあります（メモリを一定に保つためにプルベースです）が、基本的なEffectタイプは単一ショットであり、スマートで遅延評価されるPromiseとして最適化されているため、Effectを使用する際にはすべてのものに宣言型スタイルを使用する必要はなく、async-awaitに似たモデルを使用してプログラムすることができます。
 
-The other big difference is that RxJS only cares about the happy-path with explicit types, it doesn't offer a way of typing errors and dependencies, Effect instead consider both errors and dependencies as explicitely typed and offers control-flow around those in a fully type-safe manner.
+もう一つの大きな違いは、RxJSはハッピーパスのみを明示的な型で扱い、エラーや依存関係を型付けする方法を提供しないことです。一方、Effectはエラーと依存関係の両方を明示的に型付けし、それらを完全に型安全な方法で制御するフローを提供します。
 
-In short if you need reactive programming around Observables, use RxJS, if you need to write production-grade TypeScript that includes by default native telemetry, error handling, dependency injection, and more use Effect.
+要するに、Observablesを中心にリアクティブプログラミングが必要な場合はRxJSを使用し、ネイティブのテレメトリー、エラーハンドリング、依存性注入などを含むプロダクションレベルのTypeScriptを書く必要がある場合はEffectを使用してください。
 
-## Effect should be a language or Use a different language
+## Effectは言語であるべき、または別の言語を使用すべき
 
-Neither solve the issue of writing production grade software in TypeScript. 
+どちらもTypeScriptでプロダクションレベルのソフトウェアを書く問題を解決しません。
 
-TypeScript is an amazing language to write full stack code with deep roots in the JS ecosystem and wide compatibility of tools, it is an industrial language adopted by many large scale companies. 
+TypeScriptは、JSエコシステムに深く根ざし、ツールの広範な互換性を持つフルスタックコードを書くための素晴らしい言語です。多くの大規模な企業に採用されている産業言語です。
 
-The fact that something like Effect is possible within the language and the fact that the language supports things such as generators that allows for imperative programming with custom types such as Effect makes TypeScript a unique language.
+Effectのようなものが言語内で可能であり、ジェネレータのようなものをサポートしているため、Effectのようなカスタムタイプを使用した命令型プログラミングが可能であるという事実は、TypeScriptをユニークな言語にしています。
 
-In fact even in functional languages such as Scala the interop with effect systems is less optimal than it is in TypeScript, to the point that effect system authors have expressed wish for their language to support as much as TypeScript supports.
-
+実際、Scalaのような関数型言語でも、エフェクトシステムとの相互運用性はTypeScriptほど最適ではなく、エフェクトシステムの著者が自分たちの言語がTypeScriptと同じくらいサポートしてほしいと表明しているほどです。

@@ -1,16 +1,16 @@
 ---
-title: Why Effect?
-excerpt: Effect presents a new way of thinking about programming in TypeScript, offering an ecosystem of tools to build better applications and libraries. Learn how to leverage the TypeScript type system to enhance reliability and maintainability.
+title: なぜEffect？
+excerpt: EffectはTypeScriptでのプログラミングに対する新しい考え方を提示し、より良いアプリケーションやライブラリを構築するためのツールのエコシステムを提供します。TypeScriptの型システムを活用して、信頼性と保守性を向上させる方法を学びましょう。
 bottomNavigation: pagination
 ---
 
-## Motivation
+## 動機
 
-Programming is challenging. When we build libraries and apps, we look to many tools to handle the complexity and make our day-to-day more manageable. Effect presents a new way of thinking about programming in TypeScript.
+プログラミングは挑戦的です。ライブラリやアプリを構築する際、複雑さを扱い、日々の作業をより管理しやすくするために多くのツールを探します。EffectはTypeScriptでのプログラミングに対する新しい考え方を提示します。
 
-Effect is an ecosystem of tools that help you build better applications and libraries. As a result, you will also learn more about the TypeScript language and how to use the type system to make your programs more reliable and easier to maintain.
+Effectは、より良いアプリケーションやライブラリを構築するのに役立つツールのエコシステムです。その結果、TypeScript言語についてさらに学び、型システムを使用してプログラムをより信頼性が高く、保守しやすくする方法を学ぶことができます。
 
-In "typical" TypeScript, without Effect, we write code that assumes that a function is either successful or throws an exception. Take this trivial example of division:
+Effectを使用しない「典型的な」TypeScriptでは、関数が成功するか例外を投げるかのどちらかであると仮定してコードを書きます。次のような簡単な除算の例を見てみましょう：
 
 ```ts twoslash
 const divide = (a: number, b: number): number => {
@@ -21,19 +21,19 @@ const divide = (a: number, b: number): number => {
 }
 ```
 
-Based on the types, we have no idea that this function can throw an exception. We can only find out by reading the code. This may not seem like much of a problem when you only have one function in your codebase, but when you have hundreds or thousands, it really starts to add up. It's easy to forget that a function can throw an exception, and it's easy to forget to handle that exception.
+型に基づいて、この関数が例外を投げる可能性があることはわかりません。コードを読んで初めてそれがわかります。コードベースに1つの関数しかない場合はそれほど問題ではないかもしれませんが、数百や数千の関数がある場合は本当に問題になります。関数が例外を投げる可能性があることを忘れがちで、その例外を処理することも忘れがちです。
 
-Often, we will do the "easiest" thing and just wrap the function in a `try/catch` block. This is a good first step to prevent your program from crashing, but it doesn't make it any easier to manage or understand our complex application/library. We can do better.
+しばしば、私たちは「最も簡単な」方法として、関数を `try/catch` ブロックでラップするだけです。これはプログラムがクラッシュするのを防ぐための良い第一歩ですが、複雑なアプリケーションやライブラリを管理したり理解したりするのを容易にするわけではありません。もっと良い方法があります。
 
-One of the most important tools we have in TypeScript is the compiler. It is the first line of defense against bugs, domain errors, and general complexity.
+TypeScriptで私たちが持っている最も重要なツールの一つはコンパイラです。これはバグ、ドメインエラー、一般的な複雑さに対する最初の防衛線です。
 
-## The Effect Pattern
+## Effectパターン
 
-While Effect is a vast ecosystem of many different tools, if it had to be reduced down to just one idea, it would be the following:
+Effectは多くの異なるツールの広大なエコシステムですが、もし一つのアイデアに絞るとすれば、それは次のようになります：
 
-Effect's major unique insight is that we can use the type system to track _errors_ and _"context"_ (more on this later), not only _success_ values as shown in the divide example above.
+Effectの主要な独自の洞察は、型システムを使用して、成功値だけでなく、エラーや「コンテキスト」（これについては後で詳しく説明します）を追跡できるということです。
 
-Here's the same divide function from above, but with the Effect pattern:
+以下は、Effectパターンを使用した先ほどの除算関数です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -44,30 +44,30 @@ const divide = (a: number, b: number): Effect.Effect<number, Error, never> =>
     : Effect.succeed(a / b)
 ```
 
-Notice how looking at the type signature tells you exactly what success value(s) it returns (`number`), what error(s) it can throw (`Error`) and what context the function needs (`never`, as in, no context required here). This function no longer throws an exception, and you can cleanly pass on the error to the caller of this function.
+型シグネチャを見ることで、成功時の値（`number`）、投げられる可能性のあるエラー（`Error`）、および関数が必要とするコンテキスト（ここでは`never`、つまりコンテキストは不要）を正確に把握できることに注目してください。この関数はもはや例外を投げず、エラーをこの関数の呼び出し元にクリーンに渡すことができます。
 
-Errors now become values, just like your success values. Effect gives us many functions to make managing errors and success values ergonomic.
+エラーは成功値と同じように値になります。Effectはエラーと成功値を扱いやすくするための多くの関数を提供します。
 
-Additionally, tracking context allows you to provide additional information to your functions without having to pass in everything as an argument. For example, you can swap out implementations of live external services with mocks during your tests without changing any core business logic. There are many other use cases for context as well.
+さらに、コンテキストを追跡することで、すべての情報を引数として渡すことなく、関数に追加の情報を提供することができます。例えば、テスト中にライブの外部サービスの実装をモックに置き換えることができ、コアビジネスロジックを変更する必要がありません。コンテキストには他にも多くのユースケースがあります。
 
-## Effect's Ecosystem
+## Effectのエコシステム
 
-It turns out that this unique insight, along with a lot of other tooling, has led to a rich ecosystem of libraries that make building complex applications in TypeScript a breeze. Things that used to seem impossible are now ordinary. Effect's ecosystem is growing rapidly, and you can find the growing list on Effect's [GitHub](https://github.com/Effect-TS).
+この独自の洞察と多くのツールが組み合わさることで、TypeScriptで複雑なアプリケーションを簡単に構築できる豊かなライブラリエコシステムが生まれました。以前は不可能に思えたことが、今では普通のことになっています。Effectのエコシステムは急速に成長しており、Effectの[GitHub](https://github.com/Effect-TS)で成長中のリストを見つけることができます。
 
-## Don't Re-Invent the Wheel
+## 車輪の再発明をしない
 
-Application code in TypeScript often solves the same problems over and over again. Interacting with external services, filesystems, databases, etc. are common problems for all application developers. Effect provides a rich ecosystem of libraries that provide standardized solutions to many of these problems. You can use these libraries to build your application, or you can use them to build your own libraries.
+TypeScriptのアプリケーションコードは、しばしば同じ問題を何度も解決します。外部サービス、ファイルシステム、データベースなどとのやり取りは、すべてのアプリケーション開発者に共通の問題です。Effectはこれらの問題に対する標準化された解決策を提供する豊富なライブラリエコシステムを提供します。これらのライブラリを使用してアプリケーションを構築することも、自分のライブラリを構築することもできます。
 
-Managing challenges like error handling, debugging, tracing, async/promises, retries, streaming, concurrency, caching, resource management, and a lot more are made manageable with Effect. You don't have to re-invent the solutions to these problems, or install tons of dependencies. Effect, under one umbrella, solves many of the problems that you would usually install many different dependencies with different APIs to solve.
+エラーハンドリング、デバッグ、トレース、非同期/プロミス、リトライ、ストリーミング、並行性、キャッシング、リソース管理などの課題をEffectで管理することができます。これらの問題の解決策を再発明する必要はなく、多くの依存関係をインストールする必要もありません。Effectは一つの傘の下で、通常は異なるAPIを持つ多くの依存関係をインストールして解決する問題の多くを解決します。
 
-## Solving Practical Problems
+## 実際の問題の解決
 
-Effect is heavily inspired by great work done in other languages, like Scala and Haskell. However, it's important to understand that Effect's goal is to be a practical toolkit, and it goes to great lengths to solve real, everyday problems that developers face when building applications and libraries in TypeScript.
+EffectはScalaやHaskellなどの他の言語で行われた素晴らしい仕事に大きく影響を受けています。しかし、Effectの目標は実用的なツールキットであることを理解することが重要です。Effectは、TypeScriptでアプリケーションやライブラリを構築する際に開発者が直面する日常的な問題を解決するために多大な努力を払っています。
 
-## Enjoy Building and Learning
+## 楽しみながら学ぶ
 
-Learning Effect is a lot of fun. Many developers in the Effect ecosystem are using Effect to solve real problems in their day-to-day work, and also experiment with cutting edge ideas for pushing TypeScript to be the most useful language it can be.
+Effectを学ぶことはとても楽しいです。Effectエコシステムの多くの開発者は、日々の仕事で実際の問題を解決するためにEffectを使用しており、TypeScriptを最も有用な言語にするための最先端のアイデアを実験しています。
 
-You don't have to use all aspects of Effect at once, and can start with the pieces of the ecosystem that make the most sense for the problems you are solving. Effect is a toolkit, and you can pick and choose the pieces that make the most sense for your use case. However, as more and more of your codebase is using Effect, you will probably find yourself wanting to utilize more of the ecosystem!
+Effectのすべての側面を一度に使用する必要はなく、解決しようとしている問題に最も適したエコシステムの部分から始めることができます。Effectはツールキットであり、ユースケースに最も適した部分を選んで使用することができます。しかし、コードベースの多くがEffectを使用するようになると、エコシステムの他の部分も利用したくなるでしょう。
 
-Effect's concepts may be new to you, and might not completely make sense at first. This is totally normal. Take your time with reading the docs and try to understand the core concepts - this will really pay off later on as you get into the more advanced tooling in the Effect ecosystem. The Effect community is always happy to help you learn and grow. Feel free to hop into our [Discord](https://discord.gg/effect-ts) or discuss on [GitHub](https://github.com/Effect-TS)! We are open to feedback and contributions, and are always looking for ways to improve Effect.
+Effectの概念は初めての方には新しいかもしれませんし、最初は完全に理解できないかもしれません。これは全く普通のことです。ドキュメントを読む時間をかけて、コアコンセプトを理解するようにしてください。これにより、Effectエコシステムのより高度なツールに進む際に本当に役立ちます。Effectコミュニティは常にあなたの学習と成長を助けることを喜んでいます。私たちの[Discord](https://discord.gg/effect-ts)に参加するか、[GitHub](https://github.com/Effect-TS)で議論してください。私たちはフィードバックや貢献を歓迎しており、Effectを改善する方法を常に探しています。

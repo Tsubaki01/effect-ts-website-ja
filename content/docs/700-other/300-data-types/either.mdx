@@ -1,16 +1,16 @@
 ---
 title: Either
-excerpt: Explore the `Either` data type in Effect for representing exclusive values using `Left` and `Right`. Learn to create Eithers, use guards for checking types, and perform pattern matching. Discover operations like mapping over `Right` and `Left` values, and understand interoperability with the `Effect` type. Master the expressive and versatile features of `Either` for error handling and result representation in your applications.
+excerpt: `Left`と`Right`を使用して排他的な値を表現するためのEffectの`Either`データ型を探求します。`Either`の作成方法、型をチェックするためのガードの使用方法、パターンマッチングの実行方法を学びます。`Right`および`Left`値に対するマッピングなどの操作を発見し、`Effect`型との相互運用性を理解します。エラー処理や結果の表現において、`Either`の表現力豊かで多用途な機能をマスターしましょう。
 bottomNavigation: pagination
 ---
 
-The `Either` data type represents two exclusive possible values: an `Either<R, L>` can be either a `Right` value or a `Left` value, where `R` represents the type of the `Right` value and `L` represents the type of the `Left` value.
+`Either`データ型は2つの排他的な可能な値を表します。`Either<R, L>`は`Right`値または`Left`値のいずれかであり、`R`は`Right`値の型を表し、`L`は`Left`値の型を表します。
 
-## Creating Eithers
+## Eitherの作成
 
-You can create an `Either` using the `Either.right` and `Either.left` constructors.
+`Either.right`および`Either.left`コンストラクタを使用して`Either`を作成できます。
 
-- The `Either.right` function takes a value of type `R` and constructs a `Either<R, never>`:
+- `Either.right`関数は型`R`の値を取り、`Either<R, never>`を構築します：
 
   ```ts twoslash
   import { Either } from "effect"
@@ -18,7 +18,7 @@ You can create an `Either` using the `Either.right` and `Either.left` constructo
   const rightValue = Either.right(42)
   ```
 
-- The `Either.left` function takes a value of type `L` and constructs a `Either<never, L>`:
+- `Either.left`関数は型`L`の値を取り、`Either<never, L>`を構築します：
 
   ```ts twoslash
   import { Either } from "effect"
@@ -28,7 +28,7 @@ You can create an `Either` using the `Either.right` and `Either.left` constructo
 
 ## Guards
 
-You can determine whether an `Either` is a `Left` or a `Right` by using the `Either.isLeft` and `Either.isRight` guards:
+`Either`が`Left`か`Right`かを判定するには、`Either.isLeft`および`Either.isRight`ガードを使用できます：
 
 ```ts twoslash
 import { Either } from "effect"
@@ -40,12 +40,12 @@ if (Either.isLeft(foo)) {
 } else {
   console.log(`The Right value is: ${foo.right}`)
 }
-// Output: "The Right value is: 42"
+// 出力: "The Right value is: 42"
 ```
 
-## Pattern Matching
+## パターンマッチング
 
-The `Either.match` function allows you to handle different cases of an `Either` by providing separate callbacks for each case:
+`Either.match`関数を使用すると、各ケースに対して個別のコールバックを提供することで、`Either`の異なるケースを処理できます：
 
 ```ts twoslash
 import { Either } from "effect"
@@ -57,26 +57,26 @@ const message = Either.match(foo, {
   onRight: (right) => `The Right value is: ${right}`
 })
 
-console.log(message) // Output: "The Right value is: 42"
+console.log(message) // 出力: "The Right value is: 42"
 ```
 
 <Idea>
-  Using `match` instead of `isLeft` or `isRight` can be more expressive and
-  provide a clear way to handle both cases of an `Either`.
+  `isLeft`や`isRight`の代わりに`match`を使用することで、より表現力豊かになり、
+  `Either`の両方のケースを明確に処理する方法を提供できます。
 </Idea>
 
-## Working with Either
+## Eitherの操作
 
-Once you have an `Either`, there are several operations you can perform on it.
+`Either`を取得したら、いくつかの操作を実行できます。
 
-### Mapping over the Right Value
+### Right値のマッピング
 
-You can use the `Either.map` function to transform the `Right` value of an `Either`.
-The `Either.map` function takes a transformation function that maps the `Right` value.
+`Either`の`Right`値を変換するには、`Either.map`関数を使用できます。
+`Either.map`関数は、`Right`値をマッピングする変換関数を取ります。
 
-If the `Either` value is a `Left` value, the transformation function is **ignored**, and the `Left` value is returned unchanged.
+`Either`値が`Left`値の場合、変換関数は**無視**され、`Left`値は変更されずに返されます。
 
-**Example**
+**例**
 
 ```ts twoslash
 import { Either } from "effect"
@@ -86,13 +86,13 @@ Either.map(Either.right(1), (n) => n + 1) // right(2)
 Either.map(Either.left("not a number"), (n) => n + 1) // left("not a number")
 ```
 
-### Mapping over the Left Value
+### Left値のマッピング
 
-You can use the `Either.mapLeft` function to transform the `Left` value of an Either. The `mapLeft` function takes a transformation function that maps the `Left`.
+`Either.mapLeft`関数を使用して、Eitherの`Left`値を変換できます。`mapLeft`関数は、`Left`値をマッピングする変換関数を取ります。
 
-If the `Either` value is a `Right` value, the transformation function is **ignored**, and the `Right` value is returned unchanged.
+`Either`値が`Right`値の場合、変換関数は**無視**され、`Right`値は変更されずに返されます。
 
-**Example**
+**例**
 
 ```ts twoslash
 import { Either } from "effect"
@@ -102,11 +102,11 @@ Either.mapLeft(Either.right(1), (s) => s + "!") // right(1)
 Either.mapLeft(Either.left("not a number"), (s) => s + "!") // left("not a number!")
 ```
 
-### Mapping over Both Values
+### 両方の値のマッピング
 
-You can use the `Either.mapBoth` function to transform both the `Left` and `Right` values of an `Either`. The `mapBoth` function takes two transformation functions: one for the `Left` value and one for the `Right` value.
+`Either`の`Left`値と`Right`値の両方を変換するには、`Either.mapBoth`関数を使用できます。`mapBoth`関数は、`Left`値用の変換関数と`Right`値用の変換関数の2つを取ります。
 
-**Example**
+**例**
 
 ```ts twoslash
 import { Either } from "effect"
@@ -122,16 +122,16 @@ Either.mapBoth(Either.left("not a number"), {
 }) // left("not a number!")
 ```
 
-## Interop with Effect
+## Effectとの相互運用
 
-The `Either` type is a subtype of the `Effect` type, which means that it can be seamlessly used with functions from the `Effect` module. These functions are primarily designed to work with `Effect` values, but they can also handle `Either` values and process them correctly.
+`Either`型は`Effect`型のサブタイプであり、`Effect`モジュールの関数とシームレスに使用できます。これらの関数は主に`Effect`値を処理するために設計されていますが、`Either`値も正しく処理できます。
 
-In the context of `Effect`, the two members of the `Either` type are treated as follows:
+`Effect`のコンテキストでは、`Either`型の2つのメンバーは次のように扱われます：
 
-- `Left<L>` is equivalent to `Effect<never, L>`
-- `Right<R>` is equivalent to `Effect<R>`
+- `Left<L>`は`Effect<never, L>`に相当します
+- `Right<R>`は`Effect<R>`に相当します
 
-To illustrate this interoperability, let's consider the following example:
+この相互運用性を示すために、次の例を考えてみましょう：
 
 ```ts twoslash
 import { Effect, Either } from "effect"
@@ -140,14 +140,14 @@ const head = <A>(array: ReadonlyArray<A>): Either.Either<A, string> =>
   array.length > 0 ? Either.right(array[0]) : Either.left("empty array")
 
 const foo = Effect.runSync(Effect.andThen(Effect.succeed([1, 2, 3]), head))
-console.log(foo) // Output: 1
+console.log(foo) // 出力: 1
 
-const bar = Effect.runSync(Effect.andThen(Effect.succeed([]), head)) // throws "empty array"
+const bar = Effect.runSync(Effect.andThen(Effect.succeed([]), head)) // "empty array"をスロー
 ```
 
-## Combining Two or More Eithers
+## 2つ以上のEitherの結合
 
-The `Either.zipWith` function allows you to combine two `Either` values using a provided function. It creates a new `Either` that holds the combined value of both original `Either` values.
+`Either.zipWith`関数を使用すると、提供された関数を使って2つの`Either`値を結合できます。これにより、元の2つの`Either`値の結合された値を保持する新しい`Either`が作成されます。
 
 ```ts twoslash
 import { Either } from "effect"
@@ -162,18 +162,18 @@ const person = Either.zipWith(maybeName, maybeAge, (name, age) => ({
 
 console.log(person)
 /*
-Output:
+出力:
 { _id: 'Either', _tag: 'Right', right: { name: 'JOHN', age: 25 } }
 */
 ```
 
-The `Either.zipWith` function takes three arguments:
+`Either.zipWith`関数は3つの引数を取ります：
 
-- The first `Either` you want to combine
-- The second `Either` you want to combine
-- A function that takes two arguments, which are the values held by the two `Either`, and returns the combined value
+- 結合したい最初の`Either`
+- 結合したい2番目の`Either`
+- 2つの`Either`が保持する値を引数に取り、結合された値を返す関数
 
-It's important to note that if either of the two `Either` values is `Left`, the resulting `Either` will also be `Left`, containing the value of the first encountered `Left`:
+重要な点として、2つの`Either`のいずれかが`Left`である場合、結果の`Either`も`Left`となり、最初に遭遇した`Left`の値を含みます：
 
 ```ts {4-6} twoslash
 import { Either } from "effect"
@@ -190,16 +190,16 @@ const person = Either.zipWith(maybeName, maybeAge, (name, age) => ({
 
 console.log(person)
 /*
-Output:
+出力:
 { _id: 'Either', _tag: 'Left', left: new Error("Oh no!") }
 */
 ```
 
-If you need to combine two or more `Either`s without transforming the values they hold, you can use `Either.all`, which takes a collection of `Either`s and returns an `Either` with the same structure.
+2つ以上の`Either`を保持する値を変換せずに結合する必要がある場合は、`Either.all`を使用できます。これは、`Either`のコレクションを取り、同じ構造の`Either`を返します。
 
-- If a tuple is provided, the returned `Either` will contain a tuple with the same length.
-- If a struct is provided, the returned `Either` will contain a struct with the same keys.
-- If an iterable is provided, the returned `Either` will contain an array.
+- タプルが提供された場合、返される`Either`には同じ長さのタプルが含まれます。
+- 構造体が提供された場合、返される`Either`には同じキーを持つ構造体が含まれます。
+- イテラブルが提供された場合、返される`Either`には配列が含まれます。
 
 ```ts twoslash
 import { Either } from "effect"
@@ -212,7 +212,7 @@ const tuple = Either.all([maybeName, maybeAge])
 const struct = Either.all({ name: maybeName, age: maybeAge })
 ```
 
-Note that if one or more `Either` is a `Left`, then the first encountered `Left` will be returned:
+1つ以上の`Either`が`Left`である場合、最初に遭遇した`Left`が返されることに注意してください。
 
 ```ts
 import { Either } from "effect"
@@ -228,16 +228,16 @@ const tuple = Either.all([maybeName, maybeAge])
 
 console.log(tuple)
 /*
-Output:
+出力:
 { _id: 'Either', _tag: 'Left', left: new Error("name not found") }
 */
 ```
 
 ## gen
 
-Similar to [Effect.gen](../../guides/essentials/using-generators), there's also `Either.gen`, which provides a convenient syntax, akin to async/await, for writing code involving `Either` and using generators.
+[Effect.gen](../../guides/essentials/using-generators)と同様に、`Either.gen`もあり、`Either`を使用したコードをジェネレーターを使って書くための、async/awaitに似た便利な構文を提供します。
 
-Let's revisit the previous example, this time using `Either.gen` instead of `Either.zipWith`:
+前の例を再度見てみましょう。今回は`Either.zipWith`の代わりに`Either.gen`を使用します。
 
 ```ts twoslash
 import { Either } from "effect"
@@ -253,12 +253,12 @@ const person = Either.gen(function* () {
 
 console.log(person)
 /*
-Output:
+出力:
 { _id: 'Either', _tag: 'Right', right: { name: 'JOHN', age: 25 } }
 */
 ```
 
-Once again, if either of the two `Either` values is `Left`, the resulting `Either` will also be `Left`:
+再度説明しますが、2つの`Either`値のいずれかが`Left`である場合、結果の`Either`も`Left`になります：
 
 ```ts twoslash
 import { Either } from "effect"
@@ -276,7 +276,7 @@ const person = Either.gen(function* () {
 
 console.log(person)
 /*
-Output:
+出力:
 { _id: 'Either', _tag: 'Left', left: new Error("Oh no!") }
 */
 ```

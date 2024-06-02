@@ -1,25 +1,24 @@
 ---
 title: Data
-excerpt: Explore the Data module in Effect, offering functionalities for defining data types, ensuring value equality, and working with case classes. Learn about the advantages of using `Data.struct`, `Data.tuple`, and `Data.array` for efficient value comparisons. Dive into the concept of case classes, including `case`, `tagged`, `Class`, and `TaggedClass`, providing automated implementations for data types. Discover how to create unions of case classes using `TaggedEnum` for streamlined handling of disjoint unions.
+excerpt: EffectのDataモジュールを探索し、データ型の定義、値の等価性の確保、ケースクラスの操作機能を提供します。効率的な値の比較のために`Data.struct`、`Data.tuple`、`Data.array`を使用する利点について学びます。`case`、`tagged`、`Class`、`TaggedClass`を含むケースクラスの概念に飛び込み、データ型の自動実装を提供します。`TaggedEnum`を使用してケースクラスのユニオンを作成し、非連結ユニオンの処理を簡素化する方法を発見します。
 bottomNavigation: pagination
 ---
 
-The Data module offers a range of features that make it easier to create and manipulate data structures in your TypeScript applications.
-It includes functionalities for **defining data types**, ensuring **equality** between data objects, and **hashing** data for efficient comparison.
+Dataモジュールは、TypeScriptアプリケーションでデータ構造を作成および操作するのを容易にするさまざまな機能を提供します。
+データ型の**定義**、データオブジェクト間の**等価性**の確保、および効率的な比較のためのデータの**ハッシュ化**の機能が含まれています。
 
-The module offers APIs tailored for comparing **existing values** of your data types.
-Alternatively, it provides mechanisms for defining **constructors** for your data types.
+このモジュールは、データ型の**既存の値**を比較するためのAPIを提供します。
+また、データ型の**コンストラクタ**を定義するためのメカニズムも提供します。
 
-## Value Equality
+## 値の等価性
 
-If you need to compare **existing values** for equality without the need for explicit
-implementations, consider using the Data module. It provides convenient APIs
-that generate default implementations for [Equal](../trait/equal) and [Hash](../trait/hash), making equality
-checks a breeze.
+明示的な実装を必要とせずに**既存の値**を等価性で比較する必要がある場合は、Dataモジュールを使用してください。
+これは、[Equal](../trait/equal)および[Hash](../trait/hash)のデフォルト実装を生成する便利なAPIを提供し、
+等価性チェックを簡単にします。
 
 ### struct
 
-In this example, we use the `Data.struct` function to create structured data objects and check their equality using `Equal.equals`.
+この例では、`Data.struct`関数を使用して構造化データオブジェクトを作成し、`Equal.equals`を使用してその等価性を確認します。
 
 ```ts twoslash
 import { Data, Equal } from "effect"
@@ -28,19 +27,19 @@ const alice = Data.struct({ name: "Alice", age: 30 })
 
 const bob = Data.struct({ name: "Bob", age: 40 })
 
-console.log(Equal.equals(alice, alice)) // Output: true
-console.log(Equal.equals(alice, Data.struct({ name: "Alice", age: 30 }))) // Output: true
+console.log(Equal.equals(alice, alice)) // 出力: true
+console.log(Equal.equals(alice, Data.struct({ name: "Alice", age: 30 }))) // 出力: true
 
-console.log(Equal.equals(alice, { name: "Alice", age: 30 })) // Output: false
-console.log(Equal.equals(alice, bob)) // Output: false
+console.log(Equal.equals(alice, { name: "Alice", age: 30 })) // 出力: false
+console.log(Equal.equals(alice, bob)) // 出力: false
 ```
 
-The `Data` module simplifies the process by providing a default implementation for both [Equal](../trait/equal) and [Hash](../trait/hash),
-allowing you to focus on comparing values without the need for explicit implementations.
+`Data`モジュールは、[Equal](../trait/equal)と[Hash](../trait/hash)のデフォルト実装を提供することで、プロセスを簡素化し、
+明示的な実装を必要とせずに値の比較に集中できるようにします。
 
 ### tuple
 
-If you prefer to model your domain with tuples, the `Data.tuple` function has got you covered:
+ドメインをタプルでモデル化することを好む場合は、`Data.tuple`関数が役立ちます：
 
 ```ts twoslash
 import { Data, Equal } from "effect"
@@ -49,16 +48,16 @@ const alice = Data.tuple("Alice", 30)
 
 const bob = Data.tuple("Bob", 40)
 
-console.log(Equal.equals(alice, alice)) // Output: true
-console.log(Equal.equals(alice, Data.tuple("Alice", 30))) // Output: true
+console.log(Equal.equals(alice, alice)) // 出力: true
+console.log(Equal.equals(alice, Data.tuple("Alice", 30))) // 出力: true
 
-console.log(Equal.equals(alice, ["Alice", 30])) // Output: false
-console.log(Equal.equals(alice, bob)) // Output: false
+console.log(Equal.equals(alice, ["Alice", 30])) // 出力: false
+console.log(Equal.equals(alice, bob)) // 出力: false
 ```
 
 ### array
 
-You can take it a step further and use arrays to compare multiple values:
+さらに一歩進んで、配列を使用して複数の値を比較することができます：
 
 ```ts twoslash
 import { Data, Equal } from "effect"
@@ -76,26 +75,26 @@ console.log(
       Data.struct({ name: "Bob", age: 40 })
     ])
   )
-) // Output: true
+) // 出力: true
 ```
 
-In this extended example, we create an array of person objects using the `Data.array` function.
-We then compare this array with another array of person objects using `Equal.equals`,
-and the result is `true` since the arrays contain structurally equal elements.
+この拡張例では、`Data.array`関数を使用して人物オブジェクトの配列を作成します。
+次に、この配列を別の人物オブジェクトの配列と`Equal.equals`を使用して比較します。
+結果は、配列が構造的に等しい要素を含んでいるため`true`となります。
 
 ## Constructors
 
-The module introduces a concept known as "Case classes", which automate various essential operations when defining data types.
-These operations include generating **constructors**, handling **equality** checks, and managing **hashing**.
+このモジュールは、データ型を定義する際にさまざまな基本操作を自動化する「Case classes」という概念を導入します。
+これらの操作には、**constructors**の生成、**equality**チェックの処理、および**hashing**の管理が含まれます。
 
-Case classes can be defined in two primary ways:
+Case classesは、主に2つの方法で定義できます：
 
-- as plain objects using `case` or `tagged`
-- as TypeScript classes using `Class` or `TaggedClass`
+- `case`または`tagged`を使用したプレーンオブジェクトとして
+- `Class`または`TaggedClass`を使用したTypeScriptクラスとして
 
 ### case
 
-This helper automatically provides implementations for constructors, equality checks, and hashing for your data type.
+このヘルパーは、データ型のためのコンストラクタ、等価性チェック、およびハッシュ化の実装を自動的に提供します。
 
 ```ts twoslash
 import { Data, Equal } from "effect"
@@ -104,83 +103,82 @@ interface Person {
   readonly name: string
 }
 
-// Creating a constructor for `Person`
+// `Person`のコンストラクタを作成
 const Person = Data.case<Person>()
 
-// Creating instances of Person
+// Personのインスタンスを作成
 const mike1 = Person({ name: "Mike" })
 const mike2 = Person({ name: "Mike" })
 const john = Person({ name: "John" })
 
-// Checking equality
-console.log(Equal.equals(mike1, mike2)) // Output: true
-console.log(Equal.equals(mike1, john)) // Output: false
+// 等価性のチェック
+console.log(Equal.equals(mike1, mike2)) // 出力: true
+console.log(Equal.equals(mike1, john)) // 出力: false
 ```
 
-Here we create a constructor for `Person` using `Data.case`.
-The resulting instances come with built-in equality checks, making it simple to compare them using `Equal.equals`.
+ここでは、`Data.case`を使用して`Person`のコンストラクタを作成します。
+生成されたインスタンスには組み込みの等価性チェックが付属しており、`Equal.equals`を使用して簡単に比較できます。
 
 ### tagged
 
-In certain situations, like when you're defining a data type that includes a tag field (commonly used in disjoint unions),
-using the `case` approach can become repetitive and cumbersome.
-This is because you're required to specify the tag every time you create an instance:
+タグフィールド（通常は相異なる共用体で使用される）を含むデータ型を定義する場合など、特定の状況では`case`アプローチを使用することが繰り返しになり面倒になることがあります。
+これは、インスタンスを作成するたびにタグを指定する必要があるためです。
 
 ```ts twoslash
 import { Data } from "effect"
 
 interface Person {
-  readonly _tag: "Person" // the tag
+  readonly _tag: "Person" // タグ
   readonly name: string
 }
 
 const Person = Data.case<Person>()
 
-// It can be quite frustrating to repeat `_tag: 'Person'` every time...
+// 毎回`_tag: 'Person'`を繰り返すのはかなり面倒です...
 const mike = Person({ _tag: "Person", name: "Mike" })
 const john = Person({ _tag: "Person", name: "John" })
 ```
 
-To make your life easier, the `tagged` helper simplifies this process by allowing you to define the tag only once. It follows the convention within the Effect ecosystem of naming the tag field with `"_tag"`:
+作業を簡単にするために、`tagged`ヘルパーはタグを一度だけ定義することでこのプロセスを簡素化します。これは、Effectエコシステム内でタグフィールドを`"_tag"`と命名する慣例に従います。
 
 ```ts twoslash
 import { Data } from "effect"
 
 interface Person {
-  readonly _tag: "Person" // the tag
+  readonly _tag: "Person" // タグ
   readonly name: string
 }
 
 const Person = Data.tagged<Person>("Person")
 
-// Now, it's much more convenient...
+// これで、はるかに便利になりました...
 const mike = Person({ name: "Mike" })
 const john = Person({ name: "John" })
 
-console.log(mike._tag) // Output: { name: 'Mike', _tag: 'Person' }
+console.log(mike._tag) // 出力: { name: 'Mike', _tag: 'Person' }
 ```
 
-### Class
+### クラス
 
-If you find it more comfortable to work with classes instead of plain objects, you have the option to use `Data.Class` instead of `case`.
-This approach can be particularly useful in scenarios where you prefer a more class-oriented structure:
+プレーンオブジェクトよりもクラスを使う方が快適だと感じる場合は、`case`の代わりに`Data.Class`を使用するオプションがあります。
+このアプローチは、よりクラス指向の構造を好むシナリオで特に有用です。
 
 ```ts twoslash
 import { Data, Equal } from "effect"
 
 class Person extends Data.Class<{ name: string }> {}
 
-// Creating instances of Person
+// Personのインスタンスを作成する
 const mike1 = new Person({ name: "Mike" })
 const mike2 = new Person({ name: "Mike" })
 const john = new Person({ name: "John" })
 
-// Checking equality
-console.log(Equal.equals(mike1, mike2)) // Output: true
-console.log(Equal.equals(mike1, john)) // Output: false
+// 等価性をチェックする
+console.log(Equal.equals(mike1, mike2)) // 出力: true
+console.log(Equal.equals(mike1, john)) // 出力: false
 ```
 
-One advantage of using classes is that you can easily add custom getters and methods to the class definition, enhancing its functionality to suit your specific needs:
+クラスを使用する利点の一つは、カスタムゲッターやメソッドをクラス定義に簡単に追加できるため、特定のニーズに合わせて機能を強化できることです。
 
 ```ts twoslash
 import { Data } from "effect"
@@ -193,31 +191,31 @@ class Person extends Data.Class<{ name: string }> {
 
 const mike = new Person({ name: "Mike" })
 
-console.log(mike.upperName) // Output: MIKE
+console.log(mike.upperName) // 出力: MIKE
 ```
 
 ### TaggedClass
 
-For those who prefer working with classes over plain objects, you can utilize `Data.TaggedClass` as an alternative to `tagged`.
+プレーンオブジェクトよりもクラスを使う方が好みの方は、`tagged`の代わりに`Data.TaggedClass`を利用することができます。
 
 ```ts twoslash
 import { Data, Equal } from "effect"
 
 class Person extends Data.TaggedClass("Person")<{ name: string }> {}
 
-// Creating instances of Person
+// Personのインスタンスを作成する
 const mike1 = new Person({ name: "Mike" })
 const mike2 = new Person({ name: "Mike" })
 const john = new Person({ name: "John" })
 
-console.log(mike1) // Output: Person { name: 'Mike', _tag: 'Person' }
+console.log(mike1) // 出力: Person { name: 'Mike', _tag: 'Person' }
 
-// Checking equality
-console.log(Equal.equals(mike1, mike2)) // Output: true
-console.log(Equal.equals(mike1, john)) // Output: false
+// 等価性をチェックする
+console.log(Equal.equals(mike1, mike2)) // 出力: true
+console.log(Equal.equals(mike1, john)) // 出力: false
 ```
 
-One of the advantages of using tagged classes is that you can seamlessly incorporate custom getters and methods into the class definition, expanding its functionality as needed:
+タグ付きクラスを使用する利点の一つは、カスタムゲッターやメソッドをクラス定義にシームレスに組み込むことができ、必要に応じて機能を拡張できることです。
 
 ```ts twoslash
 import { Data } from "effect"
@@ -230,57 +228,57 @@ class Person extends Data.TaggedClass("Person")<{ name: string }> {
 
 const mike = new Person({ name: "Mike" })
 
-console.log(mike.upperName) // Output: MIKE
+console.log(mike.upperName) // 出力: MIKE
 ```
 
-## Union of Tagged Structs
+## タグ付き構造体のユニオン
 
-If you're looking to create a disjoint union of tagged structs, you can easily achieve this using `Data.TaggedEnum` and `Data.taggedEnum`.
-This feature simplifies the process of defining and working with unions of plain objects.
+タグ付き構造体の排他的ユニオンを作成したい場合、`Data.TaggedEnum`と`Data.taggedEnum`を使用することで簡単に実現できます。
+この機能は、プレーンオブジェクトのユニオンを定義し、操作するプロセスを簡素化します。
 
-### Definition
+### 定義
 
-Let's walk through an example to see how this works:
+どのように機能するか、例を見てみましょう：
 
 ```ts twoslash
 import { Data, Equal } from "effect"
 
-// Define a union type using TaggedEnum
+// TaggedEnumを使用してユニオン型を定義する
 type RemoteData = Data.TaggedEnum<{
   Loading: {}
   Success: { readonly data: string }
   Failure: { readonly reason: string }
 }>
 
-// Create constructors for specific error types
+// 特定のエラータイプのコンストラクタを作成する
 const { Loading, Success, Failure } = Data.taggedEnum<RemoteData>()
 
-// Create instances of errors
+// エラーのインスタンスを作成する
 const state1 = Loading()
 const state2 = Success({ data: "test" })
 const state3 = Success({ data: "test" })
 const state4 = Failure({ reason: "not found" })
 
-// Checking equality
-console.log(Equal.equals(state2, state3)) // Output: true
-console.log(Equal.equals(state2, state4)) // Output: false
+// 等価性をチェックする
+console.log(Equal.equals(state2, state3)) // 出力: true
+console.log(Equal.equals(state2, state4)) // 出力: false
 
-console.log(state1) // Output: { _tag: 'Loading' }
-console.log(state2) // Output: { data: 'test', _tag: 'Success' }
-console.log(state4) // Output: { reason: 'not found', _tag: 'Failure' }
+console.log(state1) // 出力: { _tag: 'Loading' }
+console.log(state2) // 出力: { data: 'test', _tag: 'Success' }
+console.log(state4) // 出力: { reason: 'not found', _tag: 'Failure' }
 ```
 
-In this example:
+この例では：
 
-- We define a `RemoteData` union type with three states: `Loading`, `Success`, and `Failure`.
-- We use `Data.taggedEnum` to create constructors for these states.
-- We create instances of each state and check for equality using `Equal.equals`.
+- `RemoteData` ユニオン型を `Loading`、`Success`、`Failure` の3つの状態で定義します。
+- `Data.taggedEnum` を使用してこれらの状態のコンストラクタを作成します。
+- 各状態のインスタンスを作成し、`Equal.equals` を使用して等価性をチェックします。
 
-Note that it follows the convention within the Effect ecosystem of naming the tag field with `"_tag"`.
+タグフィールドに `"_tag"` を使用するという Effect エコシステム内の慣例に従っていることに注意してください。
 
-### Adding Generics
+### ジェネリクスの追加
 
-You can also create tagged unions with generics using `TaggedEnum.WithGenerics`. This allows for more flexible and reusable type definitions.
+`TaggedEnum.WithGenerics` を使用してジェネリクスを持つタグ付きユニオンを作成することもできます。これにより、より柔軟で再利用可能な型定義が可能になります。
 
 ```ts twoslash
 import { Data } from "effect"
@@ -304,9 +302,9 @@ const failure = Failure({ reason: "not found" })
 const success = Success({ data: 1 })
 ```
 
-### $is and $match
+### $is と $match
 
-The `Data.taggedEnum` also provides `$is` and `$match` functions for type guards and pattern matching, respectively.
+`Data.taggedEnum` は、型ガードとパターンマッチングのための `$is` と `$match` 関数も提供します。
 
 ```ts twoslash
 import { Data } from "effect"
@@ -320,13 +318,13 @@ type RemoteData = Data.TaggedEnum<{
 const { $is, $match, Loading, Success, Failure } =
   Data.taggedEnum<RemoteData>()
 
-// Create a type guard
+// タイプガードを作成する
 const isLoading = $is("Loading")
 
 console.log(isLoading(Loading())) // true
 console.log(isLoading(Success({ data: "test" }))) // false
 
-// Create a matcher
+// マッチャーを作成する
 const matcher = $match({
   Loading: () => "this is a Loading",
   Success: ({ data }) => `this is a Success: ${data}`,
@@ -338,14 +336,14 @@ console.log(matcher(Success({ data: "test" }))) // "this is a Success: test"
 
 ## Errors
 
-In Effect, errors play a crucial role, and defining and constructing them is made easier with two specialized constructors:
+Effectにおいて、エラーは重要な役割を果たし、定義と構築は2つの特殊なコンストラクタを使用することで簡単になります：
 
 - `Error`
 - `TaggedError`
 
 ### Error
 
-With `Data.Error`, we can create an `Error` with additional fields beyond the usual `message`:
+`Data.Error`を使用すると、通常の`message`に加えて追加のフィールドを持つ`Error`を作成できます：
 
 ```ts twoslash
 import { Data } from "effect"
@@ -357,18 +355,18 @@ const err = new NotFound({
   file: "foo.txt"
 })
 
-console.log(err instanceof Error) // Output: true
+console.log(err instanceof Error) // 出力: true
 
-console.log(err.file) // Output: foo.txt
+console.log(err.file) // 出力: foo.txt
 console.log(err)
 /*
-Output:
+出力:
 Error: Cannot find this file
   ... stack trace ...
 */
 ```
 
-Additionally, `NotFound` is "yieldable" as it is an `Effect`, so there's no need to use `Effect.fail`:
+さらに、`NotFound`は`Effect`として"yieldable"であるため、`Effect.fail`を使用する必要はありません：
 
 ```ts twoslash
 import { Data, Effect } from "effect"
@@ -385,7 +383,7 @@ const program = Effect.gen(function* () {
 
 ### TaggedError
 
-In Effect, there's a special convention to add a `_tag` field to custom errors. This convention simplifies certain operations, such as error handling with APIs like `Effect.catchTag` or `Effect.catchTags`. Therefore, the `TaggedError` API simplifies the process of creating custom errors by automatically adding this type of tag without needing to specify it every time you create a new error:
+Effectでは、カスタムエラーに`_tag`フィールドを追加する特別な慣習があります。この慣習により、`Effect.catchTag`や`Effect.catchTags`のようなAPIを使用したエラー処理など、特定の操作が簡素化されます。したがって、`TaggedError` APIは、新しいエラーを作成するたびにこのタイプのタグを指定する必要がないように、自動的にこのタグを追加することでカスタムエラーの作成プロセスを簡素化します。
 
 ```ts twoslash
 import { Data, Effect, Console } from "effect"
@@ -407,5 +405,5 @@ const program = Effect.gen(function* () {
 )
 
 Effect.runPromise(program)
-// Output: Cannot find this file (foo.txt)
+// 出力: Cannot find this file (foo.txt)
 ```

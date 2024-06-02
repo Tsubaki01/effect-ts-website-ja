@@ -1,14 +1,14 @@
 ---
-title: Matching
-excerpt: Discover how to handle both success and failure cases in the Effect data type using functions like `match` and `matchEffect`. Learn techniques to perform side effects, ignore values, and access the full cause of failures. Effectively manage control flow and handle errors in your Effect programs.
+title: マッチング
+excerpt: `match`や`matchEffect`のような関数を使用して、Effectデータ型における成功と失敗の両方のケースを処理する方法を学びます。副作用を実行し、値を無視し、失敗の原因を完全に把握する技術を学びます。Effectプログラムでの制御フローを効果的に管理し、エラーを処理します。
 bottomNavigation: pagination
 ---
 
-In the `Effect` data type, just like other data types such as [Option](../../other/data-types/option#matching) and [Exit](../../other/data-types/exit#matching), we have a `match` function that allows us to handle different cases simultaneously. When working with effects, we also have several functions that enable us to handle both success and failure scenarios.
+`Effect`データ型では、[Option](../../other/data-types/option#matching)や[Exit](../../other/data-types/exit#matching)などの他のデータ型と同様に、異なるケースを同時に処理できる`match`関数があります。エフェクトを扱う際には、成功と失敗の両方のシナリオを処理するためのいくつかの関数もあります。
 
 ## match
 
-The `Effect.match` function allows us to **handle both success and failure cases** in a non-effectful manner by providing a handler for each case:
+`Effect.match`関数は、各ケースに対してハンドラを提供することにより、非エフェクト的な方法で**成功と失敗の両方のケースを処理**することができます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -21,17 +21,17 @@ const program1 = Effect.match(success, {
   onSuccess: (value) => `success: ${value}`
 })
 
-Effect.runPromise(program1).then(console.log) // Output: "success: 42"
+Effect.runPromise(program1).then(console.log) // 出力: "success: 42"
 
 const program2 = Effect.match(failure, {
   onFailure: (error) => `failure: ${error.message}`,
   onSuccess: (value) => `success: ${value}`
 })
 
-Effect.runPromise(program2).then(console.log) // Output: "failure: Uh oh!"
+Effect.runPromise(program2).then(console.log) // 出力: "failure: Uh oh!"
 ```
 
-We can also choose to ignore the success and failure values if we're not interested in them:
+成功と失敗の値に興味がない場合、それらを無視することもできます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -45,7 +45,7 @@ const program = Effect.match(task, {
 })
 ```
 
-In this case, we use the `constVoid` function from the `Function` module, which constantly returns `void`, to provide handlers that perform no operation. This effectively discards the success and failure values and focuses solely on the control flow or side effects of the program. Alternatively, we can achieve the same result using the `Effect.ignore` function:
+この場合、`Function`モジュールの`constVoid`関数を使用します。この関数は常に`void`を返し、何も操作を行わないハンドラを提供します。これにより、成功と失敗の値を効果的に無視し、プログラムの制御フローや副作用にのみ焦点を当てることができます。代わりに、`Effect.ignore`関数を使用して同じ結果を達成することもできます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -57,7 +57,7 @@ const program = Effect.ignore(task)
 
 ## matchEffect
 
-In addition to `Effect.match`, we have the `Effect.matchEffect` function, which allows us to handle success and failure cases while performing **additional side effects**. Let's see an example:
+`Effect.match`に加えて、`Effect.matchEffect`関数もあります。この関数を使用すると、成功と失敗のケースを処理しながら**追加の副作用**を実行することができます。例を見てみましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -74,7 +74,7 @@ const program1 = Effect.matchEffect(success, {
 
 console.log(Effect.runSync(program1))
 /*
-Output:
+出力:
 ... message="success: 42"
 success: 42
 */
@@ -88,17 +88,17 @@ const program2 = Effect.matchEffect(failure, {
 
 console.log(Effect.runSync(program2))
 /*
-Output:
+出力:
 ... message="failure: Uh oh!"
 failure: Uh oh!
 */
 ```
 
-In this example, we use `Effect.matchEffect` instead of `Effect.match`. The `Effect.matchEffect` function allows us to perform additional side effects while handling success and failure cases. We can log messages or perform other side effects within the respective handlers.
+この例では、`Effect.match`の代わりに`Effect.matchEffect`を使用しています。`Effect.matchEffect`関数を使用すると、成功と失敗のケースを処理しながら追加の副作用を実行することができます。これにより、メッセージのログやその他の副作用をそれぞれのハンドラ内で行うことができます。
 
 ## matchCause / matchCauseEffect
 
-Effect also provides `Effect.matchCause` and `Effect.matchCauseEffect` functions, which are useful for **accessing the full cause** of the underlying fiber in case of failure. This allows us to handle different failure causes separately and take appropriate actions. Here's an example:
+Effectはまた、`Effect.matchCause`および`Effect.matchCauseEffect`関数も提供しています。これらの関数は、失敗した場合に基礎となるファイバーの完全な原因にアクセスするのに役立ちます。これにより、異なる失敗原因を個別に処理し、適切な対応を取ることができます。以下はその例です：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -121,4 +121,4 @@ const program = Effect.matchCauseEffect(exceptionalEffect, {
 })
 ```
 
-In this example, we have an `exceptionalEffect` that may fail or encounter other types of exceptions. The `matchCauseEffect` function allows us to match and handle different failure causes separately.
+この例では、`exceptionalEffect`が失敗したり、他の種類の例外に遭遇したりする可能性があります。`matchCauseEffect`関数を使用すると、異なる失敗原因を個別にマッチングして処理することができます。

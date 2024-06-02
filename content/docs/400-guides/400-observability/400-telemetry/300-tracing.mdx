@@ -1,37 +1,37 @@
 ---
 title: Introduction to Tracing in Effect
 navTitle: Tracing
-excerpt: Explore the necessity of tracing in distributed systems beyond logs and metrics. Discover spans and traces, crucial for understanding request lifecycles. Learn to create, print, and annotate spans, and visualize traces for effective debugging and optimization.
+excerpt: 分散システムにおけるログやメトリクスを超えたトレーシングの必要性を探ります。リクエストのライフサイクルを理解するために重要なSpanとトレースを発見します。Spanの作成、印刷、注釈付けを学び、効果的なデバッグと最適化のためにトレースを視覚化します。
 bottomNavigation: pagination
 ---
 
-Although logs and metrics are useful to understand the behavior of individual services, they are not enough to provide a complete overview of the lifetime of a request in a distributed system.
+ログやメトリクスは個々のサービスの動作を理解するのに役立ちますが、分散システムにおけるリクエストのライフタイム全体を把握するには不十分です。
 
-In a distributed system, a request can span multiple services and each service can make multiple requests to other services to fulfill the request. In such a scenario, we need to have a way to track the lifetime of a request across multiple services to diagnose what services are the bottlenecks and where the request is spending most of its time.
+分散システムでは、リクエストは複数のサービスにまたがることがあり、各サービスはリクエストを完了するために他のサービスに複数のリクエストを行うことがあります。このようなシナリオでは、複数のサービスにわたるリクエストのライフタイムを追跡し、どのサービスがボトルネックであり、リクエストがどこで最も時間を費やしているかを診断する方法が必要です。
 
 ## Spans
 
-A span represents a unit of work or operation. It tracks specific operations that a request makes, painting a picture of what happened during the time in which that operation was executed.
+Spanは作業や操作の単位を表します。リクエストが行う特定の操作を追跡し、その操作が実行された時間に何が起こったかを描写します。
 
-A typical Span contains the following information:
+典型的なSpanには以下の情報が含まれます：
 
-- **Name:** Describes the operation being tracked.
+- **Name:** 追跡される操作を説明します。
 
-- **Time-Related Data:** Timestamps to measure when the operation started and how long it took.
+- **Time-Related Data:** 操作が開始された時刻とその所要時間を測定するタイムスタンプ。
 
-- **Structured Log Messages:** Records essential information during the operation.
+- **Structured Log Messages:** 操作中の重要な情報を記録します。
 
-- **Metadata (Attributes):** Additional data that provides context about the operation.
+- **Metadata (Attributes):** 操作に関するコンテキストを提供する追加データ。
 
 ## Traces
 
-A trace records the paths taken by requests (made by an application or end-user) as they propagate through multi-service architectures, like microservice and serverless applications.
+トレースは、アプリケーションやエンドユーザーによって行われたリクエストが、マイクロサービスやサーバーレスアプリケーションのようなマルチサービスアーキテクチャを通じて伝播する経路を記録します。
 
-Without tracing, it is challenging to pinpoint the cause of performance problems in a distributed system.
+トレーシングがなければ、分散システムにおけるパフォーマンス問題の原因を特定するのは困難です。
 
-A trace is made of one or more spans. The first span represents the root span. Each root span represents a request from start to finish. The spans underneath the parent provide a more in-depth context of what occurs during a request (or what steps make up a request).
+トレースは1つ以上のSpanで構成されます。最初のSpanはルートSpanを表します。各ルートSpanはリクエストの開始から終了までを表します。親の下にあるSpanは、リクエスト中に何が起こるか（またはリクエストを構成するステップ）についての詳細なコンテキストを提供します。
 
-Many Observability back-ends visualize traces as waterfall diagrams that may look something like this:
+多くのObservabilityバックエンドは、トレースをウォーターフォールダイアグラムとして視覚化します。これは次のようなものです：
 
 <img
   src="/pages/tracing/waterfall-trace.svg"
@@ -39,11 +39,11 @@ Many Observability back-ends visualize traces as waterfall diagrams that may loo
   title="Trace waterfall diagram"
 />
 
-Waterfall diagrams show the parent-child relationship between a root span and its child spans. When a span encapsulates another span, this also represents a nested relationship.
+ウォーターフォールダイアグラムは、ルートSpanとその子Spanの親子関係を示します。Spanが別のSpanを包含する場合、これはネストされた関係も表します。
 
 ## Creating Spans
 
-You can instrument an effect with a Span using the `Effect.withSpan` API. Here's how you can do it:
+`Effect.withSpan` APIを使用して、EffectにSpanをインストルメントすることができます。以下はその方法です：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -53,11 +53,11 @@ const program = Effect.void.pipe(Effect.delay("100 millis"))
 const instrumented = program.pipe(Effect.withSpan("myspan"))
 ```
 
-It's important to note that instrumenting an effect doesn't change its type. You start with an `Effect<void>`, and you still get an `Effect<void>`.
+効果にインストルメントを追加しても、その型は変わらないことに注意してください。最初に `Effect<void>` を使用し、結果として `Effect<void>` を得ます。
 
-## Printing Spans
+## Spansの出力
 
-Now, let's print our Span to the console. To achieve this, we need specific tools, including
+次に、Spanをコンソールに出力してみましょう。これを実現するためには、以下の特定のツールが必要です：
 
 - `@effect/opentelemetry`
 - `@opentelemetry/sdk-metrics`
@@ -65,9 +65,9 @@ Now, let's print our Span to the console. To achieve this, we need specific tool
 - `@opentelemetry/sdk-trace-node`
 - `@opentelemetry/sdk-trace-web`
 
-With these in place, we can visualize and understand the Spans in our application.
+これらのツールを使用することで、アプリケーション内のSpanを視覚化し、理解することができます。
 
-Here's a code snippet demonstrating how to set up the necessary environment and print the Span to the console:
+以下のコードスニペットは、必要な環境を設定し、Spanをコンソールに出力する方法を示しています：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -88,7 +88,7 @@ const NodeSdkLive = NodeSdk.layer(() => ({
 
 Effect.runPromise(instrumented.pipe(Effect.provide(NodeSdkLive)))
 /*
-Example Output:
+Example 出力:
 {
   traceId: 'd0f730abfc366205806469596092b239',
   parentId: undefined,
@@ -106,22 +106,22 @@ Example Output:
 */
 ```
 
-Here's a breakdown of the output:
+出力の内訳は以下の通りです：
 
-| Field        | Description                                                                                                                                                                                                    |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `traceId`    | A unique identifier for the entire trace, helping trace requests or operations as they move through an application.                                                                                            |
-| `parentId`   | Identifies the parent span of the current span, marked as `undefined` in the output when there is no parent span, making it a root span.                                                                       |
-| `name`       | Describes the name of the span, indicating the operation being tracked (e.g., "myspan").                                                                                                                       |
-| `id`         | A unique identifier for the current span, distinguishing it from other spans within a trace.                                                                                                                   |
-| `timestamp`  | A timestamp representing when the span started, measured in microseconds since the Unix epoch.                                                                                                                 |
-| `duration`   | Specifies the duration of the span, representing the time taken to complete the operation (e.g., `2895.769` microseconds).                                                                                     |
-| `attributes` | Spans may contain attributes, which are key-value pairs providing additional context or information about the operation. In this output, it's an empty object, indicating no specific attributes in this span. |
-| `status`     | The status field provides information about the span's status. In this case, it has a code of 1, which typically indicates an OK status (whereas a code of 2 signifies an ERROR status)                        |
-| `events`     | Spans can include events, which are records of specific moments during the span's lifecycle. In this output, it's an empty array, suggesting no specific events recorded.                                      |
-| `links`      | Links can be used to associate this span with other spans in different traces. In the output, it's an empty array, indicating no specific links for this span.                                                 |
+| フィールド   | 説明                                                                                                                                                               |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `traceId`    | トレース全体の一意の識別子であり、アプリケーションを通じてリクエストや操作を追跡するのに役立ちます。                                                               |
+| `parentId`   | 現在のSpanの親Spanを識別します。親Spanがない場合、出力では`undefined`と表示され、ルートSpanとなります。                                                            |
+| `name`       | Spanの名前を示し、追跡される操作を表します（例："myspan"）。                                                                                                       |
+| `id`         | 現在のSpanの一意の識別子であり、トレース内の他のSpanと区別します。                                                                                                 |
+| `timestamp`  | Spanが開始された時刻を示すタイムスタンプで、Unixエポックからのマイクロ秒で測定されます。                                                                           |
+| `duration`   | Spanの期間を示し、操作が完了するまでの時間を表します（例：`2895.769`マイクロ秒）。                                                                                 |
+| `attributes` | Spanには属性が含まれることがあり、操作に関する追加のコンテキストや情報を提供するキーと値のペアです。この出力では、特定の属性がないことを示す空のオブジェクトです。 |
+| `status`     | Spanのステータスに関する情報を提供します。この場合、コードが1であり、通常はOKステータスを示します（コードが2の場合はエラーステータスを示します）。                 |
+| `events`     | Spanにはイベントが含まれることがあり、Spanのライフサイクル中の特定の瞬間を記録します。この出力では、特定のイベントが記録されていないことを示す空の配列です。       |
+| `links`      | このSpanを他のトレース内の他のSpanと関連付けるために使用されます。この出力では、特定のリンクがないことを示す空の配列です。                                         |
 
-Let's examine the output of an effect that encountered an error:
+エラーが発生したEffectの出力を見てみましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -145,7 +145,7 @@ Effect.runPromiseExit(program.pipe(Effect.provide(NodeSdkLive))).then(
   console.log
 )
 /*
-Example Output:
+出力の例:
 {
   traceId: '760510a3f9a0881a09de990c87ec1cef',
   parentId: undefined,
@@ -168,10 +168,10 @@ Example Output:
 */
 ```
 
-## Adding Annotations
+## アノテーションの追加
 
-You can provide extra information to a span by utilizing the `Effect.annotateCurrentSpan` function.
-This tool allows you to associate key-value pairs, offering more context about the execution of the span.
+`Effect.annotateCurrentSpan` 関数を利用することで、Spanに追加情報を提供できます。
+このツールを使うと、キーと値のペアを関連付けて、Spanの実行に関するより多くのコンテキストを提供できます。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -194,7 +194,7 @@ const NodeSdkLive = NodeSdk.layer(() => ({
 
 Effect.runPromise(program.pipe(Effect.provide(NodeSdkLive)))
 /*
-Example Output:
+出力の例:
 {
   traceId: '869c9d74d9db14a4ba4393ca8e0f61db',
   parentId: undefined,
@@ -212,9 +212,9 @@ Example Output:
 */
 ```
 
-## Logs as events
+## イベントのログ
 
-Logs are transformed into what are known as "Span Events." These events provide structured information and a timeline of occurrences within your application.
+ログは "Span Events" として知られるものに変換されます。これらのイベントは、アプリケーション内の出来事に関する構造化された情報とタイムラインを提供します。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -236,7 +236,7 @@ const NodeSdkLive = NodeSdk.layer(() => ({
 
 Effect.runPromise(program.pipe(Effect.provide(NodeSdkLive)))
 /*
-Example Output:
+出力の例:
 {
   traceId: 'ad708d58c15f9e5c7b5cca2eeb6838a2',
   parentId: undefined,
@@ -261,11 +261,11 @@ Example Output:
 */
 ```
 
-Spans can contain events, which are records of specific moments during the span's lifecycle. In this output, there is one event named `'Hello'`. It includes associated attributes, such as `'effect.fiberId'` and `'effect.logLevel'`, providing information about the logged event. The `time` field represents the timestamp when the event occurred.
+Spansは、スパンのライフサイクル中の特定の瞬間を記録するイベントを含むことができます。この出力では、`'Hello'`という名前のイベントが1つあります。これには、`'effect.fiberId'`や`'effect.logLevel'`などの関連属性が含まれており、ログされたイベントに関する情報を提供します。`time`フィールドは、イベントが発生したタイムスタンプを表しています。
 
-## Nesting Spans
+## ネストされたSpans
 
-Spans can be nested, creating a hierarchy of operations. This concept is illustrated in the following code:
+Spansはネストすることができ、操作の階層を作成します。この概念は、次のコードで示されています。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -293,7 +293,7 @@ const NodeSdkLive = NodeSdk.layer(() => ({
 
 Effect.runPromise(parent.pipe(Effect.provide(NodeSdkLive)))
 /*
-Example Output:
+出力の例:
 {
   traceId: '92fe81f1454d9c099198568cf867dc59',
   parentId: 'b953d6c7d37ad93d',
@@ -325,50 +325,50 @@ Example Output:
 */
 ```
 
-As you can observe, the `b953d6c7d37ad93d` value plays a crucial role in maintaining the parent-child relationship between these spans. It provides a clear indication of how spans can be nested, creating a trace that helps developers understand the flow and hierarchy of operations in their applications.
+ご覧のとおり、`b953d6c7d37ad93d`の値はこれらのスパン間の親子関係を維持する上で重要な役割を果たします。これはスパンがどのようにネストされるかを明確に示し、開発者がアプリケーション内の操作の流れと階層を理解するのに役立つトレースを作成します。
 
-## Tutorial: Visualizing Traces with Docker, Prometheus, Grafana, and Tempo
+## チュートリアル: Docker、Prometheus、Grafana、Tempoを使ったトレースの可視化
 
-In this tutorial, we'll guide you through simulating and visualizing traces using a sample instrumented Node.js application. We will use Docker, Prometheus, Grafana, and Tempo to create, collect, and visualize traces.
+このチュートリアルでは、サンプルの計測済みNode.jsアプリケーションを使用してトレースをシミュレートし、可視化する方法を案内します。Docker、Prometheus、Grafana、Tempoを使用してトレースを作成、収集、可視化します。
 
-### Tools Explained
+### ツールの説明
 
-Let's understand the tools we'll be using in simple terms:
+使用するツールを簡単に説明します：
 
-- **Docker**: Docker allows us to run applications in containers. Think of a container as a lightweight and isolated environment where your application can run consistently, regardless of the host system. It's a bit like a virtual machine but more efficient.
+- **Docker**: Dockerはアプリケーションをコンテナで実行することを可能にします。コンテナは、ホストシステムに関係なく、アプリケーションが一貫して実行できる軽量で隔離された環境のようなものです。仮想マシンに似ていますが、より効率的です。
 
-- **Prometheus**: Prometheus is a monitoring and alerting toolkit. It collects metrics and data about your applications and stores them for further analysis. This helps in identifying performance issues and understanding the behavior of your applications.
+- **Prometheus**: Prometheusは監視とアラートのツールキットです。アプリケーションのメトリクスやデータを収集し、さらなる分析のために保存します。これにより、パフォーマンスの問題を特定し、アプリケーションの動作を理解するのに役立ちます。
 
-- **Grafana**: Grafana is a visualization and analytics platform. It helps in creating beautiful and interactive dashboards to visualize your application's data. You can use it to graphically represent metrics collected by Prometheus.
+- **Grafana**: Grafanaは可視化と分析のプラットフォームです。アプリケーションのデータを視覚的に表現する美しいインタラクティブなダッシュボードを作成するのに役立ちます。Prometheusが収集したメトリクスをグラフィカルに表現することができます。
 
-- **Tempo**: Tempo is a distributed tracing system that allows you to trace the journey of a request as it flows through your application. It provides insights into how requests are processed and helps in debugging and optimizing your applications.
+- **Tempo**: Tempoは分散トレーシングシステムで、リクエストがアプリケーションを通過する際の経路をトレースすることができます。リクエストがどのように処理されるかについての洞察を提供し、デバッグやアプリケーションの最適化に役立ちます。
 
-### Getting Docker
+### Dockerの取得
 
-To get Docker, follow these steps:
+Dockerを取得するには、以下の手順に従ってください：
 
-1. Visit the Docker website at [https://www.docker.com/](https://www.docker.com/).
+1. Dockerのウェブサイト [https://www.docker.com/](https://www.docker.com/) にアクセスします。
 
-2. Download Docker Desktop for your operating system (Windows or macOS) and install it.
+2. お使いのオペレーティングシステム（WindowsまたはmacOS）用のDocker Desktopをダウンロードしてインストールします。
 
-3. After installation, open Docker Desktop, and it will run in the background.
+3. インストール後、Docker Desktopを開くとバックグラウンドで実行されます。
 
-### Simulating Traces
+### トレースのシミュレーション
 
-Now, let's simulate traces using a sample Node.js application. We'll provide you with the code and guide you on setting up the necessary components.
+次に、サンプルのNode.jsアプリケーションを使用してトレースをシミュレートします。コードを提供し、必要なコンポーネントの設定方法を案内します。
 
-1. **Download Docker Files**. Download the required Docker files: [docker.zip](/pages/tracing/docker.zip).
+1. **Dockerファイルのダウンロード**。必要なDockerファイルをダウンロードします：[docker.zip](/pages/tracing/docker.zip)。
 
-2. **Set Up docker**. Unzip the downloaded file, navigate to the `/docker/local` directory in your terminal or command prompt and run the following command to start the necessary services:
+2. **Dockerのセットアップ**。ダウンロードしたファイルを解凍し、ターミナルまたはコマンドプロンプトで`/docker/local`ディレクトリに移動し、以下のコマンドを実行して必要なサービスを開始します：
 
    ```bash filename="Terminal"
    docker-compose up
    ```
 
-3. **Simulate Traces**. Run the following example code in your Node.js environment.
-   This code simulates a set of tasks and generates traces.
+3. **トレースのシミュレーション**。以下のサンプルコードをNode.js環境で実行してください。
+   このコードは一連のタスクをシミュレートし、トレースを生成します。
 
-   Before proceeding, you'll need to install additional libraries in addition to the latest version of `effect`. Here are the required libraries:
+   進める前に、最新バージョンの`effect`に加えて追加のライブラリをインストールする必要があります。以下が必要なライブラリです：
 
    - `@effect/opentelemetry`
    - `@opentelemetry/exporter-trace-otlp-http`
@@ -381,7 +381,7 @@ Now, let's simulate traces using a sample Node.js application. We'll provide you
    import { BatchSpanProcessor } from "@opentelemetry/sdk-trace-base"
    import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http"
 
-   // Function to simulate a task with possible subtasks
+   // サブタスクを含む可能性のあるタスクをシミュレートする関数
    const task = (
      name: string,
      delay: number,
@@ -398,7 +398,7 @@ Now, let's simulate traces using a sample Node.js application. We'll provide you
 
    const poll = task("/poll", 1)
 
-   // Create a program with tasks and subtasks
+   // タスクとサブタスクを含むプログラムを作成する
    const program = task("client", 2, [
      task("/api", 3, [
        task("/authN", 4, [task("/authZ", 5)]),
@@ -423,7 +423,7 @@ Now, let's simulate traces using a sample Node.js application. We'll provide you
      )
    )
    /*
-   Output:
+   出力:
    timestamp=... level=INFO fiber=#0 message=client
    timestamp=... level=INFO fiber=#0 message=/api
    timestamp=... level=INFO fiber=#0 message=/authN
@@ -440,8 +440,8 @@ Now, let's simulate traces using a sample Node.js application. We'll provide you
    */
    ```
 
-4. **Visualize Traces**. Now, open your web browser and go to [http://localhost:3000/explore](http://localhost:3000/explore). You will see a generated `Trace ID` on the web page. Click on it to see the details of the trace.
+4. **Visualize Traces**. 次に、ウェブブラウザを開いて [http://localhost:3000/explore](http://localhost:3000/explore) にアクセスします。ウェブページに生成された `Trace ID` が表示されます。それをクリックしてトレースの詳細を確認してください。
 
    ![Traces in Grafana Tempo](/pages/tracing/trace.png)
 
-That's it! You've simulated and visualized traces using Docker, Prometheus, Grafana, and Tempo. You can use these tools to monitor, analyze, and gain insights into your applications' performance and behavior.
+以上です！Docker、Prometheus、Grafana、Tempo を使用してトレースをシミュレートし、可視化しました。これらのツールを使用して、アプリケーションのパフォーマンスと動作を監視、分析し、洞察を得ることができます。

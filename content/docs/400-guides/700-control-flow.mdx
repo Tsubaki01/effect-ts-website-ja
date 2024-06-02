@@ -1,15 +1,15 @@
 ---
-title: Introduction to Effect's Control Flow Operators
+title: Effectの制御フローオペレーターの紹介
 navTitle: Control Flow
-excerpt: Effect is a powerful TypeScript library designed to help developers easily create complex, synchronous, and asynchronous programs.
+excerpt: Effectは、開発者が複雑な同期および非同期プログラムを簡単に作成できるようにする強力なTypeScriptライブラリです。
 bottomNavigation: pagination
 ---
 
-Even though JavaScript provides built-in control flow structures, Effect offers additional control flow functions that are useful in Effect applications. In this section, we will introduce different ways to control the flow of execution.
+JavaScriptには組み込みの制御フロー構造がありますが、EffectはEffectアプリケーションで役立つ追加の制御フロー関数を提供します。このセクションでは、実行の流れを制御するさまざまな方法を紹介します。
 
-## if Expression
+## if式
 
-When working with Effect values, we can use the standard JavaScript if-then-else expressions:
+Effectの値を扱うとき、標準のJavaScriptのif-then-else式を使用できます：
 
 ```ts twoslash
 import { Effect, Option } from "effect"
@@ -25,9 +25,9 @@ const validateWeightOption = (
 }
 ```
 
-Here we are using the [Option](../other/data-types/option) data type to represent the absence of a valid value.
+ここでは、有効な値が存在しないことを表現するために[Option](../other/data-types/option)データ型を使用しています。
 
-We can also handle invalid inputs by using the error channel:
+エラーチャネルを使用して無効な入力を処理することもできます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -43,11 +43,11 @@ const validateWeightOrFail = (
 }
 ```
 
-## Conditional Operators
+## 条件演算子
 
 ### when
 
-Instead of using `if (condition) expression`, we can use the `Effect.when` function:
+`if (condition) expression`を使用する代わりに、`Effect.when`関数を使用できます：
 
 ```ts twoslash
 import { Effect, Option } from "effect"
@@ -58,9 +58,9 @@ const validateWeightOption = (
   Effect.succeed(weight).pipe(Effect.when(() => weight >= 0))
 ```
 
-Here we are using the [Option](../other/data-types/option) data type to represent the absence of a valid value.
+ここでは、有効な値が存在しないことを表現するために[Option](../other/data-types/option)データ型を使用しています。
 
-If the condition evaluates to `true`, the effect inside the `Effect.when` will be executed and the result will be wrapped in a `Some`, otherwise it returns `None`:
+条件が`true`と評価される場合、`Effect.when`内のエフェクトが実行され、その結果が`Some`でラップされます。そうでない場合は`None`を返します：
 
 ```ts twoslash
 import { Effect, Option } from "effect"
@@ -73,7 +73,7 @@ const validateWeightOption = (
 // ---cut---
 Effect.runPromise(validateWeightOption(100)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Option",
   _tag: "Some",
@@ -83,7 +83,7 @@ Output:
 
 Effect.runPromise(validateWeightOption(-5)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Option",
   _tag: "None"
@@ -91,9 +91,9 @@ Output:
 */
 ```
 
-If the condition itself involves an effect, we can use `Effect.whenEffect`.
+条件自体がエフェクトを含む場合、`Effect.whenEffect`を使用できます。
 
-For example, the following function creates a random option of an integer value:
+例えば、次の関数は整数値のランダムなオプションを作成します：
 
 ```ts twoslash
 import { Effect, Random } from "effect"
@@ -105,13 +105,13 @@ const randomIntOption = Random.nextInt.pipe(
 
 ### unless
 
-The `Effect.unless` and `Effect.unlessEffect` functions are similar to the `when*` functions, but they are equivalent to the `if (!condition) expression` construct.
+`Effect.unless`と`Effect.unlessEffect`関数は`when*`関数に似ていますが、`if (!condition) expression`構文に相当します。
 
 ### if
 
-The `Effect.if` function allows you to provide an effectful predicate. If the predicate evaluates to `true`, the `onTrue` effect will be executed. Otherwise, the `onFalse` effect will be executed.
+`Effect.if`関数は、効果的な述語を提供することを可能にします。述語が`true`と評価される場合、`onTrue`エフェクトが実行されます。そうでない場合は、`onFalse`エフェクトが実行されます。
 
-Let's use this function to create a simple virtual coin flip function:
+この関数を使って、簡単な仮想コイン投げ関数を作成してみましょう：
 
 ```ts twoslash
 import { Effect, Random, Console } from "effect"
@@ -124,21 +124,21 @@ const flipTheCoin = Effect.if(Random.nextBoolean, {
 Effect.runPromise(flipTheCoin)
 ```
 
-In this example, we generate a random boolean value using `Random.nextBoolean`. If the value is `true`, the effect `onTrue` will be executed, which logs "Head". Otherwise, if the value is `false`, the effect `onFalse` will be executed, logging "Tail".
+この例では、`Random.nextBoolean`を使用してランダムなブール値を生成します。値が`true`の場合、`onTrue`エフェクトが実行され、「Head」がログに記録されます。逆に、値が`false`の場合、`onFalse`エフェクトが実行され、「Tail」がログに記録されます。
 
-## Loop Operators
+## ループオペレーター
 
 ### loop
 
-The `Effect.loop` function allows you to repeatedly change the state based on an `step` function until a condition given by the `while` function is evaluated to `true`:
+`Effect.loop`関数は、`while`関数によって条件が`true`と評価されるまで、`step`関数に基づいて状態を繰り返し変更することを可能にします：
 
 ```ts
 Effect.loop(initial, options: { while, step, body })
 ```
 
-It collects all intermediate states in an array and returns it as the final result.
+すべての中間状態を配列に収集し、最終結果として返します。
 
-We can think of `Effect.loop` as equivalent to a `while` loop in JavaScript:
+`Effect.loop`はJavaScriptの`while`ループに相当すると考えることができます：
 
 ```ts
 let state = initial
@@ -152,45 +152,44 @@ while (options.while(state)) {
 return result
 ```
 
-**Example**
+**例**
 
 ```ts twoslash
 import { Effect } from "effect"
 
 const result = Effect.loop(
-  1, // Initial state
+  1, // 初期状態
   {
-    while: (state) => state <= 5, // Condition to continue looping
-    step: (state) => state + 1, // State update function
-    body: (state) => Effect.succeed(state) // Effect to be performed on each iteration
+    while: (state) => state <= 5, // ループを続ける条件
+    step: (state) => state + 1, // 状態更新関数
+    body: (state) => Effect.succeed(state) // 各イテレーションで実行されるエフェクト
   }
 )
-
-Effect.runPromise(result).then(console.log) // Output: [1, 2, 3, 4, 5]
+Effect.runPromise(result).then(console.log) // 出力: [1, 2, 3, 4, 5]
 ```
 
-In this example, the loop starts with an initial state of `1`. The loop continues as long as the condition `n <= 5` is `true`, and in each iteration, the state `n` is incremented by `1`. The effect `Effect.succeed(n)` is performed on each iteration, collecting all intermediate states in an array.
+この例では、ループは初期状態`1`から始まります。条件`n <= 5`が`true`である限りループは続き、各イテレーションで状態`n`は`1`ずつ増加します。各イテレーションでエフェクト`Effect.succeed(n)`が実行され、すべての中間状態が配列に収集されます。
 
-You can also use the `discard` option if you're not interested in collecting the intermediate results. It discards all intermediate states and returns `undefined` as the final result.
+中間結果を収集する必要がない場合は、`discard`オプションを使用することもできます。これにより、すべての中間状態が破棄され、最終結果として`undefined`が返されます。
 
-**Example** (`discard: true`)
+**例** (`discard: true`)
 
 ```ts twoslash
 import { Effect, Console } from "effect"
 
 const result = Effect.loop(
-  1, // Initial state
+  1, // 初期状態
   {
-    while: (state) => state <= 5, // Condition to continue looping,
-    step: (state) => state + 1, // State update function,
-    body: (state) => Console.log(`Currently at state ${state}`), // Effect to be performed on each iteration,
+    while: (state) => state <= 5, // ループを続ける条件
+    step: (state) => state + 1, // 状態更新関数
+    body: (state) => Console.log(`Currently at state ${state}`), // 各イテレーションで実行されるエフェクト
     discard: true
   }
 )
 
 Effect.runPromise(result).then(console.log)
 /*
-Output:
+出力:
 Currently at state 1
 Currently at state 2
 Currently at state 3
@@ -200,17 +199,17 @@ undefined
 */
 ```
 
-In this example, the loop performs a side effect of logging the current index on each iteration, but it discards all intermediate results. The final result is `undefined`.
+この例では、ループは各イテレーションで現在のインデックスをログに記録する副作用を実行しますが、すべての中間結果を破棄します。最終結果は`undefined`です。
 
 ### iterate
 
-The `Effect.iterate` function allows you to iterate with an effectful operation. It uses an effectful `body` operation to change the state during each iteration and continues the iteration as long as the `while` function evaluates to `true`:
+`Effect.iterate`関数は、エフェクトフルな操作を使用してイテレーションを行うことを可能にします。各イテレーション中に状態を変更するためにエフェクトフルな`body`操作を使用し、`while`関数が`true`を評価する限りイテレーションを続けます：
 
 ```ts
 Effect.iterate(initial, options: { while, body })
 ```
 
-We can think of `Effect.iterate` as equivalent to a `while` loop in JavaScript:
+`Effect.iterate`はJavaScriptの`while`ループと同等と考えることができます：
 
 ```ts
 let result = initial
@@ -222,27 +221,27 @@ while (options.while(result)) {
 return result
 ```
 
-Here's an example of how it works:
+以下はその動作例です：
 
 ```ts twoslash
 import { Effect } from "effect"
 
 const result = Effect.iterate(
-  1, // Initial result
+  1, // 初期結果
   {
-    while: (result) => result <= 5, // Condition to continue iterating
-    body: (result) => Effect.succeed(result + 1) // Operation to change the result
+    while: (result) => result <= 5, // イテレーションを続ける条件
+    body: (result) => Effect.succeed(result + 1) // 結果を変更する操作
   }
 )
 
-Effect.runPromise(result).then(console.log) // Output: 6
+Effect.runPromise(result).then(console.log) // 出力: 6
 ```
 
 ### forEach
 
-The `Effect.forEach` function allows you to iterate over an `Iterable` and perform an effectful operation for each element.
+`Effect.forEach`関数は、`Iterable`を反復処理し、各要素に対してエフェクトフルな操作を実行することを可能にします。
 
-The syntax for `forEach` is as follows:
+`forEach`の構文は次のとおりです：
 
 ```ts
 import { Effect } from "effect"
@@ -250,11 +249,11 @@ import { Effect } from "effect"
 const combinedEffect = Effect.forEach(iterable, operation, options)
 ```
 
-It applies the given effectful operation to each element of the `Iterable`. By default, it executes each effect in **sequence** (to explore options for managing concurrency and controlling how these effects are executed, you can refer to the [Concurrency Options](./concurrency/concurrency-options) documentation).
+与えられたエフェクトフルな操作を`Iterable`の各要素に適用します。デフォルトでは、各エフェクトを**順番に**実行します（並行性の管理やこれらのエフェクトの実行方法を制御するオプションについては、[Concurrency Options](./concurrency/concurrency-options)のドキュメントを参照してください）。
 
-This function returns a new effect that produces an array containing the results of each individual effect.
+この関数は、各個別のエフェクトの結果を含む配列を生成する新しいエフェクトを返します。
 
-Let's take a look at an example:
+例を見てみましょう：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -265,7 +264,7 @@ const result = Effect.forEach([1, 2, 3, 4, 5], (n, index) =>
 
 Effect.runPromise(result).then(console.log)
 /*
-Output:
+出力:
 Currently at index 0
 Currently at index 1
 Currently at index 2
@@ -275,11 +274,11 @@ Currently at index 4
 */
 ```
 
-In this example, we have an array `[1, 2, 3, 4, 5]`, and for each element we perform an effectful operation. The output shows that the operation is executed for each element in the array, displaying the current index.
+この例では、配列 `[1, 2, 3, 4, 5]` があり、各要素に対してエフェクトフルな操作を実行します。出力は、配列の各要素に対して操作が実行され、現在のインデックスが表示されることを示しています。
 
-The `Effect.forEach` combinator collects the results of each effectful operation in an array, which is why the final output is `[ 2, 4, 6, 8, 10 ]`.
+`Effect.forEach` コンビネータは、各エフェクトフルな操作の結果を配列に収集するため、最終的な出力は `[ 2, 4, 6, 8, 10 ]` となります。
 
-We also have the `discard` option, which when set to `true` discards the results of each effectful operation:
+また、`discard` オプションがあり、これを `true` に設定すると、各エフェクトフルな操作の結果が破棄されます：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -293,7 +292,7 @@ const result = Effect.forEach(
 
 Effect.runPromise(result).then(console.log)
 /*
-Output:
+出力:
 Currently at index 0
 Currently at index 1
 Currently at index 2
@@ -303,13 +302,13 @@ undefined
 */
 ```
 
-In this case, the output is the same, but the final result is `undefined` since the results of each effectful operation are discarded.
+この場合、出力は同じですが、各エフェクトフルな操作の結果が破棄されるため、最終結果は `undefined` になります。
 
 ### all
 
-The `Effect.all` function in the Effect library is a powerful tool that allows you to merge multiple effects into a single effect, offering flexibility by working with various structured formats such as tuples, iterables, structs, and records.
+Effectライブラリの`Effect.all`関数は、複数のエフェクトを単一のエフェクトに統合する強力なツールであり、タプル、イテラブル、構造体、レコードなどのさまざまな構造化フォーマットで柔軟に動作します。
 
-The syntax for `all` is as follows:
+`all`の構文は次のとおりです：
 
 ```ts
 import { Effect } from "effect"
@@ -317,15 +316,15 @@ import { Effect } from "effect"
 const combinedEffect = Effect.all(effects, options)
 ```
 
-where `effects` is a collection of individual effects that you wish to merge.
+`effects` は、マージしたい個々のエフェクトのコレクションです。
 
-By default, the `all` function will execute each effect in **sequence** (to explore options for managing concurrency and controlling how these effects are executed, you can refer to the [Concurrency Options](./concurrency/concurrency-options) documentation).
+デフォルトでは、`all` 関数は各エフェクトを**順番に**実行します（これらのエフェクトの実行方法を管理するためのオプションについては、[Concurrency Options](./concurrency/concurrency-options) ドキュメントを参照してください）。
 
-It will return a new effect that produces a result with a shape that depends on the shape of the `effects` argument.
+この関数は、`effects` 引数の形状に依存する形状の結果を生成する新しいエフェクトを返します。
 
-Let's explore examples for each supported shape: tuples, iterables, structs, and records.
+サポートされている各形状（タプル、イテラブル、構造体、レコード）の例を見てみましょう。
 
-#### Tuples
+#### タプル
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -339,14 +338,14 @@ const combinedEffect = Effect.all(tuple)
 
 Effect.runPromise(combinedEffect).then(console.log)
 /*
-Output:
+出力:
 42
 Hello
 [ 42, 'Hello' ]
 */
 ```
 
-#### Iterables
+#### イテラブル
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -359,7 +358,7 @@ const combinedEffect = Effect.all(iterable)
 
 Effect.runPromise(combinedEffect).then(console.log)
 /*
-Output:
+出力:
 1
 2
 3
@@ -367,7 +366,7 @@ Output:
 */
 ```
 
-#### Structs
+#### 構造体
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -381,14 +380,14 @@ const combinedEffect = Effect.all(struct)
 
 Effect.runPromise(combinedEffect).then(console.log)
 /*
-Output:
+出力:
 42
 Hello
 { a: 42, b: 'Hello' }
 */
 ```
 
-#### Records
+#### レコード
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -402,21 +401,21 @@ const combinedEffect = Effect.all(record)
 
 Effect.runPromise(combinedEffect).then(console.log)
 /*
-Output:
+出力:
 1
 2
 { key1: 1, key2: 2 }
 */
 ```
 
-#### The Role of Short-Circuiting
+#### ショートサーキットの役割
 
-When working with the `Effect.all` API, it's important to understand how it manages errors.
-This API is designed to **short-circuit the execution** upon encountering the **first error**.
+`Effect.all` APIを使用する際には、エラーの管理方法を理解することが重要です。
+このAPIは**最初のエラー**に遭遇した時点で**実行をショートサーキット**するように設計されています。
 
-What does this mean for you as a developer? Well, let's say you have a collection of effects to be executed in sequence. If any error occurs during the execution of one of these effects, the remaining computations will be skipped, and the error will be propagated to the final result.
+これは開発者にとってどういう意味を持つのでしょうか？例えば、一連のエフェクトを順番に実行する場合を考えてみましょう。これらのエフェクトの実行中にエラーが発生すると、残りの計算はスキップされ、そのエラーが最終結果に伝播されます。
 
-In simpler terms, the short-circuiting behavior ensures that if something goes wrong at any step of your program it will immediately stop and return the error to let you know that something went wrong.
+簡単に言えば、ショートサーキットの動作は、プログラムのどのステップで問題が発生しても、即座に停止してエラーを返し、何が問題だったのかを知らせてくれることを保証します。
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -424,14 +423,14 @@ import { Effect, Console } from "effect"
 const effects = [
   Effect.succeed("Task1").pipe(Effect.tap(Console.log)),
   Effect.fail("Task2: Oh no!").pipe(Effect.tap(Console.log)),
-  Effect.succeed("Task3").pipe(Effect.tap(Console.log)) // this task won't be executed
+  Effect.succeed("Task3").pipe(Effect.tap(Console.log)) // このタスクは実行されません
 ]
 
 const program = Effect.all(effects)
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 Task1
 {
   _id: 'Exit',
@@ -441,13 +440,13 @@ Task1
 */
 ```
 
-You can override this behavior by using the `mode` option.
+この動作は`mode`オプションを使用してオーバーライドすることができます。
 
-#### The mode option
+#### モードオプション
 
-When you use the `{ mode: "either" }` option with `Effect.all`, it modifies the behavior of the API to handle errors differently. Instead of short-circuiting the entire computation on the first error, it continues to execute all effects, collecting both successes and failures. The result is an array of `Either` instances, representing either a successful outcome (`Right`) or a failure (`Left`) for each individual effect.
+`Effect.all`で`{ mode: "either" }`オプションを使用すると、APIのエラー処理の動作が変更されます。最初のエラーで計算全体をショートサーキットする代わりに、すべてのエフェクトを実行し続け、成功と失敗の両方を収集します。結果は、各エフェクトの成功結果（`Right`）または失敗結果（`Left`）を表す`Either`インスタンスの配列になります。
 
-Here's a breakdown:
+以下はその詳細です：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -462,7 +461,7 @@ const program = Effect.all(effects, { mode: "either" })
 
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 Task1
 Task3
 {
@@ -477,9 +476,9 @@ Task3
 */
 ```
 
-On the other hand, when you use the `{ mode: "validate" }` option with `Effect.all`, it takes a similar approach to `{ mode: "either" }` but uses the `Option` type to represent the success or failure of each effect. The resulting array will contain `None` for successful effects and `Some` with the associated error message for failed effects.
+一方、`Effect.all`で`{ mode: "validate" }`オプションを使用すると、`{ mode: "either" }`と似たアプローチを取りますが、各エフェクトの成功または失敗を表すために`Option`型を使用します。結果の配列には、成功したエフェクトには`None`が含まれ、失敗したエフェクトには関連するエラーメッセージを持つ`Some`が含まれます。
 
-Here's an illustration:
+以下はその例です：
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -494,7 +493,7 @@ const program = Effect.all(effects, { mode: "validate" })
 
 Effect.runPromiseExit(program).then((result) => console.log("%o", result))
 /*
-Output:
+出力:
 Task1
 Task3
 {

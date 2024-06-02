@@ -1,43 +1,43 @@
 ---
 title: Fibers
-excerpt: Discover the power of fibers in Effect, providing a lightweight and efficient way to manage concurrency and asynchronous tasks. Learn the fundamentals of fibers, their role in multitasking, and how they contribute to responsive applications. Explore the creation of fibers, their lifetimes, and various forking strategies, gaining insights into structured concurrency and daemon fibers. Unravel the intricacies of when fibers run, enabling you to optimize their execution and harness the full potential of concurrent programming in Effect.
+excerpt: Effectにおけるfibersの力を発見し、軽量で効率的な方法で並行性と非同期タスクを管理します。fibersの基本、マルチタスクにおける役割、そしてレスポンシブなアプリケーションへの貢献について学びます。fibersの作成、そのライフタイム、およびさまざまなフォーキング戦略を探求し、構造化された並行性とデーモンfibersについての洞察を得ます。fibersがいつ実行されるかの複雑さを解き明かし、その実行を最適化し、Effectにおける並行プログラミングの可能性を最大限に引き出します。
 bottomNavigation: pagination
 ---
 
-## What is a Fiber?
+## Fiberとは何か？
 
-A "fiber" is a small unit of work or a lightweight thread of execution. It represents a specific computation or an effectful operation in a program. Fibers are used to manage concurrency and asynchronous tasks.
+"fiber"は、小さな作業単位または軽量な実行スレッドです。プログラム内の特定の計算または効果的な操作を表します。fibersは並行性と非同期タスクを管理するために使用されます。
 
-Think of a fiber as a worker that performs a specific job. It can be started, paused, resumed, and even interrupted. Fibers are useful when we want to perform multiple tasks simultaneously or handle long-running operations without blocking the main program.
+fiberを特定の仕事を行う労働者と考えてください。開始、停止、一時停止、再開、さらには中断することができます。fibersは、複数のタスクを同時に実行したり、メインプログラムをブロックせずに長時間実行する操作を処理したりする場合に役立ちます。
 
-By using fibers, developers can control and coordinate the execution of tasks, allowing for efficient multitasking and responsiveness in their applications.
+fibersを使用することで、開発者はタスクの実行を制御および調整し、アプリケーションの効率的なマルチタスキングとレスポンシブ性を実現できます。
 
-To summarize:
+要約すると：
 
-- An `Effect` is a higher-level concept that describes an effectful computation. It is lazy and immutable, meaning it represents a computation that may produce a value or fail but does not immediately execute.
-- A fiber, on the other hand, represents the running execution of an `Effect`. It can be interrupted or awaited to retrieve its result. Think of it as a way to control and interact with the ongoing computation.
+- `Effect`は効果的な計算を記述する高レベルの概念です。それは遅延評価され、不変であり、値を生成するか失敗する可能性のある計算を表しますが、即座に実行されるわけではありません。
+- 一方、fiberは`Effect`の実行中の状態を表します。それは中断されたり、結果を取得するために待機されたりすることができます。進行中の計算を制御および対話する方法と考えてください。
 
-## Creating Fibers
+## Fibersの作成
 
-A fiber is created any time an effect is run. When running effects concurrently, a fiber is created for each concurrent effect.
+効果が実行されるたびにfiberが作成されます。効果を並行して実行する場合、各並行効果に対してfiberが作成されます。
 
-## Lifetime of Child Fibers
+## 子Fiberのライフタイム
 
-When we fork fibers, depending on how we fork them we can have four different lifetime strategies for the child fibers:
+fibersをフォークする場合、フォークの方法に応じて、子fiberのライフタイムには4つの異なる戦略があります：
 
-1. **Fork With Automatic Supervision**. If we use the ordinary `Effect.fork` operation, the child fiber will be automatically supervised by the parent fiber. The lifetime child fibers are tied to the lifetime of their parent fiber. This means that these fibers will be terminated either when they end naturally, or when their parent fiber is terminated.
+1. **自動監視付きフォーク**。通常の`Effect.fork`操作を使用すると、子fiberは親fiberによって自動的に監視されます。子fiberのライフタイムは親fiberのライフタイムに結び付けられます。つまり、これらのfibersは自然に終了するか、親fiberが終了するときに終了します。
 
-2. **Fork in Global Scope (Daemon)**. Sometimes we want to run long-running background fibers that aren't tied to their parent fiber, and also we want to fork them in a global scope. Any fiber that is forked in global scope will become daemon fiber. This can be achieved by using the `Effect.forkDaemon` operator. As these fibers have no parent, they are not supervised, and they will be terminated when they end naturally, or when our application is terminated.
+2. **グローバルスコープでのフォーク（デーモン）**。長時間実行されるバックグラウンドfiberを親fiberに結び付けずに実行したい場合、またはグローバルスコープでフォークしたい場合があります。グローバルスコープでフォークされたfiberはデーモンfiberになります。これは`Effect.forkDaemon`オペレーターを使用して実現できます。これらのfibersには親がいないため、監視されず、自然に終了するか、アプリケーションが終了するときに終了します。
 
-3. **Fork in Local Scope**. Sometimes, we want to run a background fiber that isn't tied to its parent fiber, but we want to live that fiber in the local scope. We can fork fibers in the local scope by using `Effect.forkScoped`. Such fibers can outlive their parent fiber (so they are not supervised by their parents), and they will be terminated when their life end or their local scope is closed.
+3. **ローカルスコープでのフォーク**。親fiberに結び付けずにバックグラウンドfiberを実行したい場合がありますが、そのfiberをローカルスコープで生かしたい場合があります。`Effect.forkScoped`を使用してローカルスコープでfibersをフォークできます。このようなfibersは親fiberを超えて生きることができ（したがって親によって監視されません）、そのライフが終了するかローカルスコープが閉じられると終了します。
 
-4. **Fork in Specific Scope**. This is similar to the previous strategy, but we can have more fine-grained control over the lifetime of the child fiber by forking it in a specific scope. We can do this by using the `Effect.forkIn` operator.
+4. **特定のスコープでのフォーク**。これは前の戦略に似ていますが、特定のスコープでフォークすることにより、子fiberのライフタイムをより細かく制御できます。これは`Effect.forkIn`オペレーターを使用して行うことができます。
 
-### Fork with Automatic Supervision
+### 自動監視付きフォーク
 
-Effect employs a **structured concurrency** model where the lifetimes of fibers are neatly nested. Simply put, the lifespan of a fiber depends on the lifespan of its parent fiber.
+Effectは**構造化された並行性**モデルを採用しており、fibersのライフタイムはきれいにネストされています。簡単に言えば、fiberの寿命は親fiberの寿命に依存します。
 
-To help clarify this concept, let's explore the following example. In this scenario, the `foo` fiber spawns the `bar` fiber. The `bar` fiber is engaged in a long-running task that never completes. What's important to note here is that Effect ensures the `bar` fiber will not outlive the `foo` fiber:
+この概念を明確にするために、次の例を見てみましょう。このシナリオでは、`foo` fiberが`bar` fiberを生成します。`bar` fiberは決して完了しない長時間実行のタスクに従事しています。ここで重要なのは、Effectが`bar` fiberが`foo` fiberを超えて生きることがないようにすることです。
 
 ```ts twoslash
 import { Effect, Console, Schedule } from "effect"
@@ -57,7 +57,7 @@ const fooJob = Effect.gen(function* () {
 Effect.runPromise(fooJob)
 ```
 
-When you run the above program, you'll see the following output:
+上記のプログラムを実行すると、次のような出力が表示されます：
 
 ```
 Foo: started!
@@ -67,11 +67,11 @@ Bar: still running!
 Foo: finished!
 ```
 
-This pattern can be extended to any level of nested fibers.
+このパターンは、任意のレベルのネストされたfiberに拡張することができます。
 
-### Fork in Global Scope (Daemon)
+### グローバルスコープでのフォーク（デーモン）
 
-Using `Effect.forkDaemon` we can create a daemon fiber from an effect. Its lifetime is tied to the global scope. So if the parent fiber terminates, the daemon fiber will not be terminated. It will only will be terminated when the global scope is closed, or its life end naturally.
+`Effect.forkDaemon`を使用すると、エフェクトからデーモンfiberを作成できます。そのライフタイムはグローバルスコープに結び付けられます。したがって、親fiberが終了しても、デーモンfiberは終了しません。デーモンfiberはグローバルスコープが閉じられるか、そのライフが自然に終了するまで続きます。
 
 ```ts twoslash
 import { Effect, Console, Schedule } from "effect"
@@ -91,7 +91,7 @@ const fooJob = Effect.gen(function* () {
 Effect.runPromise(fooJob)
 ```
 
-If we run the above program, we will see the following output which shows that while the lifetime of the `foo` fiber ends after 3 seconds, the daemon fiber (`bar`) is still running:
+上記のプログラムを実行すると、次のような出力が表示されます。これは、`foo` fiberのライフタイムが3秒後に終了しても、デーモンfiber（`bar`）がまだ実行中であることを示しています：
 
 ```
 Foo: started!
@@ -107,7 +107,7 @@ Bar: still running!
 ...etc...
 ```
 
-Even if we interrupt the `foo` fiber, the daemon fiber (`bar`) will not be interrupted:
+たとえ`foo` fiberを中断しても、デーモンfiber（`bar`）は中断されません：
 
 ```ts twoslash
 import { Effect, Console, Schedule, Fiber } from "effect"
@@ -133,7 +133,7 @@ const program = Effect.gen(function* () {
 Effect.runPromise(program)
 ```
 
-The output:
+The 出力:
 
 ```
 Foo: started!
@@ -148,9 +148,9 @@ Bar: still running!
 ...etc...
 ```
 
-### Fork in Local Scope
+### ローカルスコープでのフォーク
 
-Sometimes we want to attach fiber to a local scope. In such cases, we can use the `Effect.forkScoped` operator. By using this operator, the lifetime of the forked fiber can be outlived the lifetime of its parent fiber, and it will be terminated when the local scope is closed:
+時々、fiberをローカルスコープにアタッチしたいことがあります。そのような場合には、`Effect.forkScoped`オペレーターを使用できます。このオペレーターを使用することで、フォークされたfiberのライフタイムは親fiberのライフタイムを超えることができ、ローカルスコープが閉じられるときに終了します。
 
 ```ts twoslash
 import { Effect, Console, Schedule } from "effect"
@@ -179,9 +179,9 @@ const program = Effect.scoped(
 Effect.runPromise(program)
 ```
 
-In the above example, the `bar` fiber forked in the local scope has bigger lifetime than its parent fiber (`foo`).
-So, when its parent fiber (`foo`) is terminated, the `bar` fiber still running in the local scope until the local scope is closed.
-Let's see the output:
+上記の例では、ローカルスコープでフォークされた `bar` fiber は親fiber (`foo`) よりも長いライフタイムを持ちます。
+したがって、親fiber (`foo`) が終了しても、ローカルスコープが閉じられるまで `bar` fiber は実行され続けます。
+出力を見てみましょう：
 
 ```
 Local scope started!
@@ -195,9 +195,9 @@ Bar: still running!
 Leaving the local scope!
 ```
 
-### Fork in Specific Scope
+### 特定のスコープでのフォーク
 
-There are some cases where we need more fine-grained control, so we want to fork a fiber in a specific scope. We can use the `Effect.forkIn` operator which takes the target scope as an argument:
+より細かい制御が必要な場合、特定のスコープでfiberをフォークしたいことがあります。そのような場合には、ターゲットスコープを引数として取る`Effect.forkIn`オペレーターを使用できます：
 
 ```ts twoslash
 import { Effect, Console, Schedule } from "effect"
@@ -225,7 +225,7 @@ const program = Effect.scoped(
 Effect.runPromise(program)
 ```
 
-The output:
+The 出力:
 
 ```
 Still running!
@@ -241,11 +241,11 @@ Still running!
 The outer scope is about to be closed.
 ```
 
-## When do Fibers run?
+## Fiberはいつ実行されるのか？
 
-New fibers begin execution after the current fiber completes or yields. This is necessary to prevent infinite loops in some cases, and is useful to know when using the `fork` APIs.
+新しいfiberは現在のfiberが完了するか、yieldした後に実行を開始します。これは無限ループを防ぐために必要な場合があり、`fork` APIを使用する際に知っておくと便利です。
 
-In the following example the `SubscriptionRef` `changes` stream only contains a single value `2` because the fiber (created by `fork`) to run the stream is started _after_ the value has been updated.
+次の例では、`SubscriptionRef`の`changes`ストリームは単一の値`2`のみを含んでいます。これは、ストリームを実行するために作成されたfiber（`fork`によって作成）が値の更新後に開始されるためです。
 
 ```ts twoslash
 import { Effect, SubscriptionRef, Stream, Console } from "effect"
@@ -263,12 +263,12 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 SubscriptionRef changed to 2
 */
 ```
 
-If we add `Effect.yieldNow()` to force the current fiber to yield then the stream will contain all values `0`, `1`, and `2` because the fiber running the stream has an opportunity to start before the value is changed.
+`Effect.yieldNow()`を追加して現在のfiberにyieldを強制すると、ストリームは値が変更される前に実行される機会があるため、`0`、`1`、および`2`のすべての値を含むようになります。
 
 ```ts twoslash
 import { Effect, SubscriptionRef, Stream, Console } from "effect"
@@ -287,7 +287,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 SubscriptionRef changed to 0
 SubscriptionRef changed to 1
 SubscriptionRef changed to 2

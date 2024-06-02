@@ -1,30 +1,30 @@
 ---
-title: Building Pipelines
-excerpt: Explore the power of Effect pipelines for composing and sequencing operations on values. Learn about key functions like `pipe`, `Effect.map`, `Effect.flatMap`, `Effect.andThen`, `Effect.tap`, and `Effect.all` for building modular and concise transformations. Understand the advantages of using functions over methods in the Effect ecosystem for tree shakeability and extendibility.
+title: パイプラインの構築
+excerpt: 値に対する操作を構成およびシーケンス化するためのEffectパイプラインの力を探ります。`pipe`、`Effect.map`、`Effect.flatMap`、`Effect.andThen`、`Effect.tap`、および`Effect.all`などの主要な関数について学び、モジュール化された簡潔な変換を構築します。Effectエコシステムで関数をメソッドよりも使用する利点について、ツリーシェイク可能性と拡張性の観点から理解します。
 bottomNavigation: pagination
 ---
 
-Effect pipelines allow for the composition and sequencing of operations on values, enabling the transformation and manipulation of data in a concise and modular manner.
+Effectパイプラインは、値に対する操作を構成およびシーケンス化することを可能にし、データの変換と操作を簡潔かつモジュール化された方法で行うことができます。
 
-## Why Pipelines are Good for Structuring Your Application
+## パイプラインがアプリケーションの構造化に良い理由
 
-Pipelines are an excellent way to structure your application and handle data transformations in a concise and modular manner. They offer several benefits:
+パイプラインは、アプリケーションを構造化し、データ変換を簡潔かつモジュール化された方法で処理するための優れた方法です。以下のような利点があります：
 
-1. **Readability**: Pipelines allow you to compose functions in a readable and sequential manner. You can clearly see the flow of data and the operations applied to it, making it easier to understand and maintain the code.
+1. **可読性**: パイプラインを使用すると、関数を読みやすく順序立てて構成できます。データの流れとそれに適用される操作が明確に見えるため、コードの理解と保守が容易になります。
 
-2. **Code Organization**: With pipelines, you can break down complex operations into smaller, manageable functions. Each function performs a specific task, making your code more modular and easier to reason about.
+2. **コードの整理**: パイプラインを使用すると、複雑な操作を小さく管理可能な関数に分解できます。各関数は特定のタスクを実行し、コードをよりモジュール化し、理解しやすくします。
 
-3. **Reusability**: Pipelines promote the reuse of functions. By breaking down operations into smaller functions, you can reuse them in different pipelines or contexts, improving code reuse and reducing duplication.
+3. **再利用性**: パイプラインは関数の再利用を促進します。操作を小さな関数に分解することで、異なるパイプラインやコンテキストでそれらを再利用でき、コードの再利用性が向上し、重複が減少します。
 
-4. **Type Safety**: By leveraging the type system, pipelines help catch errors at compile-time. Functions in a pipeline have well-defined input and output types, ensuring that the data flows correctly through the pipeline and minimizing runtime errors.
+4. **型安全性**: 型システムを活用することで、パイプラインはコンパイル時にエラーをキャッチするのに役立ちます。パイプライン内の関数は明確に定義された入力と出力の型を持ち、データがパイプラインを通じて正しく流れることを保証し、ランタイムエラーを最小限に抑えます。
 
-Now, let's delve into how to define pipelines and explore some of the key components:
+それでは、パイプラインの定義方法と主要なコンポーネントについて詳しく見ていきましょう：
 
 ## pipe
 
-The `pipe` function is a utility that allows us to compose functions in a readable and sequential manner. It takes the output of one function and passes it as the input to the next function in the pipeline. This enables us to build complex transformations by chaining multiple functions together.
+`pipe`関数は、関数を読みやすく順序立てて構成するためのユーティリティです。ある関数の出力を次の関数の入力として渡すことで、パイプライン内で複数の関数を連鎖させて複雑な変換を構築することができます。
 
-The basic syntax of `pipe` is as follows:
+`pipe`の基本的な構文は以下の通りです：
 
 ```ts
 import { pipe } from "effect"
@@ -32,15 +32,15 @@ import { pipe } from "effect"
 const result = pipe(input, func1, func2, ..., funcN)
 ```
 
-In this syntax, `input` is the initial value, and `func1`, `func2`, ..., `funcN` are the functions to be applied in sequence. The result of each function becomes the input for the next function, and the final result is returned.
+この構文では、`input`が初期値であり、`func1`、`func2`、...、`funcN`が順番に適用される関数です。各関数の結果は次の関数の入力となり、最終的な結果が返されます。
 
-Here's an illustration of how `pipe` works:
+以下は`pipe`の動作を示す図です：
 
 ![Pipe](/images/mmd/pipeline.svg)
 
-It's important to note that functions passed to `pipe` must have a **single argument** because they are only called with a single argument.
+`pipe`に渡される関数は**単一の引数**を持つ必要があることに注意してください。なぜなら、それらは単一の引数でのみ呼び出されるからです。
 
-Let's see an example to better understand how `pipe` works:
+`pipe`の動作をよりよく理解するために、例を見てみましょう：
 
 ```ts twoslash
 import { pipe } from "effect"
@@ -51,50 +51,48 @@ const subtractTen = (x: number) => x - 10
 
 const result = pipe(5, increment, double, subtractTen)
 
-console.log(result) // Output: 2
+console.log(result) // 出力: 2
 ```
 
-In the above example, we start with an input value of `5`. The `increment` function adds `1` to the initial value, resulting in `6`. Then, the `double` function doubles the value, giving us `12`. Finally, the `subtractTen` function subtracts `10` from `12`, resulting in the final output of `2`.
+上記の例では、入力値として`5`を使用しています。`increment`関数は初期値に`1`を加え、結果として`6`になります。次に、`double`関数が値を2倍にし、`12`になります。最後に、`subtractTen`関数が`12`から`10`を引き、最終的な出力は`2`になります。
 
-## Functions vs Methods
+## 関数とメソッド
 
-In the Effect ecosystem, libraries often expose functions rather than methods. This design choice is important for two key reasons: tree shakeability and extendibility.
+Effectエコシステムでは、ライブラリはメソッドではなく関数を公開することが多いです。この設計選択は、ツリーシェイク可能性と拡張性という2つの重要な理由によるものです。
 
-### Tree Shakeability
+### ツリーシェイク可能性
 
-Tree shakeability refers to the ability of a build system to eliminate unused code during the bundling process. Functions are tree shakeable, while methods are not.
+ツリーシェイク可能性とは、ビルドシステムがバンドルプロセス中に未使用のコードを排除する能力を指します。関数はツリーシェイク可能ですが、メソッドはそうではありません。
 
-When functions are used in the Effect ecosystem, only the functions that are actually imported and used in your application will be included in the final bundled code. Unused functions are automatically removed, resulting in a smaller bundle size and improved performance.
+Effectエコシステムで関数が使用される場合、実際にインポートされてアプリケーションで使用される関数のみが最終的なバンドルコードに含まれます。未使用の関数は自動的に削除され、バンドルサイズが小さくなり、パフォーマンスが向上します。
 
-On the other hand, methods are attached to objects or prototypes, and they cannot be easily tree shaken. Even if you only use a subset of methods, all methods associated with an object or prototype will be included in the bundle, leading to unnecessary code bloat.
+一方、メソッドはオブジェクトやプロトタイプにアタッチされており、簡単にツリーシェイクすることはできません。メソッドのサブセットのみを使用している場合でも、オブジェクトやプロトタイプに関連付けられたすべてのメソッドがバンドルに含まれ、不要なコードの膨張を引き起こします。
 
-### Extendibility
+### 拡張性
 
-Another important advantage of using functions in the Effect ecosystem is the ease of extendibility. With methods, extending the functionality of an existing API often requires modifying the prototype of the object, which can be complex and error-prone.
+Effectエコシステムで関数を使用するもう一つの重要な利点は、拡張性の容易さです。メソッドを使用する場合、既存のAPIの機能を拡張するには、オブジェクトのプロトタイプを変更する必要があり、これは複雑でエラーが発生しやすいです。
 
-In contrast, with functions, extending the functionality is much simpler. You can define your own "extension methods" as plain old functions without the need to modify the prototypes of objects. This promotes cleaner and more modular code, and it also allows for better compatibility with other libraries and modules.
+対照的に、関数を使用する場合、機能の拡張ははるかに簡単です。プロトタイプを変更する必要なく、通常の関数として独自の「拡張メソッド」を定義できます。これにより、よりクリーンでモジュール化されたコードが促進され、他のライブラリやモジュールとの互換性も向上します。
 
 <Idea>
-  The use of functions in the Effect ecosystem libraries is important for
-  achieving **tree shakeability** and ensuring **extendibility**. Functions
-  enable efficient bundling by eliminating unused code, and they provide a
-  flexible and modular approach to extending the libraries' functionality.
+  Effectエコシステムのライブラリで関数を使用することは、**ツリーシェイク可能性**を達成し、
+  **拡張性**を確保するために重要です。関数は未使用のコードを排除することで効率的なバンドルを可能にし、
+  ライブラリの機能を拡張するための柔軟でモジュール化されたアプローチを提供します。
 </Idea>
 
-Now let's explore some examples of APIs that can be used with the `pipe` function to build pipelines.
+それでは、`pipe`関数を使用してパイプラインを構築するために使用できるいくつかのAPIの例を見てみましょう。
 
 ## map
 
-The `Effect.map` function is used to transform the value inside an `Effect`.
-It takes a function and applies it to the value contained within the `Effect`, creating a **new** `Effect` with the transformed value.
+`Effect.map`関数は、`Effect`内の値を変換するために使用されます。
+この関数は、`Effect`に含まれる値に適用され、新しい変換された値を持つ**新しい**`Effect`を作成します。
 
 <Info>
-  It's important to note that `Effect`s are immutable, meaning that when you
-  use `Effect.map` on an `Effect`, it doesn't modify the original data type.
-  Instead, it returns a new copy of the `Effect` with the transformed value.
+  `Effect`は不変であるため、`Effect.map`を使用しても元のデータ型は変更されません。
+  代わりに、変換された値を持つ新しい`Effect`のコピーが返されます。
 </Info>
 
-The syntax for `Effect.map` is as follows:
+`Effect.map`の構文は以下の通りです：
 
 ```ts
 import { pipe, Effect } from "effect"
@@ -104,9 +102,9 @@ const mappedEffect = pipe(myEffect, Effect.map(func))
 const mappedEffect = Effect.map(myEffect, func)
 ```
 
-In the code above, `func` represents the transformation function to be applied, and `myEffect` is the input `Effect`.
+上記のコードでは、`func`は適用される変換関数を表し、`myEffect`は入力の`Effect`です。
 
-Let's see an example to better understand how `map` works:
+`map`の動作をよりよく理解するために、例を見てみましょう：
 
 ```ts twoslash
 import { pipe, Effect } from "effect"
@@ -116,47 +114,46 @@ const myEffect = Effect.succeed(5)
 
 const mappedEffect = pipe(myEffect, Effect.map(increment))
 
-Effect.runPromise(mappedEffect).then(console.log) // Output: 6
+Effect.runPromise(mappedEffect).then(console.log) // 出力: 6
 ```
 
-In the example above:
+上記の例では：
 
-- We define a simple `increment` function that adds `1` to its input.
-- We create an `Effect` using `Effect.succeed` with an initial value of `5`.
-- We use `Effect.map` to apply the `increment` function to the value inside the `myEffect`.
+- 入力に「1」を加えるシンプルな`increment`関数を定義します。
+- 初期値「5」で`Effect.succeed`を使用して`Effect`を作成します。
+- `Effect.map`を使用して、`myEffect`内の値に`increment`関数を適用します。
 
-The resulting `mappedEffect` contains the transformed value of `6`.
+結果として得られる`mappedEffect`には、変換された値「6」が含まれます。
 
-If you simply want to replace the value with a constant, you can use `Effect.as`:
+値を定数で置き換えたい場合は、`Effect.as`を使用できます：
 
 ```ts twoslash
 import { pipe, Effect } from "effect"
 
 const program = pipe(Effect.succeed(5), Effect.as("new value"))
 
-Effect.runPromise(program).then(console.log) // Output: "new value"
+Effect.runPromise(program).then(console.log) // 出力: "new value"
 ```
 
 ## flatMap
 
-In the previous example, we saw how to transform an `Effect` using the `Effect.map` function when the transformation function returns a regular value. But what if we want to transform an `Effect` using a function that itself returns another `Effect`?
+前の例では、変換関数が通常の値を返す場合に`Effect.map`関数を使用して`Effect`を変換する方法を見ました。しかし、変換関数自体が別の`Effect`を返す場合はどうでしょうか？
 
-Many JavaScript / TypeScript engineers are familiar with the term `flatMap` due to it's [presence as a method on the `Array` prototype](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap).
-However, `flatMap` can actually be used to describe a more generic data transformation. While this section will focus specifically on explaining how one can use `flatMap` from the `Effect` module, we provide a more detailed explanation of `flatMap` [in the FAQ](../../other/faq#a-closer-look-at-flatmap).
+多くのJavaScript / TypeScriptエンジニアは、[`Array`プロトタイプのメソッドとしての`flatMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap)に馴染みがあるでしょう。しかし、`flatMap`は実際にはより一般的なデータ変換を説明するために使用できます。このセクションでは、`Effect`モジュールから`flatMap`を使用する方法に焦点を当てますが、`flatMap`の詳細な説明は[FAQ](../../other/faq#a-closer-look-at-flatmap)に提供しています。
 
 <Info>
-  If you're just looking for how to flatten a nested `Array`s within an Effect:
+  `Effect`内のネストされた`Array`をフラット化する方法を探しているだけなら：
 
   <details>
-  <summary>Flattening a Nested Array</summary>
+  <summary>ネストされた配列のフラット化</summary>
 
-If you have an Effect where result type is a nested `Array`, for example:
+結果の型がネストされた`Array`である`Effect`がある場合、例えば：
 
 ```ts
 Effect<Array<Array<A>>>
 ```
 
-you can easily flatten the array using either the `Array` module exported from `effect`:
+`effect`からエクスポートされた`Array`モジュールを使用して、簡単に配列をフラット化できます：
 
 ```ts twoslash
 import { pipe, Effect, Array } from "effect"
@@ -170,21 +167,20 @@ const flattened = pipe(
 )
 ```
 
-or using the standard `Array.prototype.flat()` method.
+または標準の `Array.prototype.flat()` メソッドを使用します。
 
   </details>
 </Info>
 
-The `Effect.flatMap` function allows us to chain computations that produce `Effect` values. It takes a transformation function that produces a new `Effect` and then "flattens" the nested `Effect` structure.
+`Effect.flatMap`関数は、`Effect`値を生成する計算を連鎖させることができます。これは、新しい`Effect`を生成する変換関数を受け取り、ネストされた`Effect`構造を「フラット化」します。
 
 <Info>
-  It's important to note that `Effect`s are immutable, meaning that when you
-  use `Effect.flatMap` on an `Effect`, it doesn't modify the original data
-  type. Instead, it returns a new copy of the `Effect` with the transformed
-  value.
+  `Effect`は不変であることに注意してください。
+  つまり、`Effect.flatMap`を`Effect`に使用すると、元のデータ型は変更されません。
+  代わりに、変換された値を持つ新しい`Effect`のコピーが返されます。
 </Info>
 
-The syntax for `Effect.flatMap` is as follows:
+`Effect.flatMap`の構文は次のとおりです：
 
 ```ts
 import { pipe, Effect } from "effect"
@@ -194,9 +190,9 @@ const flatMappedEffect = pipe(myEffect, Effect.flatMap(func))
 const flatMappedEffect = Effect.flatMap(myEffect, func)
 ```
 
-In the code above, `func` represents the transformation function that returns a new `Effect`, and `myEffect` is the input `Effect` that we want to transform.
+上記のコードでは、`func`は新しい`Effect`を返す変換関数を表し、`myEffect`は変換したい入力`Effect`です。
 
-Let's see an example to better understand how `Effect.flatMap` works:
+`Effect.flatMap`の動作をよりよく理解するために、例を見てみましょう：
 
 ```ts twoslash
 import { pipe, Effect } from "effect"
@@ -212,20 +208,20 @@ const flatMappedEffect = pipe(
   Effect.flatMap(([a, b]) => divide(a, b))
 )
 
-Effect.runPromise(flatMappedEffect).then(console.log) // Output: 5
+Effect.runPromise(flatMappedEffect).then(console.log) // 出力: 5
 ```
 
-In the example above:
+上記の例では：
 
-- We define a function called `divide` that takes two numbers `a` and `b` and returns an `Effect` that can potentially succeed with the result of the division or fail with an error if `b` is zero.
-- We create an `Effect` using `Effect.succeed` with a tuple containing the values `10` and `2`.
-- We use `Effect.flatMap` to apply the `divide` function to the values inside the `myEffect`.
+- `divide`という関数を定義し、2つの数値 `a` と `b` を受け取り、`b` がゼロの場合はエラーで失敗し、そうでない場合は除算の結果で成功する可能性のある `Effect` を返します。
+- 値 `10` と `2` を含むタプルを使用して `Effect.succeed` を使って `Effect` を作成します。
+- `Effect.flatMap` を使用して、`myEffect` 内の値に `divide` 関数を適用します。
 
-The resulting `Effect` contains the transformed value of `5`.
+結果として得られる`Effect`には、変換された値である`5`が含まれています。
 
-When using `Effect.flatMap`, it is crucial to ensure that **all effects** are properly considered in the computation. If you ignore an effect returned by a computation within `Effect.flatMap`, it can result in unexpected behavior and incorrect program logic.
+`Effect.flatMap`を使用する際には、**すべてのEffect**が計算に適切に考慮されていることが重要です。`Effect.flatMap`内の計算から返されるEffectを無視すると、予期しない動作や不正確なプログラムロジックの原因となる可能性があります。
 
-Let's take a look at the following code snippet:
+次のコードスニペットを見てみましょう：
 
 ```ts {1}
 Effect.flatMap(([a, b]) => {
@@ -234,20 +230,19 @@ Effect.flatMap(([a, b]) => {
 })
 ```
 
-The problem here is that the effect returned by `Effect.sync` will be ignored and not included in the resulting computation. It will not be chained or combined with the effect returned by`divide(a, b)`. As a result, you may encounter unexpected program behavior and obtain incorrect results.
+ここでの問題は、`Effect.sync`によって返されるEffectが無視され、結果の計算に含まれないことです。それは`divide(a, b)`によって返されるEffectと連鎖または結合されません。その結果、予期しないプログラムの動作や不正確な結果が生じる可能性があります。
 
-To ensure correct behavior, make sure that any effect you want to include in the computation is explicitly chained using `Effect.flatMap` or combined with other `Effect` values using the appropriate functions provided by the Effect library.
+正しい動作を確保するためには、計算に含めたいEffectが`Effect.flatMap`を使用して明示的に連鎖されるか、Effectライブラリが提供する適切な関数を使用して他の`Effect`値と結合されることを確認してください。
 
-In the next section, we will explore how to address this problem using the `tap` API.
+次のセクションでは、この問題に対処するために`tap` APIを使用する方法を探ります。
 
 ## andThen
 
-Both the `Effect.map` and `Effect.flatMap` functions serve to transform an `Effect` into another `Effect` in two different scenarios.
-In the first scenario, `Effect.map` is used when the transformation function does not return an `Effect`, while in the second scenario,
-`Effect.flatMap` is used when the transformation function still returns an `Effect`.
-However, since both scenarios involve transformations, the Effect module also exposes a convenient all-in-one solution to use: `Effect.andThen`.
+`Effect.map`と`Effect.flatMap`の両方の関数は、2つの異なるシナリオで`Effect`を別の`Effect`に変換するために使用されます。
+最初のシナリオでは、変換関数が`Effect`を返さない場合に`Effect.map`が使用され、2番目のシナリオでは、変換関数が`Effect`を返す場合に`Effect.flatMap`が使用されます。
+しかし、両方のシナリオが変換を伴うため、Effectモジュールは便利なオールインワンソリューションとして`Effect.andThen`を提供しています。
 
-The `Effect.andThen` function executes a sequence of two actions, typically two `Effect`s, where the second action can depend on the result of the first action.
+`Effect.andThen`関数は、通常2つの`Effect`の一連のアクションを実行し、2番目のアクションは最初のアクションの結果に依存することができます。
 
 ```ts
 import { pipe, Effect } from "effect"
@@ -257,16 +252,16 @@ const transformedEffect = pipe(self, Effect.andThen(that))
 const transformedEffect = Effect.andThen(self, that)
 ```
 
-The `that` action can take various forms:
+`that` アクションは次のような形式を取ることができます：
 
-- a value
-- a function returning a value (i.e. same functionality of `Effect.map`)
-- a `Promise`
-- a function returning a `Promise`
-- an `Effect`
-- a function returning an `Effect`(i.e. same functionality of `Effect.flatMap`)
+- 値
+- 値を返す関数（つまり、`Effect.map`と同じ機能）
+- `Promise`
+- `Promise`を返す関数
+- `Effect`
+- `Effect`を返す関数（つまり、`Effect.flatMap`と同じ機能）
 
-Let's see an example where we can compare the use of `Effect.andThen` instead of `Effect.map` and `Effect.flatMap`:
+`Effect.map`や`Effect.flatMap`の代わりに`Effect.andThen`を使用する例を見てみましょう：
 
 ```ts
 import { pipe, Effect } from "effect"
@@ -283,7 +278,7 @@ const result1 = pipe(
   Effect.flatMap(([a, b]) => divide(a, b))
 )
 
-console.log(Effect.runSync(result1)) // Output: 2
+console.log(Effect.runSync(result1)) // 出力: 2
 
 // Using Effect.andThen
 const result2 = pipe(
@@ -292,18 +287,18 @@ const result2 = pipe(
   Effect.andThen(([a, b]) => divide(a, b))
 )
 
-console.log(Effect.runSync(result2)) // Output: 2
+console.log(Effect.runSync(result2)) // 出力: 2
 ```
 
 ## tap
 
-In the previous section, we discussed the problem of ignoring effects in a computation.
-To address this issue, we can use the `tap` API, which allows us to execute side effects without affecting the computation flow.
+前のセクションでは、計算中にEffectを無視する問題について議論しました。
+この問題に対処するために、計算の流れに影響を与えずに副作用を実行できる`tap` APIを使用することができます。
 
-The `Effect.tap` API has a similar signature to `Effect.flatMap`, but the result of the transformation function is **ignored**.
-This means that the value returned by the previous computation (i.e. `[a, b]`) will still be available for the next computation (i.e. `divide`).
+`Effect.tap` APIは`Effect.flatMap`と似たシグネチャを持っていますが、変換関数の結果は**無視**されます。
+つまり、前の計算で返された値（つまり、`[a, b]`）は次の計算（つまり、`divide`）でも引き続き利用可能です。
 
-Let's take a look at an updated code snippet that incorporates the `Effect.tap` API to fix the problem:
+問題を解決するために`Effect.tap` APIを組み込んだ更新されたコードスニペットを見てみましょう：
 
 ```ts {3-5} twoslash
 import { pipe, Effect } from "effect"
@@ -324,21 +319,21 @@ const program = pipe(
 
 Effect.runPromise(program).then(console.log)
 /*
-Output:
+出力:
 Performing division: 10 / 2
 5
 */
 ```
 
-By using `Effect.tap`, we include the effect of `Effect.sync` in the computation. This ensures that the logging action is performed, providing us with the desired output and maintaining correct program logic. The resulting output is still `5`, as expected.
+`Effect.tap`を使用することで、計算に`Effect.sync`の効果を含めることができます。これにより、ログアクションが実行され、期待通りの出力が得られ、プログラムのロジックが正しく維持されます。結果の出力は予想通り`5`のままです。
 
-Using `tap` allows us to execute side effects during the computation without altering the result. This can be useful for logging, performing additional actions, or observing the intermediate values without interfering with the main computation flow.
+`tap`を使用すると、計算中に結果を変更せずに副作用を実行することができます。これは、ログを記録したり、追加のアクションを実行したり、中間値を観察したりするのに役立ちますが、メインの計算フローには干渉しません。
 
 ## all
 
-The `Effect.all` function is a powerful utility provided by Effect that allows you to combine multiple effects into a single effect that produces a tuple of results.
+`Effect.all`関数は、複数のEffectを組み合わせて、結果のタプルを生成する単一のEffectにする強力なユーティリティです。
 
-The syntax for `all` is as follows:
+`all`の構文は次のとおりです：
 
 ```ts
 import { Effect } from "effect"
@@ -346,17 +341,14 @@ import { Effect } from "effect"
 const combinedEffect = Effect.all(effects)
 ```
 
-Here, `effects` represents multiple effects that you want to combine.
+ここで、`effects`は組み合わせたい複数のEffectを表します。
 
-The `all` function will execute all these effects in **sequence** (to explore options for
-managing concurrency and controlling how these effects are executed, you can
-refer to the [Concurrency Options](../concurrency/concurrency-options)
-documentation).
+`all`関数はこれらのEffectを**順番に**実行します（並行処理の管理やこれらのEffectの実行方法を制御するオプションについては、[Concurrency Options](../concurrency/concurrency-options)のドキュメントを参照してください）。
 
-It will return a new effect that produces a tuple containing the results of each individual effect.
-Keep in mind that the order of the results corresponds to the order of the original effects passed to `all`.
+この関数は、各Effectの結果を含むタプルを生成する新しいEffectを返します。
+結果の順序は、`all`に渡された元のEffectの順序に対応していることに注意してください。
 
-Let's see an example to better understand how `all` works:
+`all`の動作をよりよく理解するために、例を見てみましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -366,21 +358,20 @@ const bar = Effect.succeed("Hello")
 
 const combinedEffect = Effect.all([foo, bar])
 
-Effect.runPromise(combinedEffect).then(console.log) // Output: [42, "Hello"]
+Effect.runPromise(combinedEffect).then(console.log) // 出力: [42, "Hello"]
 ```
 
-In this example, `foo` and `bar` are two separate effects. Using `Effect.all`, we combine them into a single effect `combinedEffect`. When we run `combinedEffect`, it produces a tuple `[42, "Hello"]` containing the results of both effects.
+この例では、`foo`と`bar`は2つの別々のEffectです。`Effect.all`を使用して、これらを1つのEffect`combinedEffect`に結合します。`combinedEffect`を実行すると、両方のEffectの結果を含むタプル`[42, "Hello"]`が生成されます。
 
 <Info>
-  The `all` function not only combines tuples but also works seamlessly with
-  iterables, structs, and records. To explore the full potential of `all` head
-  over to the [Introduction to Effect's Control Flow
-  Operators](../control-flow#all) documentation.
+  `all`関数はタプルを結合するだけでなく、イテラブル、構造体、レコードともシームレスに動作します。
+  `all`の完全な機能を探るには、[Effectの制御フローオペレーターの紹介](../control-flow#all)のドキュメントを
+  参照してください。
 </Info>
 
-## Build your first pipeline
+## 最初のパイプラインを構築する
 
-Now, let's combine all threee functions (`pipe`, `andThen` and `all`) to build a pipeline that performs a series of transformations:
+では、3つの関数（`pipe`、`andThen`、`all`）を組み合わせて、一連の変換を行うパイプラインを構築してみましょう：
 
 ```ts twoslash
 import { pipe, Effect } from "effect"
@@ -403,28 +394,28 @@ const program = pipe(
   Effect.andThen((n2) => `Result is: ${n2}`)
 )
 
-Effect.runPromise(program).then(console.log) // Output: "Result is: 6"
+Effect.runPromise(program).then(console.log) // 出力: "Result is: 6"
 ```
 
-## The pipe method
+## pipeメソッド
 
-Effect provides a `pipe` method that works similarly to the `pipe` method found in [rxjs](https://rxjs.dev/api/index/function/pipe). This method allows you to chain multiple operations together, making your code more concise and readable.
+Effectは、[rxjs](https://rxjs.dev/api/index/function/pipe)に見られる`pipe`メソッドと同様に動作する`pipe`メソッドを提供します。このメソッドを使用すると、複数の操作を連鎖させることができ、コードをより簡潔で読みやすくすることができます。
 
-Here's how the `pipe` **method** works:
+以下は`pipe`**メソッド**の動作例です：
 
 ```ts
 const result = effect.pipe(func1, func2, ..., funcN)
 ```
 
-This is equivalent to using the `pipe` **function** like this:
+これは、次のように`pipe`**関数**を使用するのと同等です：
 
 ```ts
 const result = pipe(effect, func1, func2, ..., funcN)
 ```
 
-The `pipe` method is available on all effects and many other data types, eliminating the need to import the `pipe` function from the `Function` module and saving you some keystrokes.
+`pipe`メソッドはすべてのEffectおよび多くの他のデータ型で利用可能であり、`Function`モジュールから`pipe`関数をインポートする必要がなくなり、いくつかのキーストロークを節約できます。
 
-Let's rewrite the previous example using the `pipe` method:
+前の例を`pipe`メソッドを使って書き直してみましょう：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -446,19 +437,19 @@ const program = Effect.all([task1, task2]).pipe(
   Effect.andThen((n2) => `Result is: ${n2}`)
 )
 
-Effect.runPromise(program).then(console.log) // Output: "Result is: 6"
+Effect.runPromise(program).then(console.log) // 出力: "Result is: 6"
 ```
 
-## Cheatsheet
+## チートシート
 
-Let's summarize the transformation functions we have seen so far:
+これまでに見てきた変換関数をまとめましょう：
 
-| **Function** | **Input**                                 | **Output**                  |
-| ------------ | ----------------------------------------- | --------------------------- |
-| `map`        | `Effect<A, E, R>`, `A => B`               | `Effect<B, E, R>`           |
-| `flatMap`    | `Effect<A, E, R>`, `A => Effect<B, E, R>` | `Effect<B, E, R>`           |
-| `andThen`    | `Effect<A, E, R>`, \*                     | `Effect<B, E, R>`           |
-| `tap`        | `Effect<A, E, R>`, `A => Effect<B, E, R>` | `Effect<A, E, R>`           |
-| `all`        | `[Effect<A, E, R>, Effect<B, E, R>, ...]` | `Effect<[A, B, ...], E, R>` |
+| **関数**  | **入力**                                  | **出力**                    |
+| --------- | ----------------------------------------- | --------------------------- |
+| `map`     | `Effect<A, E, R>`, `A => B`               | `Effect<B, E, R>`           |
+| `flatMap` | `Effect<A, E, R>`, `A => Effect<B, E, R>` | `Effect<B, E, R>`           |
+| `andThen` | `Effect<A, E, R>`, \*                     | `Effect<B, E, R>`           |
+| `tap`     | `Effect<A, E, R>`, `A => Effect<B, E, R>` | `Effect<A, E, R>`           |
+| `all`     | `[Effect<A, E, R>, Effect<B, E, R>, ...]` | `Effect<[A, B, ...], E, R>` |
 
-These functions are powerful tools for transforming and chaining `Effect` computations. They allow you to apply functions to values inside `Effect` and build complex pipelines of computations.
+これらの関数は、`Effect`の計算を変換および連鎖させるための強力なツールです。これにより、`Effect`内の値に関数を適用し、複雑な計算パイプラインを構築することができます。

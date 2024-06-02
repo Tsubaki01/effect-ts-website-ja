@@ -1,45 +1,45 @@
 ---
 title: Option
-excerpt: Master the versatile `Option` data type for handling optional values. Learn to create, model optional properties, and utilize guards. Discover powerful functions like `Option.map`, `Option.flatMap`, and explore seamless interop with nullable types and the Effect module. Also, delve into fallback strategies, working with nullable types, combining options, and much more.
+excerpt: 多用途な `Option` データ型をマスターして、オプション値を扱う方法を学びましょう。オプションプロパティの作成、モデリング、ガードの利用方法を学びます。`Option.map` や `Option.flatMap` などの強力な関数を発見し、nullable types や Effect モジュールとのシームレスな相互運用性を探ります。また、フォールバック戦略、nullable types の取り扱い、オプションの組み合わせなどについても深く掘り下げます。
 bottomNavigation: pagination
 ---
 
-The `Option` data type is used to represent optional values. An `Option` can be either `Some`, which contains a value, or `None`, which indicates the absence of a value.
+`Option` データ型はオプション値を表現するために使用されます。`Option` は値を含む `Some` か、値が存在しないことを示す `None` のいずれかです。
 
-The `Option` type is versatile and can be applied in various scenarios, including:
+`Option` 型は多用途で、以下のようなさまざまなシナリオに適用できます：
 
-- Using it for initial values
-- Returning values from functions that are not defined for all possible inputs (referred to as "partial functions")
-- Managing optional fields in data structures
-- Handling optional function arguments
+- 初期値としての使用
+- すべての可能な入力に対して定義されていない関数からの値の返却（「部分関数」と呼ばれる）
+- データ構造内のオプションフィールドの管理
+- オプションの関数引数の処理
 
-## Creating Options
+## Optionsの作成
 
 ### some
 
-The `Option.some` constructor takes a value of type `A` and returns an `Option<A>` that holds that value:
+`Option.some` コンストラクタは型 `A` の値を取り、その値を保持する `Option<A>` を返します。
 
 ```ts twoslash
 import { Option } from "effect"
 
-const value = Option.some(1) // An Option holding the number 1
+const value = Option.some(1) // 数値 1 を保持する Option
 ```
 
 ### none
 
-On the other hand, the `Option.none` constructor returns an `Option<never>`, representing the absence of a value:
+一方、`Option.none` コンストラクタは値の不在を表す `Option<never>` を返します：
 
 ```ts twoslash
 import { Option } from "effect"
 
-const noValue = Option.none() // An Option holding no value
+const noValue = Option.none() // 値を持たない Option
 ```
 
 ### liftPredicate
 
-Sometimes you need to create an `Option` based on a predicate, such as checking if a value is positive.
+時々、値が正であるかどうかを確認するなど、述語に基づいて `Option` を作成する必要があります。
 
-Here's how you can do this explicitly using `Option.none` and `Option.some`
+以下は、`Option.none` と `Option.some` を使用してこれを明示的に行う方法です
 
 ```ts twoslash
 import { Option } from "effect"
@@ -50,7 +50,7 @@ const parsePositive = (n: number): Option.Option<number> =>
   isPositive(n) ? Option.some(n) : Option.none()
 ```
 
-The same result can be achieved more concisely using `Option.liftPredicate`
+同じ結果を `Option.liftPredicate` を使用してより簡潔に達成できます
 
 ```ts twoslash
 import { Option } from "effect"
@@ -60,10 +60,10 @@ const isPositive = (n: number) => n > 0
 const parsePositive = Option.liftPredicate(isPositive)
 ```
 
-## Modeling Optional Properties
+## オプションプロパティのモデリング
 
-Let's look at an example of a `User` model where the `"email"` property is optional and can have a value of type `string`.
-To represent this, we can use the `Option<string>` type:
+`User` モデルの例を見てみましょう。このモデルでは、`"email"` プロパティがオプションであり、`string` 型の値を持つことができます。
+これを表現するために、`Option<string>` 型を使用できます：
 
 ```ts {6} twoslash
 import { Option } from "effect"
@@ -76,12 +76,11 @@ interface User {
 ```
 
 <Warning>
-  Optionality only applies to the value of the property. The key `"email"`
-  will always be present in the object, regardless of whether it has a value
-  or not.
+  オプショナリティはプロパティの値にのみ適用されます。キー `"email"`
+  は、値があるかどうかに関わらず、 常にオブジェクトに存在します。
 </Warning>
 
-Now, let's see how we can create instances of `User` with and without an email:
+では、`User` のインスタンスをメールありとメールなしで作成する方法を見てみましょう：
 
 ```ts twoslash
 import { Option } from "effect"
@@ -106,28 +105,28 @@ const withoutEmail: User = {
 }
 ```
 
-## Guards
+## ガード
 
-You can determine whether an `Option` is a `Some` or a `None` by using the `isSome` and `isNone` guards:
+`Option` が `Some` か `None` かを判定するには、`isSome` と `isNone` ガードを使用できます：
 
 ```ts twoslash
 import { Option } from "effect"
 
 const foo = Option.some(1)
 
-console.log(Option.isSome(foo)) // Output: true
+console.log(Option.isSome(foo)) // 出力: true
 
 if (Option.isNone(foo)) {
   console.log("Option is empty")
 } else {
   console.log(`Option has a value: ${foo.value}`)
 }
-// Output: "Option has a value: 1"
+// 出力: "Option has a value: 1"
 ```
 
 ## Matching
 
-The `Option.match` function allows you to handle different cases of an `Option` value by providing separate actions for each case:
+`Option.match` 関数を使用すると、`Option` 値の異なるケースを別々のアクションで処理することができます。
 
 ```ts twoslash
 import { Option } from "effect"
@@ -139,19 +138,19 @@ const result = Option.match(foo, {
   onSome: (value) => `Option has a value: ${value}`
 })
 
-console.log(result) // Output: "Option has a value: 1"
+console.log(result) // 出力: "Option has a value: 1"
 ```
 
 <Idea>
-  Using `match` instead of `isSome` or `isNone` can be more expressive and
-  provide a clear way to handle both cases of an `Option`.
+  `isSome` や `isNone` の代わりに `match` を使用することで、より表現力豊かに
+  `Option` の両方のケースを明確に処理する方法を提供できます。
 </Idea>
 
-## Working with Option
+## Optionの操作
 
 ### map
 
-The `Option.map` function allows you to transform the value inside an `Option` without having to unwrap and wrap the underlying value. Let's see an example:
+`Option.map` 関数を使用すると、内部の値をアンラップして再ラップすることなく変換できます。例を見てみましょう：
 
 ```ts twoslash
 import { Option } from "effect"
@@ -159,7 +158,7 @@ import { Option } from "effect"
 const maybeIncremented = Option.map(Option.some(1), (n) => n + 1) // some(2)
 ```
 
-The convenient aspect of using `Option` is how it handles the absence of a value, represented by `None`:
+`Option` を使用する便利な点は、値が存在しないことを `None` で表現し、それを適切に処理できることです：
 
 ```ts twoslash
 import { Option } from "effect"
@@ -167,13 +166,13 @@ import { Option } from "effect"
 const maybeIncremented = Option.map(Option.none(), (n) => n + 1) // none()
 ```
 
-Despite having `None` as the input, we can still operate on the `Option` without encountering errors. The mapping function `(n) => n + 1` is not executed when the `Option` is `None`, and the result remains `none` representing the absence of a value.
+入力が `None` であっても、エラーに遭遇することなく `Option` を操作することができます。`Option` が `None` の場合、マッピング関数 `(n) => n + 1` は実行されず、結果は値が存在しないことを表す `none` のままです。
 
 ### flatMap
 
-The `Option.flatMap` function works similarly to `Option.map`, but with an additional feature. It allows us to sequence computations that depend on the absence or presence of a value in an `Option`.
+`Option.flatMap` 関数は `Option.map` と似ていますが、追加の機能があります。これは、`Option` 内の値の有無に依存する計算を順序付けることができます。
 
-Let's explore an example that involves a **nested** optional property. We have a `User` model with an optional `address` field of type `Option<Address>`:
+**ネストされた**オプションプロパティを含む例を見てみましょう。`Option<Address>` 型のオプションの `address` フィールドを持つ `User` モデルがあります：
 
 ```ts {7} twoslash
 interface Address {
@@ -192,7 +191,7 @@ interface User {
 }
 ```
 
-The `address` field itself contains a nested optional property called `street` of type `Option<string>`:
+`address` フィールド自体には、`Option<string>` 型のネストされたオプションプロパティである `street` が含まれています：
 
 ```ts {3} twoslash
 import { Option } from "effect"
@@ -204,7 +203,7 @@ interface Address {
 }
 ```
 
-We can use `Option.flatMap` to extract the `street` property from the `address` field.
+`Option.flatMap` を使用して、`address` フィールドから `street` プロパティを抽出することができます。
 
 ```ts twoslash
 import { Option } from "effect"
@@ -235,15 +234,15 @@ const user: User = {
 const street = user.address.pipe(Option.flatMap((address) => address.street))
 ```
 
-Here's how it works: if the `address` is `Some`, meaning it has a value, the mapping function `(addr) => addr.street` is applied to retrieve the `street` value. On the other hand, if the `address` is `None`, indicating the absence of a value, the mapping function is not executed, and the result is also `None`.
+このように動作します：`address` が `Some` である場合、つまり値がある場合、マッピング関数 `(addr) => addr.street` が適用されて `street` の値を取得します。一方、`address` が `None` である場合、つまり値がない場合、マッピング関数は実行されず、結果も `None` になります。
 
 ### filter
 
-The `Option.filter` function is used to filter an `Option` using a predicate. If the predicate is not satisfied or the `Option` is `None`, it returns `None`.
+`Option.filter` 関数は、述語を使用して `Option` をフィルタリングするために使用されます。述語が満たされない場合、または `Option` が `None` である場合、それは `None` を返します。
 
-Let's see an example where we refactor some code to a more idiomatic version:
+コードをより慣用的なバージョンにリファクタリングする例を見てみましょう：
 
-Original Code
+元のコード
 
 ```ts twoslash
 import { Option } from "effect"
@@ -260,7 +259,7 @@ console.log(removeEmptyString(Option.some(""))) // { _id: 'Option', _tag: 'None'
 console.log(removeEmptyString(Option.some("a"))) // { _id: 'Option', _tag: 'Some', value: 'a' }
 ```
 
-Idiomatic Code
+慣用的なコード
 
 ```ts twoslash
 import { Option } from "effect"
@@ -269,20 +268,20 @@ const removeEmptyString = (input: Option.Option<string>) =>
   Option.filter(input, (value) => value !== "")
 ```
 
-## Getting the Value from an Option
+## Optionから値を取得する
 
-To retrieve the value stored within an `Option`, you can use various functions provided by the `Option` module. Let's explore these functions:
+`Option` 内に格納された値を取得するには、`Option` モジュールが提供するさまざまな関数を使用できます。これらの関数を見てみましょう：
 
-- `getOrThrow`: It retrieves the wrapped value from an `Option`, or throws an error if the `Option` is a `None`. Here's an example:
+- `getOrThrow`: `Option` からラップされた値を取得するか、`Option` が `None` の場合はエラーをスローします。以下はその例です：
 
   ```ts twoslash
   import { Option } from "effect"
 
   Option.getOrThrow(Option.some(10)) // 10
-  Option.getOrThrow(Option.none()) // throws getOrThrow called on a None
+  Option.getOrThrow(Option.none()) // Noneに対してgetOrThrowが呼び出されましたとエラーをスローします
   ```
 
-- `getOrNull` and `getOrUndefined`: These functions are useful when you want to work with code that doesn't use `Option`. They allow you to retrieve the value of an `Option` as `null` or `undefined`, respectively. Examples:
+- `getOrNull` と `getOrUndefined`: これらの関数は、`Option` を使用しないコードで作業したい場合に便利です。これらの関数を使用すると、`Option` の値をそれぞれ `null` または `undefined` として取得できます。例：
 
   ```ts twoslash
   import { Option } from "effect"
@@ -294,7 +293,7 @@ To retrieve the value stored within an `Option`, you can use various functions p
   Option.getOrUndefined(Option.none()) // undefined
   ```
 
-- `getOrElse`: This function lets you provide a default value that will be returned if the `Option` is a `None`. Here's an example:
+- `getOrElse`: この関数を使用すると、`Option` が `None` の場合に返されるデフォルト値を提供できます。以下はその例です：
 
   ```ts twoslash
   import { Option } from "effect"
@@ -305,12 +304,12 @@ To retrieve the value stored within an `Option`, you can use various functions p
 
 ## Fallback
 
-In certain situations, when a computation returns `None`, you may want to try an alternative computation that returns an `Option`. This is where the `Option.orElse` function comes in handy. It allows you to chain multiple computations together and continue with the next one if the previous one resulted in `None`. This can be useful for implementing retry logic, where you want to attempt a computation multiple times until you either succeed or exhaust all possible attempts.
+特定の状況では、計算が `None` を返す場合、`Option` を返す代替計算を試みたいことがあります。ここで役立つのが `Option.orElse` 関数です。これにより、複数の計算を連鎖させ、前の計算が `None` になった場合に次の計算を続行することができます。これは、計算を複数回試みて成功するか、すべての試行が尽きるまでリトライロジックを実装するのに便利です。
 
 ```ts twoslash
 import { Option } from "effect"
 
-// Simulating a computation that may or may not produce a result
+// 結果が出るかどうかわからない計算をシミュレートする
 const performComputation = (): Option.Option<number> =>
   Math.random() < 0.5 ? Option.some(10) : Option.none()
 
@@ -323,11 +322,11 @@ const result = performComputation().pipe(
 
 Option.match(result, {
   onNone: () => console.log("Both computations resulted in None"),
-  onSome: (value) => console.log("Computed value:", value) // At least one computation succeeded
+  onSome: (value) => console.log("計算された値:", value) // 少なくとも1つの計算が成功しました
 })
 ```
 
-Additionally, the `Option.firstSomeOf` function can be used to retrieve the first value that is `Some` within an iterable of `Option` values:
+さらに、`Option.firstSomeOf` 関数を使用すると、`Option` 値のイテラブル内で最初の `Some` 値を取得することができます:
 
 ```ts twoslash
 import { Option } from "effect"
@@ -340,11 +339,11 @@ const first = Option.firstSomeOf([
 ]) // some(2)
 ```
 
-## Interop with Nullable Types
+## Nullable Typesとの相互運用
 
-When working with the `Option` data type, you may come across code that uses `undefined` or `null` to represent optional values. The `Option` data type provides several APIs to facilitate the interaction between `Option` and nullable types.
+`Option`データ型を使用する際に、オプションの値を表すために`undefined`や`null`を使用するコードに出くわすことがあります。`Option`データ型は、`Option`とnullable typesの間の相互作用を容易にするためのいくつかのAPIを提供しています。
 
-You can create an `Option` from a nullable value using the `fromNullable` API.
+nullableな値から`Option`を作成するには、`fromNullable` APIを使用できます。
 
 ```ts twoslash
 import { Option } from "effect"
@@ -354,10 +353,10 @@ Option.fromNullable(undefined) // none()
 Option.fromNullable(1) // some(1)
 ```
 
-Conversely, if you have a value of type `Option` and want to convert it to a nullable value, you have two options:
+逆に、`Option` 型の値を持っていて、それをnullableな値に変換したい場合、次の2つのオプションがあります:
 
-- Convert `None` to `null` using the `getOrNull` API.
-- Convert `None` to `undefined` using the `getOrUndefined` API.
+- `getOrNull` APIを使用して、`None` を `null` に変換する。
+- `getOrUndefined` APIを使用して、`None` を `undefined` に変換する。
 
 ```ts twoslash
 import { Option } from "effect"
@@ -369,16 +368,16 @@ Option.getOrUndefined(Option.some(5)) // 5
 Option.getOrUndefined(Option.none()) // undefined
 ```
 
-## Interop with Effect
+## Effectとの相互運用
 
-The `Option` type is a subtype of the `Effect` type, which means that it can be seamlessly used with functions from the `Effect` module. These functions are primarily designed to work with `Effect` values, but they can also handle `Option` values and process them correctly.
+`Option`型は`Effect`型のサブタイプであるため、`Effect`モジュールの関数とシームレスに使用することができます。これらの関数は主に`Effect`値を処理するために設計されていますが、`Option`値も正しく処理することができます。
 
-In the context of `Effect`, the two members of the `Option` type are treated as follows:
+`Effect`の文脈では、`Option`型の2つのメンバーは次のように扱われます：
 
-- `None` is equivalent to `Effect<never, NoSuchElementException>`
-- `Some<A>` is equivalent to `Effect<A>`
+- `None`は`Effect<never, NoSuchElementException>`に相当します
+- `Some<A>`は`Effect<A>`に相当します
 
-To illustrate this interoperability, let's consider the following example:
+この相互運用性を示すために、次の例を考えてみましょう：
 
 ```ts twoslash
 import { Effect, Option } from "effect"
@@ -388,14 +387,14 @@ const head = <A>(as: ReadonlyArray<A>): Option.Option<A> =>
 
 console.log(
   Effect.runSync(Effect.succeed([1, 2, 3]).pipe(Effect.andThen(head)))
-) // Output: 1
+) // 出力: 1
 
 Effect.runSync(Effect.succeed([]).pipe(Effect.andThen(head))) // throws NoSuchElementException: undefined
 ```
 
-## Combining Two or More Options
+## 2つ以上のOptionを組み合わせる
 
-The `Option.zipWith` function allows you to combine two `Option` values using a provided function. It creates a new `Option` that holds the combined value of both original `Option` values.
+`Option.zipWith`関数を使用すると、提供された関数を使って2つの`Option`値を組み合わせることができます。これにより、元の2つの`Option`値の結合値を保持する新しい`Option`が作成されます。
 
 ```ts twoslash
 import { Option } from "effect"
@@ -410,18 +409,18 @@ const person = Option.zipWith(maybeName, maybeAge, (name, age) => ({
 
 console.log(person)
 /*
-Output:
+出力:
 { _id: 'Option', _tag: 'Some', value: { name: 'JOHN', age: 25 } }
 */
 ```
 
-The `Option.zipWith` function takes three arguments:
+`Option.zipWith`関数は3つの引数を取ります：
 
-- The first `Option` you want to combine
-- The second `Option` you want to combine
-- A function that takes two arguments, which are the values held by the two `Options`, and returns the combined value
+- 組み合わせたい最初の`Option`
+- 組み合わせたい2番目の`Option`
+- 2つの`Option`が保持する値を引数に取り、結合された値を返す関数
 
-It's important to note that if either of the two `Option` values is `None`, the resulting `Option` will also be `None`:
+重要な点として、2つの`Option`のいずれかが`None`である場合、結果の`Option`も`None`になります：
 
 ```ts {4} twoslash
 import { Option } from "effect"
@@ -436,16 +435,16 @@ const person = Option.zipWith(maybeName, maybeAge, (name, age) => ({
 
 console.log(person)
 /*
-Output:
+出力:
 { _id: 'Option', _tag: 'None' }
 */
 ```
 
-If you need to combine two or more `Option`s without transforming the values they hold, you can use `Option.all`, which takes a collection of `Option`s and returns an `Option` with the same structure.
+2つ以上の`Option`を保持する値を変換せずに組み合わせる必要がある場合は、`Option.all`を使用できます。`Option.all`は`Option`のコレクションを受け取り、同じ構造の`Option`を返します。
 
-- If a tuple is provided, the returned `Option` will contain a tuple with the same length.
-- If a struct is provided, the returned `Option` will contain a struct with the same keys.
-- If an iterable is provided, the returned `Option` will contain an array.
+- タプルが提供された場合、返される`Option`には同じ長さのタプルが含まれます。
+- 構造体が提供された場合、返される`Option`には同じキーを持つ構造体が含まれます。
+- イテラブルが提供された場合、返される`Option`には配列が含まれます。
 
 ```ts twoslash
 import { Option } from "effect"
@@ -460,9 +459,9 @@ const struct = Option.all({ name: maybeName, age: maybeAge })
 
 ## gen
 
-Similar to [Effect.gen](../../guides/essentials/using-generators), there's also `Option.gen`, which provides a convenient syntax, akin to async/await, for writing code involving `Option` and using generators.
+[Effect.gen](../../guides/essentials/using-generators)と同様に、`Option.gen`もあり、`Option`を使用してジェネレーターを使ったコードを書くための、async/awaitに似た便利な構文を提供します。
 
-Let's revisit the previous example, this time using `Option.gen` instead of `Option.zipWith`:
+前の例を再度見てみましょう。今回は`Option.zipWith`の代わりに`Option.gen`を使用します：
 
 ```ts twoslash
 import { Option } from "effect"
@@ -478,12 +477,12 @@ const person = Option.gen(function* () {
 
 console.log(person)
 /*
-Output:
+出力:
 { _id: 'Option', _tag: 'Some', value: { name: 'JOHN', age: 25 } }
 */
 ```
 
-Once again, if either of the two `Option` values is `None`, the resulting `Option` will also be `None`:
+再度説明すると、2つの`Option`の値のいずれかが`None`である場合、結果の`Option`も`None`になります。
 
 ```ts twoslash
 import { Option } from "effect"
@@ -499,7 +498,7 @@ const person = Option.gen(function* () {
 
 console.log(person)
 /*
-Output:
+出力:
 { _id: 'Option', _tag: 'None' }
 */
 ```

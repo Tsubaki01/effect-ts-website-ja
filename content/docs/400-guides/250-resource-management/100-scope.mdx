@@ -1,46 +1,46 @@
 ---
-title: Scope
-excerpt: Explore the importance of resource management in developing large-scale applications using the Effect library. Learn about robust constructs, such as the `Scope` data type, and discover how Effect simplifies resource management and ensures safety in your applications.
+title: スコープ
+excerpt: Effectライブラリを使用して大規模アプリケーションを開発する際のリソース管理の重要性を探ります。`Scope`データ型などの堅牢な構造を学び、Effectがどのようにリソース管理を簡素化し、アプリケーションの安全性を確保するかを発見しましょう。
 bottomNavigation: pagination
 ---
 
-In the context of developing long-lived applications, resource management plays a critical role. Effective resource management is indispensable when building large-scale applications. It's imperative that our application is resource-efficient and does not result in resource leaks.
+長期間稼働するアプリケーションを開発する際には、リソース管理が重要な役割を果たします。大規模なアプリケーションを構築する際には、効果的なリソース管理が不可欠です。アプリケーションがリソース効率的であり、リソースリークを引き起こさないことが重要です。
 
-Resource leaks, such as unclosed socket connections, database connections, or file descriptors, are unacceptable in web applications. Effect offers robust constructs to address this concern effectively.
+ソケット接続、データベース接続、ファイルディスクリプタなどのリソースリークは、ウェブアプリケーションでは許容されません。Effectはこの問題に効果的に対処するための堅牢な構造を提供します。
 
-To create an application that manages resources safely, we must ensure that every time we open a resource, we have a mechanism in place to close it. This applies whether we fully utilize the resource or encounter exceptions during its use.
+リソースを安全に管理するアプリケーションを作成するためには、リソースを開くたびにそれを閉じるメカニズムを確保する必要があります。これは、リソースを完全に利用する場合でも、使用中に例外が発生する場合でも適用されます。
 
-In the following sections, we'll delve deeper into how Effect simplifies resource management and ensures resource safety in your applications.
+次のセクションでは、Effectがどのようにリソース管理を簡素化し、アプリケーションのリソース安全性を確保するかについて詳しく見ていきます。
 
-## Scope
+## スコープ
 
-The `Scope` data type is fundamental for managing resources safely and in a composable manner in Effect.
+`Scope`データ型は、Effectでリソースを安全かつ構成可能な方法で管理するための基本的なものです。
 
-In simple terms, a scope represents the lifetime of one or more resources. When a scope is closed, the resources associated with it are guaranteed to be released.
+簡単に言えば、スコープは1つ以上のリソースのライフタイムを表します。スコープが閉じられると、それに関連付けられたリソースは確実に解放されます。
 
-With the `Scope` data type, you can:
+`Scope`データ型を使用すると、次のことができます：
 
-- **Add finalizers**, which represent the release of a resource.
-- **Close** the scope, releasing all acquired resources and executing any added finalizers.
+- **ファイナライザを追加**する。これはリソースの解放を表します。
+- スコープを**閉じる**。これにより、取得したすべてのリソースが解放され、追加されたファイナライザが実行されます。
 
-To grasp the concept better, let's delve into an example that demonstrates how it works.
-It's worth noting that in typical Effect usage, you won't often find yourself working with these low-level APIs for managing scopes.
+この概念をよりよく理解するために、どのように機能するかを示す例を見てみましょう。
+通常のEffectの使用では、スコープを管理するためのこれらの低レベルAPIを操作することはあまりありません。
 
 ```ts twoslash
 import { Scope, Effect, Console, Exit } from "effect"
 
 const program =
-  // create a new scope
+  // 新しいスコープを作成
   Scope.make().pipe(
-    // add finalizer 1
+    // ファイナライザ1を追加
     Effect.tap((scope) =>
       Scope.addFinalizer(scope, Console.log("finalizer 1"))
     ),
-    // add finalizer 2
+    // ファイナライザ2を追加
     Effect.tap((scope) =>
       Scope.addFinalizer(scope, Console.log("finalizer 2"))
     ),
-    // close the scope
+    // スコープを閉じる
     Effect.andThen((scope) =>
       Scope.close(scope, Exit.succeed("scope closed successfully"))
     )
@@ -48,27 +48,27 @@ const program =
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 finalizer 2 <-- finalizers are closed in reverse order
 finalizer 1
 */
 ```
 
-By default, when a `Scope` is closed, all finalizers added to that `Scope` are executed in the reverse order in which they were added. This approach makes sense because releasing resources in the reverse order of acquisition ensures that resources are properly closed.
+デフォルトでは、`Scope`が閉じられると、その`Scope`に追加されたすべてのファイナライザが追加された逆の順序で実行されます。このアプローチは、リソースを取得した逆の順序で解放することで、リソースが適切に閉じられることを保証するため、理にかなっています。
 
-For instance, if you open a network connection and then access a file on a remote server, you must close the file before closing the network connection. This sequence is critical to maintaining the ability to interact with the remote server.
+例えば、ネットワーク接続を開いてからリモートサーバー上のファイルにアクセスする場合、ネットワーク接続を閉じる前にファイルを閉じる必要があります。この順序は、リモートサーバーとやり取りする能力を維持するために重要です。
 
-By combining `Scope` with the Effect context, we gain a powerful way to manage resources effectively.
+`Scope`をEffectコンテキストと組み合わせることで、リソースを効果的に管理する強力な方法を得ることができます。
 
 ## addFinalizer
 
-Now, let's dive into the `Effect.addFinalizer` function, which provides a higher-level API for adding finalizers to the scope of an `Effect` value. These finalizers are guaranteed to execute when the associated scope is closed, and their behavior may depend on the `Exit` value with which the scope is closed.
+次に、`Effect.addFinalizer`関数について詳しく見ていきましょう。これは、`Effect`値のスコープにファイナライザを追加するための高レベルAPIを提供します。これらのファイナライザは、関連するスコープが閉じられたときに確実に実行され、その動作はスコープが閉じられる際の`Exit`値に依存する場合があります。
 
-Let's explore some examples to understand this better.
+これを理解するためにいくつかの例を見てみましょう。
 
-Let's observe how things behave in the event of success:
+成功した場合の動作を観察してみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -85,7 +85,7 @@ const runnable = Effect.scoped(program)
 
 Effect.runPromise(runnable).then(console.log, console.error)
 /*
-Output:
+出力:
 finalizer after Success
 1
 */
@@ -105,7 +105,7 @@ const runnable = Effect.scoped(program)
 
 Effect.runPromise(runnable).then(console.log, console.error)
 /*
-Output:
+出力:
 finalizer after Success
 1
 */
@@ -114,19 +114,19 @@ finalizer after Success
 </Tab>
 </Tabs>
 
-Here, the `Effect.addFinalizer` operator adds a `Scope` to the context required by the workflow, as indicated by:
+ここで、`Effect.addFinalizer`オペレーターは、ワークフローに必要なコンテキストに`Scope`を追加します。
 
 ```ts
 Effect<void, never, Scope>
 ```
 
-This signifies that the workflow needs a `Scope` to execute. You can provide this `Scope` using the `Effect.scoped` operator. It creates a new `Scope`, supplies it to the workflow, and closes the `Scope` once the workflow is complete.
+これは、ワークフローの実行に`Scope`が必要であることを示しています。この`Scope`は`Effect.scoped`オペレーターを使用して提供できます。これにより、新しい`Scope`が作成され、ワークフローに供給され、ワークフローが完了すると`Scope`が閉じられます。
 
-The `Effect.scoped` operator removes the `Scope` from the context, indicating that the workflow no longer requires any resources associated with a scope.
+`Effect.scoped`オペレーターはコンテキストから`Scope`を削除し、ワークフローがスコープに関連するリソースをもはや必要としないことを示します。
 
-Next, let's explore how things behave in the event of a failure:
+次に、失敗した場合の動作を見てみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -143,7 +143,7 @@ const runnable = Effect.scoped(program)
 
 Effect.runPromiseExit(runnable).then(console.log)
 /*
-Output:
+出力:
 finalizer after Failure
 {
   _id: 'Exit',
@@ -167,7 +167,7 @@ const runnable = Effect.scoped(program)
 
 Effect.runPromiseExit(runnable).then(console.log)
 /*
-Output:
+出力:
 finalizer after Failure
 {
   id: 'Exit',
@@ -180,9 +180,9 @@ finalizer after Failure
 </Tab>
 </Tabs>
 
-Finally, let's explore the behavior in the event of an interruption:
+最後に、割り込みが発生した場合の動作を見てみましょう：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用する", "pipeを使用する"]}>
 <Tab>
 
 ```ts twoslash
@@ -199,7 +199,7 @@ const runnable = Effect.scoped(program)
 
 Effect.runPromiseExit(runnable).then(console.log)
 /*
-Output:
+出力:
 finalizer after Failure
 {
   _id: 'Exit',
@@ -232,7 +232,7 @@ const runnable = Effect.scoped(program)
 
 Effect.runPromiseExit(runnable).then(console.log)
 /*
-Output:
+出力:
 finalizer after Failure
 {
   _id: 'Exit',
@@ -254,13 +254,13 @@ finalizer after Failure
 </Tab>
 </Tabs>
 
-## Manually Create and Close Scopes
+## スコープを手動で作成および閉じる
 
-When you're working with multiple scoped resources within a single operation, it's important to understand how their scopes interact. By default, these scopes are merged into one, but you can have more fine-grained control over when each scope is closed by manually creating and closing them.
+単一の操作内で複数のスコープ付きリソースを扱う場合、それらのスコープがどのように相互作用するかを理解することが重要です。デフォルトでは、これらのスコープは1つに統合されますが、手動でスコープを作成および閉じることで、各スコープが閉じられるタイミングをより細かく制御できます。
 
-Let's start by looking at how scopes are merged by default. Take a look at this code example:
+まず、スコープがデフォルトでどのように統合されるかを見てみましょう。このコード例をご覧ください：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -284,7 +284,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program.pipe(Effect.scoped))
 /*
-Output:
+出力:
 task 1
 task 2
 finalizer after task 2
@@ -311,12 +311,12 @@ const task2 = Console.log("task 2").pipe(
 )
 
 const program =
-  // Both of these scopes are merged into one
+  // これらのスコープは一つに統合されます
   Effect.all([task1, task2], { discard: true })
 
 Effect.runPromise(program.pipe(Effect.scoped))
 /*
-Output:
+出力:
 task 1
 task 2
 finalizer after task 2
@@ -327,11 +327,11 @@ finalizer after task 1
 </Tab>
 </Tabs>
 
-In this case, the scopes of `task1` and `task2` are merged into a single scope, and when the program is run, it outputs the tasks and their finalizers in a specific order.
+この場合、`task1` と `task2` のスコープは一つのスコープに統合され、プログラムを実行すると、タスクとそのファイナライザが特定の順序で出力されます。
 
-If you want more control over when each scope is closed, you can manually create and close them, as shown in this example:
+各スコープが閉じられるタイミングをより細かく制御したい場合は、次の例のように手動でスコープを作成して閉じることができます：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.genを使用", "pipeを使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -351,13 +351,13 @@ const program = Effect.gen(function* () {
   const scope1 = yield* Scope.make()
   const scope2 = yield* Scope.make()
 
-  // Extend the scope of task1 into scope1
+  // task1のスコープをscope1に拡張する
   yield* task1.pipe(Scope.extend(scope1))
 
-  // Extend the scope of task2 into scope2
+  // task2のスコープをscope2に拡張する
   yield* task2.pipe(Scope.extend(scope2))
 
-  // Close scope1 and scope2 manually
+  // scope1とscope2を手動で閉じる
   yield* Scope.close(scope1, Exit.void)
   yield* Console.log("doing something else")
   yield* Scope.close(scope2, Exit.void)
@@ -365,7 +365,7 @@ const program = Effect.gen(function* () {
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 task 1
 task 2
 finalizer after task 1
@@ -405,7 +405,7 @@ const program = Effect.all([Scope.make(), Scope.make()]).pipe(
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 task 1
 task 2
 finalizer after task 1
@@ -417,46 +417,45 @@ finalizer after task 2
 </Tab>
 </Tabs>
 
-In this example, we create two separate scopes, `scope1` and `scope2`, and extend the scope of each task into its respective scope. When you run the program, it outputs the tasks and their finalizers in a different order.
+この例では、`scope1` と `scope2` という2つの別々のスコープを作成し、それぞれのタスクのスコープをそのスコープに拡張します。プログラムを実行すると、タスクとそのファイナライザが異なる順序で出力されます。
 
 <Info>
-  The `Scope.extend` function allows you to extend the scope of an `Effect`
-  workflow that requires a scope into another scope without closing the scope
-  when the workflow finishes executing. This allows you to extend a scoped
-  value into a larger scope.
+  `Scope.extend` 関数は、スコープを必要とする
+  `Effect`ワークフローのスコープを閉じることなく、
+  別のスコープに拡張することを可能にします。これにより、
+  スコープ付きの値をより大きなスコープに拡張することができます。
 </Info>
 
-You might wonder what happens when a scope is closed, but a task within that scope hasn't completed yet. The key point to note is that the scope closing doesn't force the task to be interrupted. It will continue running, and the finalizer will execute immediately when registered. The call to `close` will only wait for the finalizers that have already been registered.
+スコープが閉じられたとき、そのスコープ内のタスクがまだ完了していない場合に何が起こるか疑問に思うかもしれません。重要な点は、スコープの閉鎖がタスクの中断を強制するわけではないということです。タスクは実行を続け、ファイナライザは登録されたときに即座に実行されます。`close` の呼び出しは、すでに登録されているファイナライザのみを待機します。
 
-So, finalizers run when the scope is closed, not necessarily when the effect finishes running. When you're using `Effect.scoped`, the scope is managed automatically, and finalizers are executed accordingly. However, when you manage the scope manually, you have control over when finalizers are executed.
+したがって、ファイナライザはスコープが閉じられたときに実行され、必ずしもエフェクトが終了したときに実行されるわけではありません。`Effect.scoped` を使用している場合、スコープは自動的に管理され、ファイナライザは適切に実行されます。しかし、スコープを手動で管理する場合、ファイナライザが実行されるタイミングを制御できます。
 
-## Defining Resources
+## リソースの定義
 
-We can define a resource using operators like `Effect.acquireRelease(acquire, release){:ts}`, which allows us to create a scoped value from an `acquire` and `release` workflow.
+`Effect.acquireRelease(acquire, release){:ts}` のようなオペレーターを使用して、`acquire` と `release` ワークフローからスコープ付きの値を作成することができます。
 
-Every acquire release requires three actions:
+すべてのアクワイアリリースには3つのアクションが必要です：
 
-- **Acquiring Resource**. An effect describing the acquisition of resource. For example, opening a file.
-- **Using Resource**. An effect describing the actual process to produce a result. For example, counting the number of lines in a file.
-- **Releasing Resource**. An effect describing the final step of releasing or cleaning up the resource. For example, closing a file.
+- **リソースの取得**。リソースの取得を記述するエフェクト。例えば、ファイルを開くこと。
+- **リソースの使用**。結果を生成する実際のプロセスを記述するエフェクト。例えば、ファイル内の行数を数えること。
+- **リソースの解放**。リソースの解放またはクリーンアップの最終ステップを記述するエフェクト。例えば、ファイルを閉じること。
 
-The `Effect.acquireRelease` operator performs the `acquire` workflow **uninterruptibly**.
-This is important because if we allowed interruption during resource acquisition we could be interrupted when the resource was partially acquired.
+`Effect.acquireRelease` オペレーターは、`acquire` ワークフローを **中断不可能** に実行します。これは、リソースの取得中に中断を許可すると、リソースが部分的に取得されたときに中断される可能性があるため重要です。
 
-The guarantee of the `Effect.acquireRelease` operator is that if the `acquire` workflow successfully completes execution then the `release` workflow is guaranteed to be run when the `Scope` is closed.
+`Effect.acquireRelease` オペレーターの保証は、`acquire` ワークフローが正常に実行を完了した場合、`release` ワークフローがスコープが閉じられたときに確実に実行されるということです。
 
-For example, let's define a simple resource:
+例えば、簡単なリソースを定義してみましょう：
 
 ```twoslash include resource
 import { Effect } from "effect"
 
-// Define the interface for the resource
+// リソースのインターフェースを定義する
 export interface MyResource {
   readonly contents: string
   readonly close: () => Promise<void>
 }
 
-// Simulate getting the resource
+// リソースの取得をシミュレートする
 const getMyResource = (): Promise<MyResource> =>
   Promise.resolve({
     contents: "lorem ipsum",
@@ -467,7 +466,7 @@ const getMyResource = (): Promise<MyResource> =>
       })
   })
 
-// Define the acquisition of the resource with error handling
+// エラーハンドリングを伴うリソースの取得を定義する
 export const acquire = Effect.tryPromise({
   try: () =>
     getMyResource().then((res) => {
@@ -477,7 +476,7 @@ export const acquire = Effect.tryPromise({
   catch: () => new Error("getMyResourceError")
 })
 
-// Define the release of the resource
+// リソースの解放を定義する
 export const release = (res: MyResource) => Effect.promise(() => res.close())
 
 export const resource = Effect.acquireRelease(acquire, release)
@@ -487,17 +486,17 @@ export const resource = Effect.acquireRelease(acquire, release)
 // @include: resource
 ```
 
-Notice that the `Effect.acquireRelease` operator added a `Scope` to the context required by the workflow:
+`Effect.acquireRelease` オペレーターがワークフローに必要なコンテキストに `Scope` を追加したことに注意してください。
 
 ```ts
 Effect<MyResource, Error, Scope>
 ```
 
-This indicates that the workflow needs a `Scope` to run and adds a finalizer that will close the resource when the scope is closed.
+これは、ワークフローが実行されるために `Scope` が必要であり、スコープが閉じられたときにリソースを閉じるファイナライザが追加されることを示しています。
 
-We can continue working with the resource for as long as we want by using `Effect.andThen` or other Effect operators. For example, here's how we can read the contents:
+`Effect.andThen` や他の Effect オペレーターを使用することで、リソースを好きなだけ使い続けることができます。例えば、次のようにして内容を読み取ることができます：
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.gen を使用", "pipe を使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -535,9 +534,9 @@ const program = resource.pipe(
 </Tab>
 </Tabs>
 
-Once we are done working with the resource, we can close the scope using the `Effect.scoped` operator. It creates a new `Scope`, provides it to the workflow, and closes the `Scope` when the workflow is finished.
+リソースの使用が終わったら、`Effect.scoped` オペレーターを使用してスコープを閉じることができます。これにより、新しい `Scope` が作成され、ワークフローに提供され、ワークフローが終了すると `Scope` が閉じられます。
 
-<Tabs items={["Using Effect.gen", "Using pipe"]}>
+<Tabs items={["Effect.gen を使用", "pipe を使用"]}>
 <Tab>
 
 ```ts twoslash
@@ -579,9 +578,9 @@ const program = Effect.scoped(
 </Tab>
 </Tabs>
 
-The `Effect.scoped` operator removes the `Scope` from the context, indicating that there are no longer any resources used by this workflow which require a scope.
+`Effect.scoped` オペレーターはコンテキストから `Scope` を削除し、このワークフローでスコープを必要とするリソースがもう存在しないことを示します。
 
-We now have a workflow that is ready to run:
+これで、実行準備が整ったワークフローができました：
 
 ```ts
 Effect.runPromise(program)
@@ -594,11 +593,11 @@ Resource released
 
 ## acquireUseRelease
 
-The `Effect.acquireUseRelease(acquire, use, release){:ts}` function is a specialized version of the `Effect.acquireRelease` function that simplifies resource management by automatically handling the scoping of resources.
+`Effect.acquireUseRelease(acquire, use, release){:ts}` 関数は、リソースのスコープを自動的に処理することで、リソース管理を簡素化する `Effect.acquireRelease` 関数の特殊なバージョンです。
 
-The main difference is that `acquireUseRelease` eliminates the need to manually call `Effect.scoped` to manage the resource's scope. It has additional knowledge about when you are done using the resource created with the `acquire` step. This is achieved by providing a `use` argument, which represents the function that operates on the acquired resource. As a result, `acquireUseRelease` can automatically determine when it should execute the release step.
+主な違いは、`acquireUseRelease` がリソースのスコープを管理するために `Effect.scoped` を手動で呼び出す必要を排除する点です。これは、`acquire` ステップで作成されたリソースの使用が終了した時点を知っているためです。これを実現するために、取得したリソースで操作を行う関数を表す `use` 引数を提供します。その結果、`acquireUseRelease` はリリースステップを実行するタイミングを自動的に判断できます。
 
-Here's an example that demonstrates the usage of `acquireUseRelease`:
+以下は `acquireUseRelease` の使用例です：
 
 ```ts twoslash
 // @filename: resource.ts
@@ -615,7 +614,7 @@ const program = Effect.acquireUseRelease(acquire, use, release)
 
 Effect.runPromise(program)
 /*
-Output:
+出力:
 Resource acquired
 content is lorem ipsum
 Resource released

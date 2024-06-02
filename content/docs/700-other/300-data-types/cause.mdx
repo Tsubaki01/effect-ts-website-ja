@@ -1,33 +1,33 @@
 ---
 title: Cause
-excerpt: Explore the `Cause` data type in the `Effect` type, which stores comprehensive information about failures, including unexpected errors, stack traces, and fiber interruption causes. Learn how `Cause` ensures no failure information is lost, providing a complete story for precise error analysis and handling in your codebase. Discover various causes such as Empty, Fail, Die, Interrupt, Sequential, and Parallel, each representing different error scenarios within the `Effect` workflow.
+excerpt: `Effect`型の`Cause`データ型を探求し、予期しないエラー、スタックトレース、ファイバー中断の原因など、失敗に関する包括的な情報を格納します。`Cause`がどのようにして失敗情報を失わずに保持し、コードベースでの正確なエラー分析と処理のための完全なストーリーを提供するかを学びます。`Effect`ワークフロー内のさまざまなエラーシナリオを表すEmpty、Fail、Die、Interrupt、Sequential、Parallelなどのさまざまな原因を発見します。
 bottomNavigation: pagination
 ---
 
-The [Effect&lt;A, E, R&gt;](../../guides/essentials/the-effect-type) type is polymorphic in values of type `E`, which means we can work with any error type we want. However, there is additional information related to failures that is not captured by the `E` value alone.
+[Effect&lt;A, E, R&gt;](../../guides/essentials/the-effect-type)型は`E`型の値に対して多相的であり、任意のエラー型を扱うことができます。しかし、`E`値だけでは捉えられない失敗に関連する追加情報があります。
 
-To preserve and provide comprehensive information about failures, Effect uses the `Cause<E>` data type. `Cause` is responsible for storing various details, such as:
+失敗に関する包括的な情報を保持するために、Effectは`Cause<E>`データ型を使用します。`Cause`は以下のようなさまざまな詳細を格納する役割を担っています：
 
-- Unexpected errors or defects
-- Stack and execution traces
-- Causes of fiber interruptions
+- 予期しないエラーや欠陥
+- スタックおよび実行トレース
+- ファイバー中断の原因
 
-Effect is designed to be strict in preserving all the information related to a failure. It captures and stores the complete story of failure in the `Cause` data type. This ensures that no information about the failure is lost, allowing us to precisely determine what happened during the execution of our effects.
+Effectは失敗に関連するすべての情報を厳密に保持するように設計されています。`Cause`データ型に失敗の完全なストーリーをキャプチャして格納します。これにより、失敗に関する情報が失われることなく、エフェクトの実行中に何が起こったのかを正確に把握することができます。
 
-Although we don't typically work directly with `Cause` values, it is an underlying data type that represents errors occurring within an Effect workflow. It provides us with total access to all concurrent and sequential errors within our codebase. This gives us the ability to analyze and handle failures in a comprehensive manner whenever needed.
+通常、`Cause`値を直接操作することはありませんが、Effectワークフロー内で発生するエラーを表す基礎的なデータ型です。これにより、コードベース内のすべての並行および逐次エラーに完全にアクセスできるようになります。これにより、必要に応じて失敗を包括的に分析および処理する能力が得られます。
 
-## Creating Causes
+## Causeの作成
 
-We can intentionally create effects with specific causes using the `Effect.failCause` constructor:
+`Effect.failCause`コンストラクタを使用して、特定の原因を持つエフェクトを意図的に作成することができます。
 
 ```ts twoslash
 import { Effect, Cause } from "effect"
 
-// Create an effect that intentionally fails with an empty cause
+// 空の原因で意図的に失敗するエフェクトを作成する
 const effect = Effect.failCause(Cause.empty)
 ```
 
-To uncover the underlying cause of an effect, we can use the `Effect.cause` function:
+エフェクトの根本的な原因を明らかにするためには、`Effect.cause`関数を使用できます：
 
 ```ts
 Effect.cause(effect).pipe(
@@ -37,47 +37,42 @@ Effect.cause(effect).pipe(
 
 ## Cause Variations
 
-There are several causes for various errors, in this section, we will describe each of these causes.
+さまざまなエラーにはいくつかの原因があります。このセクションでは、それぞれの原因について説明します。
 
 ### Empty
 
-The `Empty` cause represents a lack of errors.
+`Empty`原因はエラーがないことを表します。
 
 ### Fail
 
-The `Fail` cause represents a `Cause` which failed with an expected error of type `E`.
+`Fail`原因は、`E`型の予期されたエラーで失敗した`Cause`を表します。
 
 ### Die
 
-The `Die` cause represents a `Cause` which failed as a result of a defect, or in other words, an unexpected error.
+`Die`原因は、欠陥、つまり予期しないエラーの結果として失敗した`Cause`を表します。
 
 ### Interrupt
 
-The `Interrupt` cause represents failure due to `Fiber` interruption, which contains the `FiberId` of the interrupted `Fiber`.
+`Interrupt`原因は、`Fiber`の中断による失敗を表し、中断された`Fiber`の`FiberId`を含みます。
 
 ### Sequential
 
-The `Sequential` cause represents the composition of two causes which occurred
-sequentially.
+`Sequential`原因は、連続して発生した2つの原因の合成を表します。
 
-For example, if we perform Effect's analog of `try-finally` (i.e.
-`Effect.ensuring`), and both the `try` and `finally` blocks fail, we have two
-errors which occurred sequentially. In these cases, the errors can be
-represented by the `Sequential` cause.
+例えば、Effectの`try-finally`（つまり`Effect.ensuring`）のアナログを実行し、`try`ブロックと`finally`ブロックの両方が失敗した場合、連続して発生した2つのエラーがあります。このような場合、エラーは`Sequential`原因で表すことができます。
 
 ### Parallel
 
-The `Parallel` cause represents the composition of two causes which occurred in parallel.
+`Parallel`原因は、並行して発生した2つの原因の合成を表します。
 
-In Effect programs, it is possible that two operations may be performed in
-parallel. In these cases, the `Effect` workflow can fail for more than one
-reason. If both computations fail, then there are actually two errors which
-occurred in parallel. In these cases, the errors can be represented by the
-`Parallel` cause.
+Effectプログラムでは、2つの操作が並行して実行されることがあります。
+このような場合、`Effect`ワークフローは複数の理由で失敗する可能性があります。
+両方の計算が失敗した場合、実際には並行して発生した2つのエラーがあります。
+このような場合、エラーは`Parallel`原因で表すことができます。
 
 ## Guards
 
-To identify the type of a `Cause`, you can use specific guards provided by the `Cause` module:
+`Cause`のタイプを識別するために、`Cause`モジュールが提供する特定のガードを使用できます：
 
 - `Cause.isEmpty`
 - `Cause.isFailType`
@@ -86,7 +81,7 @@ To identify the type of a `Cause`, you can use specific guards provided by the `
 - `Cause.isSequentialType`
 - `Cause.isParallelType`
 
-Let's see an example of how you can utilize these guards:
+これらのガードをどのように利用できるかを見てみましょう：
 
 ```ts twoslash
 import { Cause } from "effect"
@@ -94,17 +89,17 @@ import { Cause } from "effect"
 const cause = Cause.fail(new Error("my message"))
 
 if (Cause.isFailType(cause)) {
-  console.log(cause.error.message) // Output: my message
+  console.log(cause.error.message) // 出力: my message
 }
 ```
 
-By using these guards, you can effectively determine the nature of a `Cause`, enabling you to handle different error scenarios appropriately in your code. Whether it's an empty cause, failure, defect, interruption, sequential composition, or parallel composition, these guards provide a clear way to identify and manage various types of errors.
+これらのガードを使用することで、`Cause`の性質を効果的に判断し、コード内でさまざまなエラーシナリオに適切に対処することができます。空の原因、失敗、欠陥、中断、連続合成、または並行合成のいずれであっても、これらのガードはさまざまな種類のエラーを識別し管理するための明確な方法を提供します。
 
 ## Pattern Matching
 
-In addition to using guards, you can handle different cases of a `Cause` using the `Cause.match` function. This function allows you to define separate callbacks for each possible case of a `Cause`.
+ガードを使用するだけでなく、`Cause.match`関数を使用して`Cause`のさまざまなケースを処理することもできます。この関数を使用すると、`Cause`の各ケースに対して個別のコールバックを定義することができます。
 
-Let's explore how you can use `Cause.match`:
+`Cause.match`の使用方法を見てみましょう：
 
 ```ts twoslash
 import { Cause } from "effect"
@@ -127,39 +122,38 @@ console.log(
   })
 )
 /*
-Output:
+出力:
 (onParallel (left: (error: my fail message)) (right: (defect: my die message))
 */
 ```
 
 ## Pretty Printing
 
-When working with errors in your code, it's crucial to have clear and readable error messages for effective debugging. The `Cause.pretty` function provides a convenient way to achieve this by generating nicely formatted error messages as strings.
+コード内でエラーを扱う際には、効果的なデバッグのために明確で読みやすいエラーメッセージが重要です。`Cause.pretty`関数は、きれいにフォーマットされたエラーメッセージを文字列として生成する便利な方法を提供します。
 
-Let's take a look at how you can use `Cause.pretty`:
+`Cause.pretty`の使用方法を見てみましょう：
 
 ```ts twoslash
 import { Cause, FiberId } from "effect"
 
-console.log(Cause.pretty(Cause.empty)) // All fibers interrupted without errors.
-console.log(Cause.pretty(Cause.fail(new Error("my fail message")))) // Error: my fail message
-console.log(Cause.pretty(Cause.die("my die message"))) // Error: my die message
-console.log(Cause.pretty(Cause.interrupt(FiberId.make(1, 0)))) // All fibers interrupted without errors.
-console.log(
+console.log(Cause.pretty(Cause.empty)) // エラーなしで全てのファイバーが中断されました。
+console.log(Cause.pretty(Cause.fail(new Error("my fail message")))) // エラー: my fail message
+console.log(Cause.pretty(Cause.die("my die message"))) // エラー: my die message
+console.log(Cause.pretty(Cause.interrupt(FiberId.make(1, 0)))) // エラーなしで全てのファイバーが中断されました。
   Cause.pretty(Cause.sequential(Cause.fail("fail1"), Cause.fail("fail2")))
 )
 /*
-Output:
+出力:
 Error: fail1
 Error: fail2
 */
 ```
 
-## Retrieval of Failures and Defects
+## FailuresとDefectsの取得
 
-If you're specifically interested in obtaining a collection of failures or defects from a `Cause`, you can use the `Cause.failures` and `Cause.defects` functions respectively.
+`Cause`から失敗や欠陥のコレクションを取得することに特に興味がある場合は、それぞれ`Cause.failures`と`Cause.defects`関数を使用できます。
 
-Let's see how you can utilize these functions:
+これらの関数をどのように利用できるか見てみましょう：
 
 ```ts twoslash
 import { Cause } from "effect"
@@ -174,7 +168,7 @@ const cause = Cause.parallel(
 
 console.log(Cause.failures(cause))
 /*
-Output:
+出力:
 {
   _id: 'Chunk',
   values: [
@@ -186,7 +180,7 @@ Output:
 
 console.log(Cause.defects(cause))
 /*
-Output:
+出力:
 { _id: 'Chunk', values: [ 'my die message' ] }
 */
 ```

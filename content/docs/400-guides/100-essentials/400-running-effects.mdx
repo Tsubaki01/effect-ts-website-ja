@@ -1,14 +1,14 @@
 ---
-title: Running Effects
-excerpt: Explore various "run" functions in the Effect module to execute effects. Learn about `runSync` for synchronous execution, `runSyncExit` for obtaining results as `Exit`, `runPromise` for executing with a Promise result, and `runPromiseExit` for Promise results with `Exit`. Understand their use cases and considerations. Check out a cheatsheet summarizing available functions for executing effects in different contexts.
+title: Effectの実行
+excerpt: Effectを実行するためのEffectモジュールのさまざまな「run」関数を探ります。同期実行のための`runSync`、結果を`Exit`として取得するための`runSyncExit`、Promiseの結果で実行するための`runPromise`、および`Exit`を伴うPromiseの結果のための`runPromiseExit`について学びます。それらの使用例と考慮事項を理解します。さまざまなコンテキストでEffectを実行するための利用可能な関数をまとめたチートシートもチェックしてください。
 bottomNavigation: pagination
 ---
 
-To execute an `Effect`, we can utilize a variety of "run" functions provided by the `Effect` module.
+`Effect`を実行するために、`Effect`モジュールが提供するさまざまな「run」関数を利用できます。
 
 ## runSync
 
-The `Effect.runSync` function is used to execute an Effect synchronously, which means it runs immediately and returns the result.
+`Effect.runSync`関数は、Effectを同期的に実行するために使用されます。これは、即座に実行され、結果を返すことを意味します。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -19,18 +19,18 @@ const program = Effect.sync(() => {
 })
 
 const result = Effect.runSync(program)
-// Output: Hello, World!
+// 出力: Hello, World!
 
 console.log(result)
-// Output: 1
+// 出力: 1
 ```
 
-If you check the console, you will see the message `"Hello, World!"` printed.
+コンソールを確認すると、メッセージ `"Hello, World!"` が表示されるのがわかります。
 
 <Warning>
-  `Effect.runSync` will throw an error if your Effect fails or performs any
-  asynchronous tasks. In the latter case, the execution will not proceed
-  beyond that asynchronous task.
+  `Effect.runSync`
+  は、Effectが失敗した場合や非同期タスクを実行する場合にエラーをスローします。
+  後者の場合、実行はその非同期タスクを超えて進行しません。
 </Warning>
 
 ```ts twoslash
@@ -43,8 +43,8 @@ Effect.runSync(Effect.promise(() => Promise.resolve(1))) // throws
 
 ## runSyncExit
 
-The `Effect.runSyncExit` function is used to execute an Effect synchronously, which means it runs immediately and returns the result as an [Exit](../../other/data-types/exit)
-(a data type used to describe the result of executing an `Effect` workflow).
+`Effect.runSyncExit`関数は、Effectを同期的に実行するために使用されます。これは、即座に実行され、結果を[Exit](../../other/data-types/exit)として返すことを意味します。
+（`Effect`ワークフローの実行結果を記述するために使用されるデータ型）。
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -52,7 +52,7 @@ import { Effect } from "effect"
 const result1 = Effect.runSyncExit(Effect.succeed(1))
 console.log(result1)
 /*
-Output:
+出力:
 {
   _id: "Exit",
   _tag: "Success",
@@ -63,7 +63,7 @@ Output:
 const result2 = Effect.runSyncExit(Effect.fail("my error"))
 console.log(result2)
 /*
-Output:
+出力:
 {
   _id: "Exit",
   _tag: "Failure",
@@ -77,9 +77,8 @@ Output:
 ```
 
 <Warning>
-  `Effect.runSyncExit` will throw an error if your Effect performs any
-  asynchronous tasks and the execution will not proceed beyond that
-  asynchronous task.
+  `Effect.runSyncExit`は、Effectが非同期タスクを実行する場合にエラーをスローし、
+  その非同期タスクを超えて実行が進行しません。
 </Warning>
 
 ```ts twoslash
@@ -90,16 +89,16 @@ Effect.runSyncExit(Effect.promise(() => Promise.resolve(1))) // throws
 
 ## runPromise
 
-The `Effect.runPromise` function is used to execute an Effect and obtain the result as a `Promise`.
+`Effect.runPromise`関数は、Effectを実行して結果を`Promise`として取得するために使用されます。
 
 ```ts twoslash
 import { Effect } from "effect"
 
-Effect.runPromise(Effect.succeed(1)).then(console.log) // Output: 1
+Effect.runPromise(Effect.succeed(1)).then(console.log) // 出力: 1
 ```
 
 <Warning>
-  `Effect.runPromise` will reject with an error if your Effect fails
+  `Effect.runPromise`は、Effectが失敗した場合にエラーで拒否されます
 </Warning>
 
 ```ts twoslash
@@ -110,15 +109,15 @@ Effect.runPromise(Effect.fail("my error")) // rejects
 
 ## runPromiseExit
 
-The `Effect.runPromiseExit` function is used to execute an Effect and obtain the result as a `Promise` that resolves to an [Exit](../../other/data-types/exit)
-(a data type used to describe the result of executing an `Effect` workflow).
+`Effect.runPromiseExit`関数は、Effectを実行し、その結果を`Promise`として取得するために使用されます。この`Promise`は[Exit](../../other/data-types/exit)に解決されます。
+（`Effect`ワークフローの実行結果を記述するために使用されるデータ型）。
 
 ```ts twoslash
 import { Effect } from "effect"
 
 Effect.runPromiseExit(Effect.succeed(1)).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Exit",
   _tag: "Success",
@@ -128,7 +127,7 @@ Output:
 
 Effect.runPromiseExit(Effect.fail("my error")).then(console.log)
 /*
-Output:
+出力:
 {
   _id: "Exit",
   _tag: "Failure",
@@ -143,7 +142,7 @@ Output:
 
 ## runFork
 
-The `Effect.runFork` function serves as a foundational building block for running effects. In fact, all other run functions are built upon it. Unless you have a specific need for a Promise or a synchronous operation, `Effect.runFork` is the recommended choice. It returns a fiber that you can observe or interrupt as needed.
+`Effect.runFork`関数は、Effectを実行するための基本的な構成要素として機能します。実際、他のすべての実行関数はこれに基づいて構築されています。Promiseや同期操作が特に必要でない限り、`Effect.runFork`が推奨されます。これは、必要に応じて観察したり中断したりできるファイバーを返します。
 
 ```ts twoslash
 import { Effect, Console, Schedule, Fiber } from "effect"
@@ -160,24 +159,23 @@ setTimeout(() => {
 }, 500)
 ```
 
-In this example, the `program` continuously logs "running..." with each repetition spaced 200 milliseconds apart. You can learn more about repetitions and scheduling in our [Introduction to Scheduling](../scheduling/introduction) guide.
+この例では、`program`は200ミリ秒ごとに「running...」を連続してログに記録します。繰り返しとスケジューリングの詳細については、[スケジューリング入門](../scheduling/introduction)ガイドをご覧ください。
 
-To stop the execution of the program, we use `Fiber.interrupt` on the fiber returned by `Effect.runFork`. This allows you to control the execution flow and terminate it when necessary.
+プログラムの実行を停止するには、`Effect.runFork`によって返されるファイバーに対して`Fiber.interrupt`を使用します。これにより、実行フローを制御し、必要に応じて終了させることができます。
 
-For a deeper understanding of how fibers work and how to handle interruptions, check out our guides on [Fibers](../concurrency/fibers) and [Interruptions](../concurrency/interruption-model).
+ファイバーの動作や中断の処理方法について詳しく知りたい場合は、[ファイバー](../concurrency/fibers)および[中断](../concurrency/interruption-model)に関するガイドを参照してください。
 
-## Cheatsheet
+## チートシート
 
 <Design>
-  The recommended approach is to design your program with the majority of its
-  logic as Effects. It's advisable to use the `run*` functions closer to the
-  "edge" of your program. This approach allows for greater flexibility in
-  executing your program and building sophisticated Effects.
+  推奨されるアプローチは、プログラムの大部分のロジックをEffectとして設計することです。
+  `run*`関数はプログラムの「エッジ」に近い部分で使用することが望ましいです。
+  このアプローチにより、プログラムの実行や高度なEffectの構築において柔軟性が向上します。
 </Design>
 
-The table provides a summary of the available `run*` functions, along with their input and output types, allowing you to choose the appropriate function based on your needs.
+この表は、利用可能な`run*`関数の概要とその入力および出力タイプを提供し、ニーズに応じて適切な関数を選択できるようにします。
 
-| **Name**         | **Given**      | **To**                |
+| **名前**         | **入力**       | **出力**              |
 | ---------------- | -------------- | --------------------- |
 | `runSync`        | `Effect<A, E>` | `A`                   |
 | `runSyncExit`    | `Effect<A, E>` | `Exit<A, E>`          |
@@ -185,4 +183,4 @@ The table provides a summary of the available `run*` functions, along with their
 | `runPromiseExit` | `Effect<A, E>` | `Promise<Exit<A, E>>` |
 | `runFork`        | `Effect<A, E>` | `RuntimeFiber<A, E>`  |
 
-You can find the complete list of `run*` functions [here](https://effect-ts.github.io/effect/effect/Effect.ts.html#execution).
+`run*`関数の完全なリストは[こちら](https://effect-ts.github.io/effect/effect/Effect.ts.html#execution)で確認できます。
