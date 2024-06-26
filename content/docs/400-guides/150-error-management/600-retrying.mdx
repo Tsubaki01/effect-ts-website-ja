@@ -119,7 +119,7 @@ import { effect } from "./fake"
 
 const policy = Schedule.addDelay(
   Schedule.recurs(2), // 最大2回リトライする
-  () => "100ミリ秒" // リトライ間に100ミリ秒の遅延を追加する
+  () => "100 millis" // リトライ間に100ミリ秒の遅延を追加する
 )
 
 // 指定されたポリシーでエフェクトをリトライし、
