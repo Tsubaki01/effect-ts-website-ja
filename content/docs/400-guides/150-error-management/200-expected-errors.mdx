@@ -9,7 +9,7 @@ bottomNavigation: pagination
 - Effectが予期されたエラーをどのように表現するか
 - Effectが提供する堅牢で包括的なエラーマネジメントツール
 
-ガイド[エフェクトの作成](../essentials/creating-effects)で見たように、`fail`コンストラクタを使用してエラーを表すEffectを作成できます：
+ガイド[Effectの作成](../essentials/creating-effects)で見たように、`fail`コンストラクタを使用してエラーを表すEffectを作成できます：
 
 ```ts twoslash
 import { Effect } from "effect"
@@ -164,7 +164,7 @@ const program = Effect.gen(function* () {
 Effect.runPromiseExit(program).then(console.log)
 /*
 出力:
-タスク1を実行中...
+Executing task1...
 {
   _id: 'Exit',
   _tag: 'Failure',
@@ -195,7 +195,7 @@ const program = task1.pipe(
 Effect.runPromiseExit(program).then(console.log)
 /*
 出力:
-タスク1を実行中...
+Executing task1...
 {
   _id: 'Exit',
   _tag: 'Failure',
