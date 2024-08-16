@@ -1,3 +1,4 @@
+import { Tutorial } from "./src/contentlayer/schema/tutorial"
 import { BlogPost } from "./src/contentlayer/schema/blog-post"
 import { DocsPage } from "./src/contentlayer/schema/docs-page"
 import { makeSource } from "contentlayer/source-files"
@@ -9,6 +10,7 @@ import rehypeRaw from "rehype-raw"
 import { nodeTypes } from "@mdx-js/mdx"
 import codeImport from "remark-code-import"
 import remarkMdxCodeMeta from "remark-mdx-code-meta"
+import rehypeSlug from "rehype-slug"
 
 export const CODE_BLOCK_FILENAME_REGEX = /filename="([^"]+)"/
 
@@ -34,7 +36,7 @@ const DEFAULT_REHYPE_PRETTY_CODE_OPTIONS: RehypePrettyCodeOptions = {
 export default makeSource({
   contentDirPath: "content",
   contentDirExclude: ["src"],
-  documentTypes: [DocsPage, BlogPost],
+  documentTypes: [DocsPage, BlogPost, Tutorial],
   mdx: {
     remarkPlugins: [
       [codeImport as any, { rootDir: process.cwd() + "/content" }],
@@ -49,7 +51,8 @@ export default makeSource({
       [
         rehypePrettyCode,
         { ...DEFAULT_REHYPE_PRETTY_CODE_OPTIONS, theme: "github-dark" }
-      ] as any
+      ] as any,
+      [rehypeSlug]
     ]
   }
 })

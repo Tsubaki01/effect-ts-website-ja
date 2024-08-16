@@ -138,3 +138,40 @@ orElse
 default value
 */
 ```
+
+## 条件に基づくリトライ
+
+`while`または`until`オプションを使用して条件を指定することで、エフェクトがどのようにリトライされるかを管理できます。
+
+```ts twoslash
+import { Effect } from "effect"
+
+let count = 0
+
+// 各呼び出しで異なるエラーをシミュレートするエフェクトを定義する
+const action = Effect.failSync(() => {
+  console.log(`Action called ${++count} time(s)`)
+  return `Error ${count}`
+})
+
+// 特定の条件が満たされるまでアクションをリトライする
+const program = Effect.retry(action, { until: (err) => err === "Error 3" })
+
+Effect.runPromiseExit(program).then(console.log)
+/*
+出力:
+Action called 1 time(s)
+Action called 2 time(s)
+Action called 3 time(s)
+{
+  _id: 'Exit',
+  _tag: 'Failure',
+  cause: { _id: 'Cause', _tag: 'Fail', failure: 'Error 3' }
+}
+*/
+```
+
+<Info>
+  エラーではなく成功した結果に基づいて条件を設定するには、
+  [Effect.repeat](../scheduling/repetition#repeating-based-on-a-condition)の使用を検討してください。
+</Info>

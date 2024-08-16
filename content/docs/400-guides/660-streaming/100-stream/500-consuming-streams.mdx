@@ -7,7 +7,7 @@ bottomNavigation: pagination
 ストリームを扱う際には、生成されるデータをどのように消費するかを理解することが重要です。
 このガイドでは、ストリームを消費するためのいくつかの一般的な方法を紹介します。
 
-## `runCollect`の使用
+## runCollectの使用
 
 ストリームからすべての要素を単一の`Chunk`に集めるには、`Stream.runCollect`関数を使用できます。
 
@@ -28,7 +28,7 @@ Effect.runPromise(collectedData).then(console.log)
 */
 ```
 
-## `runForEach`の使用
+## runForEachの使用
 
 ストリームの要素を消費する別の方法は、`Stream.runForEach`を使用することです。これは、ストリームの各要素を受け取るコールバック関数を取ります。以下はその例です：
 

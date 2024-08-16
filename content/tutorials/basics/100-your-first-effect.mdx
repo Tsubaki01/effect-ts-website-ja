@@ -1,0 +1,35 @@
+---
+title: 最初のEffect
+excerpt: Effectの基本を学ぶ
+section: 基本を学ぶ
+---
+
+### Effectとは何か？
+
+`Effect`型は、ワークフローやジョブを遅延的に記述する不変の値を表します。
+
+ある意味では、遅延Promiseのように考えることができますが、もちろんEffectは実際にはPromiseではありません。同期的、非同期的、並行的、そしてリソースを活用した計算をモデル化することができます。
+
+始めるために、「Hello world!」プログラムを実装してみましょう！エディタでは`Effect.log`関数の例を見ることができます。このエフェクトはコンソールにメッセージをログ出力します。
+
+しかし、どのように実行するのでしょうか？
+
+### Effectの実行
+
+エディタに`Effect.run`と入力すると、選択できるいくつかの異なるオプションが表示されます。
+
+関数を呼び出すのと同様に、Effectを実行するには明示的に実行する必要があります。
+この例では、`Effect.runPromise`関数を使って`Effect.log`エフェクトを実行してみましょう。
+
+`Effect.runPromise`の使用方法：
+
+```ts
+Effect.runPromise(/* your effect goes here */)
+```
+
+行き詰まったら、いつでも「Solve」ボタンをクリックしてみてください。
+
+<Idea>
+  エフェクトの実行についてさらに学ぶには、ドキュメントに詳細情報のページがあります：<br />
+  <a href="/docs/guides/essentials/running-effects" target="_blank">エフェクトの実行</a>
+</Idea>

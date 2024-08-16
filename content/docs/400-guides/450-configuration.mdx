@@ -60,21 +60,17 @@ Effect.runSync(program)
 </Tab>
 </Tabs>
 
-このアプリケーションを実行すると、次の出力が得られます：
+このプログラムを実行すると、以下のような出力が得られます：
 
-```bash
+```bash filename="Terminal"
+npx ts-node primitives.ts
 (Missing data at HOST: "Expected HOST to exist in the process context")
 ```
 
 これは設定を提供していないためです。次の環境変数を使用して実行してみましょう：
 
 ```bash filename="Terminal"
-HOST=localhost PORT=8080 ts-node primitives.ts
-```
-
-これで次の出力が得られます：
-
-```bash
+HOST=localhost PORT=8080 npx ts-node primitives.ts
 Application started: localhost:8080
 ```
 
@@ -82,15 +78,15 @@ Application started: localhost:8080
 
 Effectは、以下の基本的な型を標準で提供しています：
 
-- `string`: 文字列値のための設定を構築します。
-- `number`: 浮動小数点数値のための設定を構築します。
-- `boolean`: 真偽値のための設定を構築します。
-- `integer`: 整数値のための設定を構築します。
-- `date`: 日付値のための設定を構築します。
-- `literal`: リテラル(\*)値のための設定を構築します。
-- `logLevel`: [LogLevel](observability/logging#log-levels)値のための設定を構築します。
-- `duration`: 期間値のための設定を構築します。
-- `secret`: 秘密値のための設定を構築します。
+- `string`: 文字列値の設定を構築します。
+- `number`: 浮動小数点数値の設定を構築します。
+- `boolean`: ブール値の設定を構築します。
+- `integer`: 整数値の設定を構築します。
+- `date`: 日付値の設定を構築します。
+- `literal`: リテラル（\*）値の設定を構築します。
+- `logLevel`: [LogLevel](observability/logging#log-levels)値の設定を構築します。
+- `duration`: 期間値の設定を構築します。
+- `redacted`: 秘密値の設定を構築します。
 
 (\*) `string | number | boolean | null | bigint`
 
@@ -139,7 +135,7 @@ Effect.runSync(program)
 このコマンドでプログラムを実行すると：
 
 ```bash filename="Terminal"
-HOST=localhost ts-node withDefault.ts
+HOST=localhost npx ts-node withDefault.ts
 ```
 
 次の出力が表示されます：
@@ -181,7 +177,7 @@ Effect.runSync(program)
 ```
 
 ```bash filename="Terminal"
-MY_ARRAY=a,b,c ts-node array.ts
+MY_ARRAY=a,b,c npx ts-node array.ts
 
 [ 'a', 'b', 'c' ]
 ```
@@ -198,13 +194,6 @@ Effectには、設定を操作および処理するための組み込みオペ�
 - `map`: 元の構造と同じ構造を持つ新しい設定を作成しますが、指定された関数を使用して値を変換します。
 - `mapAttempt`: `map`に似ていますが、関数がエラーを投げた場合、それがキャッチされて検証エラーに変わります。
 - `mapOrFail`: `map`のように、失敗する可能性のある関数を許可します。関数が失敗した場合、それは検証エラーになります。
-
-### フォールバックオペレーター
-
-これらのオペレーターは、エラーやデータの欠如が発生した場合のフォールバックを設定するのに役立ちます：
-
-- `orElse`: 最初にこの設定を使用しようとします。問題がある場合、別の指定された設定にフォールバックします。
-- `orElseIf`: これも最初にメインの設定を使用しようとしますが、特定の条件に一致するエラーが発生した場合、フォールバック設定に切り替えます。
 
 **例**
 
@@ -225,10 +214,65 @@ Effect.runSync(program)
 ```
 
 ```bash filename="Terminal"
-NAME=foo ts-node validate.ts
+NAME=foo npx ts-node validate.ts
 
 [(Invalid data at NAME: "Expected a string at least 4 characters long")]
 ```
+
+### フォールバックオペレーター
+
+これらのオペレーターは、エラーや欠落データの場合にフォールバックを設定するのに役立ちます：
+
+- `orElse`: まずこの設定を使用しようとする設定を設定します。問題がある場合、指定された別の設定にフォールバックします。
+- `orElseIf`: これもまず主要な設定を使用しようとしますが、特定の条件に一致するエラーがある場合、フォールバック設定に切り替わります。
+
+**例**
+
+この例では、`A`と`B`の2つの設定を必要とするプログラムがあります。各プロバイダーが1つの設定のみを持つ2つの設定プロバイダーを使用します。`orElse`オペレーターを使用してフォールバックを設定する方法を示します。
+
+```ts filename="orElse.ts" twoslash
+import { Config, ConfigProvider, Effect, Layer } from "effect"
+
+// 2つの設定：AとBを必要とするプログラム
+const program = Effect.gen(function* () {
+  const A = yield* Config.string("A")
+  const B = yield* Config.string("B")
+  console.log(`A: ${A}`, `B: ${B}`)
+})
+
+const provider1 = ConfigProvider.fromMap(
+  new Map([
+    ["A", "A"]
+    // Bが欠落している
+  ])
+)
+
+const provider2 = ConfigProvider.fromMap(
+  new Map([
+    // Aが欠落している
+    ["B", "B"]
+  ])
+)
+
+const layer = Layer.setConfigProvider(
+  provider1.pipe(ConfigProvider.orElse(() => provider2))
+)
+
+Effect.runSync(Effect.provide(program, layer))
+```
+
+```bash filename="Terminal"
+npx ts-node orElse.ts
+
+A: A B: B
+```
+
+<Info>
+  この例で使用されている `ConfigProvider.fromMap` メソッドは、`Map`
+  から設定プロバイダーを作成します。
+  この動作については、[サービスのテスト](#testing-services)
+  セクションでより詳しく説明されています。
+</Info>
 
 ## カスタム設定
 
@@ -269,7 +313,7 @@ export const config = Config.map(
 )
 ```
 
-上記の例では、`Config.all(configs){:ts}` オペレーターを使用して、2つのプリミティブ設定 `Config<string>` と `Config<number>` を `Config<[string, number]>` に組み合わせています。
+上記の例では、`Config.all(configs)` オペレーターを使用して、2つのプリミティブな設定 `Config<string>` と `Config<number>` を `Config<[string, number]>` に組み合わせています。
 
 このカスタマイズされた設定をアプリケーションで使用する場合：
 
@@ -349,10 +393,10 @@ export const program = HostPort.config.pipe(
 </Tab>
 </Tabs>
 
-`Effect.runSync(program){:ts}`を使用してプログラムを実行すると、対応する値を環境変数（`HOST`と`PORT`）から読み取ろうとします：
+`Effect.runSync(program)`を使用してプログラムを実行すると、対応する値を環境変数（`HOST`と`PORT`）から読み取ろうとします：
 
 ```bash filename="Terminal"
-HOST=localhost PORT=8080 ts-node HostPort.ts
+HOST=localhost PORT=8080 npx ts-node HostPort.ts
 
 Application started: localhost:8080
 ```
@@ -519,44 +563,62 @@ Effect.runSync(Effect.provide(App.program, layer))
 
 このアプローチを使用することで、コンフィグデータを簡単にモックし、異なるコンフィグレーションでサービスを制御された方法でテストすることができます。
 
-## Secret
+## Redacted
 
-`Config.secret`が`Config.string`と異なる点は、機密情報の取り扱いです。
-Configの値を解析し、それを`Secret`という機密情報を保持するためのデータ型にラップします。
+`Config.redacted`が`Config.string`と異なる点は、機密情報の扱い方です。
+設定値を解析し、秘密を保持するために設計された[データ型](../other/data-types/redacted)である`Redacted<string>`でラップします。
 
-secretに対して`console.log`を使用すると、実際の値は隠され、セキュリティの層が追加されます。値にアクセスする唯一の方法は、`Secret.value(secret)`を使用することです。
+編集された値に対して`Console.log`を使用すると、実際の値は隠されたままで、セキュリティの追加層を提供します。
+値にアクセスする唯一の方法は、`Redacted.value`を使用することです。
 
-以下はそれを説明する簡単な例です：
+```ts filename="Redacted.ts" twoslash
+import { Effect, Config, Console, Redacted } from "effect"
 
-```ts twoslash
-import {
-  Effect,
-  Config,
-  ConfigProvider,
-  Layer,
-  Console,
-  Secret
-} from "effect"
-
-const program = Config.secret("API_KEY").pipe(
-  Effect.tap((secret) => Console.log(`console.log: ${secret}`)),
-  Effect.tap((secret) => Console.log(`Secret.value: ${Secret.value(secret)}`))
-)
-
-Effect.runSync(
-  program.pipe(
-    Effect.provide(
-      Layer.setConfigProvider(
-        ConfigProvider.fromMap(new Map([["API_KEY", "my-api-key"]]))
-      )
-    )
+const program = Config.redacted("API_KEY").pipe(
+  Effect.tap((redacted) => Console.log(`Console output: ${redacted}`)),
+  Effect.tap((redacted) =>
+    Console.log(`Actual value: ${Redacted.value(redacted)}`)
   )
 )
-/*
-出力:
-console.log: Secret(<redacted>)
-Secret.value: my-api-key
-*/
+
+Effect.runSync(program)
 ```
 
-この例では、`console.log`を使用してsecretをログに記録すると、実際の値が`<redacted>`に置き換えられ、機密情報が露出しないようにしています。一方、`Secret.value`関数は、元のsecret値を取得するための制御された方法を提供します。
+このプログラムを実行すると、以下の出力が得られます：
+
+```bash filename="Terminal"
+API_KEY=my-api-key tsx Redacted.ts
+Console output: <redacted>
+Actual value: my-api-key
+```
+
+この例では、`Console.log`を使用して編集された値をログに記録する際、実際の値が`<redacted>`に置き換えられ、機密情報が露出しないようになっていることがわかります。
+一方、`Redacted.value`関数は、元の秘密の値を取得するための制御された方法を提供します。
+
+## Secret
+
+<Warning>
+  バージョン3.3.0以降は非推奨：今後、機密情報の取り扱いには[Config.redacted](#redacted)を使用してください。
+</Warning>
+
+`Config.secret`は`Config.redacted`と同様に、機密情報を保護する機能を持っています。
+設定値を`Secret`型でラップし、ログに記録される際に詳細を隠蔽しますが、`Secret.value`メソッドを通じてアクセスすることができます。
+
+```ts filename="Secret.ts" twoslash
+import { Effect, Config, Console, Secret } from "effect"
+
+const program = Config.secret("API_KEY").pipe(
+  Effect.tap((secret) => Console.log(`Console output: ${secret}`)),
+  Effect.tap((secret) => Console.log(`Secret value: ${Secret.value(secret)}`))
+)
+
+Effect.runSync(program)
+```
+
+このプログラムを実行すると、以下のような出力が得られます：
+
+```bash filename="Terminal"
+API_KEY=my-api-key tsx Secret.ts
+Console output: Secret(<redacted>)
+Secret value: my-api-key
+```

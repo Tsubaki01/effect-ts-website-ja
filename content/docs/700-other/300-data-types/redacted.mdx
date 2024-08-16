@@ -1,0 +1,68 @@
+---
+title: Redacted
+excerpt: Redacted
+bottomNavigation: pagination
+---
+
+Redactedモジュールは、アプリケーション内で機密情報を安全に扱うための機能を提供します。
+`Redacted`データ型を使用することで、機密性の高い値がログやエラーメッセージで誤って露出されないようにすることができます。
+
+## 作成
+
+この関数は、与えられた値`A`から`Redacted<A>`インスタンスを作成し、そのコンテンツを安全に隠蔽します。
+
+```ts twoslash
+import { Redacted } from "effect"
+
+// Redacted値の作成
+const API_KEY = Redacted.make("1234567890")
+
+console.log(API_KEY) // 出力: {}
+console.log(String(API_KEY)) // 出力: <redacted>
+```
+
+## 値
+
+`Redacted`インスタンスから元の値を取得します。機密データを露出させるため、この関数は注意して使用してください。
+
+```ts twoslash
+import { Redacted } from "effect"
+
+const API_KEY = Redacted.make("1234567890")
+
+console.log(Redacted.value(API_KEY)) // 出力: "1234567890"
+```
+
+## unsafeWipe
+
+`Redacted`インスタンスの基礎となる値を消去し、使用不可能にします。この関数は、機密データが必要以上にメモリに残らないようにすることを目的としています。
+
+```ts twoslash
+import { Redacted } from "effect"
+
+const API_KEY = Redacted.make("1234567890")
+
+console.log(Redacted.value(API_KEY)) // 出力: "1234567890"
+
+Redacted.unsafeWipe(API_KEY)
+
+console.log(Redacted.value(API_KEY)) // throws Error: Unable to get redacted value
+```
+
+## getEquivalence
+
+基礎となる値`A`の等価関係に基づいて、`Redacted<A>`値の等価関係を生成します。
+この関数は、`Redacted`インスタンスの内容を露出させることなく比較するのに役立ちます。
+
+```ts twoslash
+import { Redacted, Equivalence } from "effect"
+
+const API_KEY1 = Redacted.make("1234567890")
+const API_KEY2 = Redacted.make("1-34567890")
+const API_KEY3 = Redacted.make("1234567890")
+
+const equivalence = Redacted.getEquivalence(Equivalence.string)
+
+console.log(equivalence(API_KEY1, API_KEY2)) // 出力: false
+console.log(equivalence(API_KEY1, API_KEY3)) // 出力: true
+```

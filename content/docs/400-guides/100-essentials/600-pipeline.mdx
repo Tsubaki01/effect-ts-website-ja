@@ -1,6 +1,6 @@
 ---
 title: パイプラインの構築
-excerpt: 値に対する操作を構成およびシーケンス化するためのEffectパイプラインの力を探ります。`pipe`、`Effect.map`、`Effect.flatMap`、`Effect.andThen`、`Effect.tap`、および`Effect.all`などの主要な関数について学び、モジュール化された簡潔な変換を構築します。Effectエコシステムで関数をメソッドよりも使用する利点について、ツリーシェイク可能性と拡張性の観点から理解します。
+excerpt: 値に対する操作を構成およびシーケンス化するためのEffectパイプラインの力を探求します。モジュール化された簡潔な変換を構築するための主要な関数である`pipe`、`Effect.map`、`Effect.flatMap`、`Effect.andThen`、`Effect.tap`、`Effect.all`について学びます。Effectエコシステムにおいて、ツリーシェイクの可能性と拡張性のためにメソッドよりも関数を使用することの利点を理解します。
 bottomNavigation: pagination
 ---
 
@@ -45,10 +45,12 @@ const result = pipe(input, func1, func2, ..., funcN)
 ```ts twoslash
 import { pipe } from "effect"
 
+// 単純な算術演算を定義する
 const increment = (x: number) => x + 1
 const double = (x: number) => x * 2
 const subtractTen = (x: number) => x - 10
 
+// `pipe`を使用してこれらの操作を順次適用する
 const result = pipe(5, increment, double, subtractTen)
 
 console.log(result) // 出力: 2
@@ -56,9 +58,11 @@ console.log(result) // 出力: 2
 
 上記の例では、入力値として`5`を使用しています。`increment`関数は初期値に`1`を加え、結果として`6`になります。次に、`double`関数が値を2倍にし、`12`になります。最後に、`subtractTen`関数が`12`から`10`を引き、最終的な出力は`2`になります。
 
-## 関数とメソッド
+この結果は `subtractTen(double(increment(5)))` と同等ですが、`pipe` を使用することでコードの可読性が向上します。なぜなら、操作が内側から外側へのネストではなく、左から右へ順序付けられているからです。
 
-Effectエコシステムでは、ライブラリはメソッドではなく関数を公開することが多いです。この設計選択は、ツリーシェイク可能性と拡張性という2つの重要な理由によるものです。
+## 関数 vs メソッド
+
+Effectエコシステムでは、ライブラリはメソッドではなく関数を公開することが多いです。この設計の選択は、ツリーシェイク可能性と拡張性という2つの重要な理由から重要です。
 
 ### ツリーシェイク可能性
 
@@ -70,13 +74,13 @@ Effectエコシステムで関数が使用される場合、実際にインポ�
 
 ### 拡張性
 
-Effectエコシステムで関数を使用するもう一つの重要な利点は、拡張性の容易さです。メソッドを使用する場合、既存のAPIの機能を拡張するには、オブジェクトのプロトタイプを変更する必要があり、これは複雑でエラーが発生しやすいです。
+Effectエコシステムで関数を使用することのもう一つの重要な利点は、拡張性の容易さです。メソッドを使用する場合、既存のAPIの機能を拡張するには、多くの場合オブジェクトのプロトタイプを変更する必要があり、これは複雑でエラーが発生しやすい可能性があります。
 
 対照的に、関数を使用する場合、機能の拡張ははるかに簡単です。プロトタイプを変更する必要なく、通常の関数として独自の「拡張メソッド」を定義できます。これにより、よりクリーンでモジュール化されたコードが促進され、他のライブラリやモジュールとの互換性も向上します。
 
 <Idea>
-  Effectエコシステムのライブラリで関数を使用することは、**ツリーシェイク可能性**を達成し、
-  **拡張性**を確保するために重要です。関数は未使用のコードを排除することで効率的なバンドルを可能にし、
+  Effectエコシステムのライブラリで関数を使用することは、**ツリーシェイク可能性**を実現し、
+  **拡張性**を確保するために重要です。関数は未使用のコードを排除することで効率的なバンドリングを可能にし、
   ライブラリの機能を拡張するための柔軟でモジュール化されたアプローチを提供します。
 </Idea>
 
@@ -87,45 +91,49 @@ Effectエコシステムで関数を使用するもう一つの重要な利点�
 `Effect.map`関数は、`Effect`内の値を変換するために使用されます。
 この関数は、`Effect`に含まれる値に適用され、新しい変換された値を持つ**新しい**`Effect`を作成します。
 
-<Info>
-  `Effect`は不変であるため、`Effect.map`を使用しても元のデータ型は変更されません。
-  代わりに、変換された値を持つ新しい`Effect`のコピーが返されます。
-</Info>
+**Effect.mapの使用法**
 
 `Effect.map`の構文は以下の通りです：
 
 ```ts
 import { pipe, Effect } from "effect"
 
-const mappedEffect = pipe(myEffect, Effect.map(func))
+const mappedEffect = pipe(myEffect, Effect.map(transformation))
 // or
-const mappedEffect = Effect.map(myEffect, func)
+const mappedEffect = Effect.map(myEffect, transformation)
+// or
+const mappedEffect = myEffect.pipe(Effect.map(transformation))
 ```
 
-上記のコードでは、`func`は適用される変換関数を表し、`myEffect`は入力の`Effect`です。
+上記のコードで、`transformation`は値に適用される関数であり、`myEffect`は変換される`Effect`です。
 
-`map`の動作をよりよく理解するために、例を見てみましょう：
+<Info>
+  `Effect`は不変であることに注意することが重要です。つまり、`Effect`に対して`Effect.map`を使用しても、
+  元のデータ型は変更されません。代わりに、変換された値を持つ`Effect`の新しいコピーが返されます。
+</Info>
+
+**例**
+
+取引に小額のサービス料を追加するプログラムを考えてみましょう：
 
 ```ts twoslash
 import { pipe, Effect } from "effect"
 
-const increment = (x: number) => x + 1
-const myEffect = Effect.succeed(5)
+// 取引金額に小額のサービス料を追加する関数
+const addServiceCharge = (amount: number) => amount + 1
 
-const mappedEffect = pipe(myEffect, Effect.map(increment))
+// データベースから取引金額を取得する模擬非同期タスク
+const fetchTransactionAmount = Effect.promise(() => Promise.resolve(100))
 
-Effect.runPromise(mappedEffect).then(console.log) // 出力: 6
+// 取引金額にサービス料を適用する
+const finalAmount = pipe(fetchTransactionAmount, Effect.map(addServiceCharge))
+
+Effect.runPromise(finalAmount).then(console.log) // Output: 101
 ```
 
-上記の例では：
+## as
 
-- 入力に「1」を加えるシンプルな`increment`関数を定義します。
-- 初期値「5」で`Effect.succeed`を使用して`Effect`を作成します。
-- `Effect.map`を使用して、`myEffect`内の値に`increment`関数を適用します。
-
-結果として得られる`mappedEffect`には、変換された値「6」が含まれます。
-
-値を定数で置き換えたい場合は、`Effect.as`を使用できます：
+元の値を置き換えて`Effect`を定数値にマッピングするには、`Effect.as`を使用します：
 
 ```ts twoslash
 import { pipe, Effect } from "effect"
@@ -137,23 +145,77 @@ Effect.runPromise(program).then(console.log) // 出力: "new value"
 
 ## flatMap
 
-前の例では、変換関数が通常の値を返す場合に`Effect.map`関数を使用して`Effect`を変換する方法を見ました。しかし、変換関数自体が別の`Effect`を返す場合はどうでしょうか？
+`Effect.flatMap`関数は、`Effect`インスタンスを生成する変換をチェーンする必要がある場合に使用されます。
+これは、非同期操作や前のエフェクトの結果に依存する計算に役立ちます。
 
-多くのJavaScript / TypeScriptエンジニアは、[`Array`プロトタイプのメソッドとしての`flatMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap)に馴染みがあるでしょう。しかし、`flatMap`は実際にはより一般的なデータ変換を説明するために使用できます。このセクションでは、`Effect`モジュールから`flatMap`を使用する方法に焦点を当てますが、`flatMap`の詳細な説明は[FAQ](../../other/faq#a-closer-look-at-flatmap)に提供しています。
+**Effect.flatMapの使用法**
 
-<Info>
-  `Effect`内のネストされた`Array`をフラット化する方法を探しているだけなら：
+`Effect.flatMap`関数を使用すると、新しい`Effect`値を生成する計算を順序付けし、発生する可能性のある入れ子の`Effect`構造を「フラット化」することができます。
 
-  <details>
-  <summary>ネストされた配列のフラット化</summary>
-
-結果の型がネストされた`Array`である`Effect`がある場合、例えば：
+`Effect.flatMap`の構文は以下の通りです：
 
 ```ts
-Effect<Array<Array<A>>>
+import { pipe, Effect } from "effect"
+
+const flatMappedEffect = pipe(myEffect, Effect.flatMap(transformation))
+// or
+const flatMappedEffect = Effect.flatMap(myEffect, transformation)
+// or
+const flatMappedEffect = myEffect.pipe(Effect.flatMap(transformation))
 ```
 
-`effect`からエクスポートされた`Array`モジュールを使用して、簡単に配列をフラット化できます：
+上記のコードで、`transformation`は値を受け取り`Effect`を返す関数であり、`myEffect`は変換される初期の`Effect`です。
+
+<Info>
+  `Effect`は不変であることに注意することが重要です。つまり、`Effect`に対して
+  `Effect.flatMap`を使用しても、元のデータ型は変更されません。代わりに、
+  変換された値を持つ`Effect`の新しいコピーが返されます。
+</Info>
+
+**例**
+
+```ts twoslash
+import { pipe, Effect } from "effect"
+
+// トランザクション金額に安全に割引を適用する関数
+const applyDiscount = (
+  total: number,
+  discountRate: number
+): Effect.Effect<number, Error> =>
+  discountRate === 0
+    ? Effect.fail(new Error("Discount rate cannot be zero"))
+    : Effect.succeed(total - (total * discountRate) / 100)
+
+// データベースからトランザクション金額を取得するシミュレートされた非同期タスク
+const fetchTransactionAmount = Effect.promise(() => Promise.resolve(100))
+
+const finalAmount = pipe(
+  fetchTransactionAmount,
+  Effect.flatMap((amount) => applyDiscount(amount, 5))
+)
+
+Effect.runPromise(finalAmount).then(console.log) // Output: 95
+```
+
+**すべての効果が考慮されていることを確認する**
+
+`Effect.flatMap`内のすべての効果が最終的な計算に寄与していることを確認することが重要です。
+効果を無視すると、予期しない動作や不正確な結果につながる可能性があります：
+
+```ts {1}
+Effect.flatMap((amount) => {
+  Effect.sync(() => console.log(`Apply a discount to: ${amount}`)) // This effect is ignored
+  return applyDiscount(amount, 5)
+})
+```
+
+上記の`Effect.sync`は無視され、`applyDiscount(amount, 5)`の結果に影響を与えません。
+エフェクトを適切に含め、エラーを避けるために、`Effect.map`、`Effect.flatMap`、`Effect.andThen`、または`Effect.tap`などの関数を使用して明示的に連鎖させてください。
+
+**`flatMap`に関する追加情報**
+
+多くの開発者は配列での使用から`flatMap`を認識しているかもしれませんが、`Effect`フレームワークでは、ネストされた`Effect`構造を管理および解決するために使用されます。
+Effectの中でネストされた配列（`Effect<Array<Array<A>>>`）をフラット化することが目的の場合、以下のように行うことができます：
 
 ```ts twoslash
 import { pipe, Effect, Array } from "effect"
@@ -169,73 +231,6 @@ const flattened = pipe(
 
 または標準の `Array.prototype.flat()` メソッドを使用します。
 
-  </details>
-</Info>
-
-`Effect.flatMap`関数は、`Effect`値を生成する計算を連鎖させることができます。これは、新しい`Effect`を生成する変換関数を受け取り、ネストされた`Effect`構造を「フラット化」します。
-
-<Info>
-  `Effect`は不変であることに注意してください。
-  つまり、`Effect.flatMap`を`Effect`に使用すると、元のデータ型は変更されません。
-  代わりに、変換された値を持つ新しい`Effect`のコピーが返されます。
-</Info>
-
-`Effect.flatMap`の構文は次のとおりです：
-
-```ts
-import { pipe, Effect } from "effect"
-
-const flatMappedEffect = pipe(myEffect, Effect.flatMap(func))
-// or
-const flatMappedEffect = Effect.flatMap(myEffect, func)
-```
-
-上記のコードでは、`func`は新しい`Effect`を返す変換関数を表し、`myEffect`は変換したい入力`Effect`です。
-
-`Effect.flatMap`の動作をよりよく理解するために、例を見てみましょう：
-
-```ts twoslash
-import { pipe, Effect } from "effect"
-
-const divide = (a: number, b: number): Effect.Effect<number, Error> =>
-  b === 0
-    ? Effect.fail(new Error("Cannot divide by zero"))
-    : Effect.succeed(a / b)
-const myEffect = Effect.succeed([10, 2])
-
-const flatMappedEffect = pipe(
-  myEffect,
-  Effect.flatMap(([a, b]) => divide(a, b))
-)
-
-Effect.runPromise(flatMappedEffect).then(console.log) // 出力: 5
-```
-
-上記の例では：
-
-- `divide`という関数を定義し、2つの数値 `a` と `b` を受け取り、`b` がゼロの場合はエラーで失敗し、そうでない場合は除算の結果で成功する可能性のある `Effect` を返します。
-- 値 `10` と `2` を含むタプルを使用して `Effect.succeed` を使って `Effect` を作成します。
-- `Effect.flatMap` を使用して、`myEffect` 内の値に `divide` 関数を適用します。
-
-結果として得られる`Effect`には、変換された値である`5`が含まれています。
-
-`Effect.flatMap`を使用する際には、**すべてのEffect**が計算に適切に考慮されていることが重要です。`Effect.flatMap`内の計算から返されるEffectを無視すると、予期しない動作や不正確なプログラムロジックの原因となる可能性があります。
-
-次のコードスニペットを見てみましょう：
-
-```ts {1}
-Effect.flatMap(([a, b]) => {
-  Effect.sync(() => console.log(`Performing division: ${a} / ${b}`))
-  return divide(a, b)
-})
-```
-
-ここでの問題は、`Effect.sync`によって返されるEffectが無視され、結果の計算に含まれないことです。それは`divide(a, b)`によって返されるEffectと連鎖または結合されません。その結果、予期しないプログラムの動作や不正確な結果が生じる可能性があります。
-
-正しい動作を確保するためには、計算に含めたいEffectが`Effect.flatMap`を使用して明示的に連鎖されるか、Effectライブラリが提供する適切な関数を使用して他の`Effect`値と結合されることを確認してください。
-
-次のセクションでは、この問題に対処するために`tap` APIを使用する方法を探ります。
-
 ## andThen
 
 `Effect.map`と`Effect.flatMap`の両方の関数は、2つの異なるシナリオで`Effect`を別の`Effect`に変換するために使用されます。
@@ -247,154 +242,238 @@ Effect.flatMap(([a, b]) => {
 ```ts
 import { pipe, Effect } from "effect"
 
-const transformedEffect = pipe(self, Effect.andThen(that))
+const transformedEffect = pipe(myEffect, Effect.andThen(anotherEffect))
 // or
-const transformedEffect = Effect.andThen(self, that)
+const transformedEffect = Effect.andThen(myEffect, anotherEffect)
+// or
+const transformedEffect = myEffect.pipe(Effect.andThen(anotherEffect))
 ```
 
-`that` アクションは次のような形式を取ることができます：
+`anotherEffect`アクションは様々な形式を取ることができます：
 
-- 値
-- 値を返す関数（つまり、`Effect.map`と同じ機能）
-- `Promise`
-- `Promise`を返す関数
-- `Effect`
-- `Effect`を返す関数（つまり、`Effect.flatMap`と同じ機能）
+1. 値（つまり、`Effect.as`と同じ機能）
+2. 値を返す関数（つまり、`Effect.map`と同じ機能）
+3. `Promise`
+4. `Promise`を返す関数
+5. `Effect`
+6. `Effect`を返す関数（つまり、`Effect.flatMap`と同じ機能）
+
+**例**
 
 `Effect.map`や`Effect.flatMap`の代わりに`Effect.andThen`を使用する例を見てみましょう：
 
 ```ts
 import { pipe, Effect } from "effect"
 
-const divide = (a: number, b: number): Effect.Effect<number, Error> =>
-  b === 0
-    ? Effect.fail(new Error("Cannot divide by zero"))
-    : Effect.succeed(a / b)
+// トランザクション金額に安全に割引を適用する関数
+const applyDiscount = (
+  total: number,
+  discountRate: number
+): Effect.Effect<number, Error> =>
+  discountRate === 0
+    ? Effect.fail(new Error("Discount rate cannot be zero"))
+    : Effect.succeed(total - (total * discountRate) / 100)
 
-// Using Effect.map, Effect.flatMap
+// データベースからトランザクション金額を取得する模擬非同期タスク
+const fetchTransactionAmount = Effect.promise(() => Promise.resolve(100))
+
+// Effect.map、Effect.flatMapを使用
 const result1 = pipe(
-  Effect.succeed(3),
-  Effect.map((n) => [n + 1, n - 1] as const),
-  Effect.flatMap(([a, b]) => divide(a, b))
+  fetchTransactionAmount,
+  Effect.map((amount) => amount * 2),
+  Effect.flatMap((amount) => applyDiscount(amount, 5))
 )
 
-console.log(Effect.runSync(result1)) // 出力: 2
+Effect.runPromise(result1).then(console.log) // 出力: 190
 
-// Using Effect.andThen
+// Effect.andThenを使用
 const result2 = pipe(
-  Effect.succeed(3),
-  Effect.andThen((n) => [n + 1, n - 1] as const),
-  Effect.andThen(([a, b]) => divide(a, b))
+  fetchTransactionAmount,
+  Effect.andThen((amount) => amount * 2),
+  Effect.andThen((amount) => applyDiscount(amount, 5))
 )
 
-console.log(Effect.runSync(result2)) // 出力: 2
+Effect.runPromise(result2).then(console.log) // 出力: 190
 ```
+
+[Option](../../other/data-types/option#interop-with-effect)と[Either](../../other/data-types/either#interop-with-effect)は、オプション値や単純なエラーシナリオを扱うために一般的に使用される型ですが、これらも`Effect.andThen`と互換性があることに注目する価値があります。
+ただし、これらの型を使用する場合、操作は前述のシナリオ5と6に分類されることを理解することが重要です。なぜなら、`Option`と`Either`はこのコンテキストでは`Effect`として機能するからです。
+
+**Optionを使用した例**
+
+```ts twoslash
+import { pipe, Effect, Option } from "effect"
+
+// データベースから数値を取得する模擬非同期タスク
+const fetchNumberValue = Effect.promise(() => Promise.resolve(42))
+
+// 型がEffect<Option<number>, never, never>になると予想されるかもしれませんが、
+// 実際にはEffect<number, NoSuchElementException, never>になります
+const program = pipe(
+  fetchNumberValue,
+  Effect.andThen((x) => (x > 0 ? Option.some(x) : Option.none()))
+)
+```
+
+`Option<A>`型の値は`Effect<A, NoSuchElementException>`型のエフェクトとして解釈されます。
+
+**Eitherを使用した例**
+
+```ts twoslash
+import { pipe, Effect, Either } from "effect"
+
+// 文字列から整数を解析する関数（失敗する可能性あり）
+const parseInteger = (input: string): Either.Either<number, string> =>
+  isNaN(parseInt(input))
+    ? Either.left("Invalid integer")
+    : Either.right(parseInt(input))
+
+// データベースから文字列を取得する模擬非同期タスク
+const fetchStringValue = Effect.promise(() => Promise.resolve("42"))
+
+// Effect<Either<number, string>, never, never>型になると予想されるかもしれませんが、
+// 実際にはEffect<number, string, never>型になります
+const program = pipe(
+  fetchStringValue,
+  Effect.andThen((str) => parseInteger(str))
+)
+```
+
+`Either<A, E>`型の値は`Effect<A, E>`型のエフェクトとして解釈されます。
 
 ## tap
 
-前のセクションでは、計算中にEffectを無視する問題について議論しました。
-この問題に対処するために、計算の流れに影響を与えずに副作用を実行できる`tap` APIを使用することができます。
+`Effect.tap` APIは`Effect.flatMap`と似たシグネチャを持ちますが、変換関数の結果は**無視されます**。
+これは、前の計算で返された値が次の計算でもまだ利用可能であることを意味します。
 
-`Effect.tap` APIは`Effect.flatMap`と似たシグネチャを持っていますが、変換関数の結果は**無視**されます。
-つまり、前の計算で返された値（つまり、`[a, b]`）は次の計算（つまり、`divide`）でも引き続き利用可能です。
+**例**
 
-問題を解決するために`Effect.tap` APIを組み込んだ更新されたコードスニペットを見てみましょう：
-
-```ts {3-5} twoslash
+```ts twoslash
 import { pipe, Effect } from "effect"
 
-const divide = (a: number, b: number): Effect.Effect<number, Error> =>
-  b === 0
-    ? Effect.fail(new Error("Cannot divide by zero"))
-    : Effect.succeed(a / b)
-// ---cut---
-const program = pipe(
-  Effect.succeed([10, 2]),
-  Effect.tap(([a, b]) =>
-    Effect.sync(() => console.log(`Performing division: ${a} / ${b}`))
+// トランザクション金額に安全に割引を適用する関数
+const applyDiscount = (
+  total: number,
+  discountRate: number
+): Effect.Effect<number, Error> =>
+  discountRate === 0
+    ? Effect.fail(new Error("Discount rate cannot be zero"))
+    : Effect.succeed(total - (total * discountRate) / 100)
+
+// データベースからトランザクション金額を取得する模擬非同期タスク
+const fetchTransactionAmount = Effect.promise(() => Promise.resolve(100))
+
+const finalAmount = pipe(
+  fetchTransactionAmount,
+  Effect.tap((amount) =>
+    Effect.sync(() => console.log(`Apply a discount to: ${amount}`))
   ),
-  // [a, b] is still available!
-  Effect.andThen(([a, b]) => divide(a, b))
+  // `amount` はまだ利用可能です！
+  Effect.flatMap((amount) => applyDiscount(amount, 5))
 )
 
-Effect.runPromise(program).then(console.log)
+Effect.runPromise(finalAmount).then(console.log)
 /*
-出力:
-Performing division: 10 / 2
-5
+Output:
+Apply a discount to: 100
+95
 */
 ```
 
-`Effect.tap`を使用することで、計算に`Effect.sync`の効果を含めることができます。これにより、ログアクションが実行され、期待通りの出力が得られ、プログラムのロジックが正しく維持されます。結果の出力は予想通り`5`のままです。
-
-`tap`を使用すると、計算中に結果を変更せずに副作用を実行することができます。これは、ログを記録したり、追加のアクションを実行したり、中間値を観察したりするのに役立ちますが、メインの計算フローには干渉しません。
+`Effect.tap`を使用すると、計算中に結果を変更せずに副作用を実行できます。
+これは、ログの記録、追加のアクションの実行、または主要な計算フローを妨げることなく中間値を観察するのに役立ちます。
 
 ## all
 
 `Effect.all`関数は、複数のEffectを組み合わせて、結果のタプルを生成する単一のEffectにする強力なユーティリティです。
 
-`all`の構文は次のとおりです：
+**Effect.allの使用法**
+
+`Effect.all`の構文は以下の通りです：
 
 ```ts
 import { Effect } from "effect"
 
-const combinedEffect = Effect.all(effects)
+const combinedEffect = Effect.all([effect1, effect2, ...])
 ```
 
-ここで、`effects`は組み合わせたい複数のEffectを表します。
+`Effect.all`関数は、これらのエフェクトをすべて**順番に**実行します（並行性の管理やこれらのエフェクトの実行方法を制御するオプションについては、[並行性オプション](../concurrency/concurrency-options)のドキュメントを参照してください）。
 
-`all`関数はこれらのEffectを**順番に**実行します（並行処理の管理やこれらのEffectの実行方法を制御するオプションについては、[Concurrency Options](../concurrency/concurrency-options)のドキュメントを参照してください）。
+この関数は、各個別のエフェクトの結果を含むタプルを生成する新しいエフェクトを返します。
+結果の順序が`Effect.all`に渡された元のエフェクトの順序に対応していることに注意してください。
 
-この関数は、各Effectの結果を含むタプルを生成する新しいEffectを返します。
-結果の順序は、`all`に渡された元のEffectの順序に対応していることに注意してください。
-
-`all`の動作をよりよく理解するために、例を見てみましょう：
+**例**
 
 ```ts twoslash
 import { Effect } from "effect"
 
-const foo = Effect.succeed(42)
-const bar = Effect.succeed("Hello")
+// ファイルから設定を読み込む模擬関数
+const webConfig = Effect.promise(() =>
+  Promise.resolve({ dbConnection: "localhost", port: 8080 })
+)
 
-const combinedEffect = Effect.all([foo, bar])
+// データベース接続性をテストする模擬関数
+const checkDatabaseConnectivity = Effect.promise(() =>
+  Promise.resolve("Connected to Database")
+)
 
-Effect.runPromise(combinedEffect).then(console.log) // 出力: [42, "Hello"]
+// 両方のエフェクトを組み合わせて起動時のチェックを実行する
+const startupChecks = Effect.all([webConfig, checkDatabaseConnectivity])
+
+Effect.runPromise(startupChecks).then(([config, dbStatus]) => {
+console.log(
+`Configuration: ${JSON.stringify(config)}, DB Status: ${dbStatus}`
+)
+})
+/_
+出力:
+Configuration: {"dbConnection":"localhost","port":8080}, DB Status: Connected to Database
+_/
+
 ```
 
-この例では、`foo`と`bar`は2つの別々のEffectです。`Effect.all`を使用して、これらを1つのEffect`combinedEffect`に結合します。`combinedEffect`を実行すると、両方のEffectの結果を含むタプル`[42, "Hello"]`が生成されます。
-
 <Info>
-  `all`関数はタプルを結合するだけでなく、イテラブル、構造体、レコードともシームレスに動作します。
-  `all`の完全な機能を探るには、[Effectの制御フローオペレーターの紹介](../control-flow#all)のドキュメントを
-  参照してください。
+  `Effect.all`関数はタプルを組み合わせるだけでなく、イテラブル、構造体、レコードにも対応しています。
+  `all`の全ての可能性を探るには、[Effectの制御フロー演算子入門](../control-flow#all)のドキュメントをご覧ください。
 </Info>
 
 ## 最初のパイプラインを構築する
 
-では、3つの関数（`pipe`、`andThen`、`all`）を組み合わせて、一連の変換を行うパイプラインを構築してみましょう：
+それでは、`pipe`、`Effect.all`、`Effect.andThen`を組み合わせて、一連の変換を実行するパイプラインを構築してみましょう：
 
 ```ts twoslash
-import { pipe, Effect } from "effect"
+import { Effect, pipe } from "effect"
 
-const increment = (x: number) => x + 1
+// トランザクション金額に小額のサービス料を追加する関数
+const addServiceCharge = (amount: number) => amount + 1
 
-const divide = (a: number, b: number): Effect.Effect<number, Error> =>
-  b === 0
-    ? Effect.fail(new Error("Cannot divide by zero"))
-    : Effect.succeed(a / b)
+// トランザクション金額に安全に割引を適用する関数
+const applyDiscount = (
+  total: number,
+  discountRate: number
+): Effect.Effect<number, Error> =>
+  discountRate === 0
+    ? Effect.fail(new Error("Discount rate cannot be zero"))
+    : Effect.succeed(total - (total * discountRate) / 100)
 
-const task1 = Effect.promise(() => Promise.resolve(10))
+// データベースからトランザクション金額を取得する模擬非同期タスク
+const fetchTransactionAmount = Effect.promise(() => Promise.resolve(100))
 
-const task2 = Effect.promise(() => Promise.resolve(2))
+// 設定ファイルから割引率を取得する模擬非同期タスク
+const fetchDiscountRate = Effect.promise(() => Promise.resolve(5))
 
+// エフェクトのパイプラインを使用してプログラムを組み立てる
 const program = pipe(
-  Effect.all([task1, task2]),
-  Effect.andThen(([a, b]) => divide(a, b)),
-  Effect.andThen((n1) => increment(n1)),
-  Effect.andThen((n2) => `Result is: ${n2}`)
+  Effect.all([fetchTransactionAmount, fetchDiscountRate]),
+  Effect.flatMap(([transactionAmount, discountRate]) =>
+    applyDiscount(transactionAmount, discountRate)
+  ),
+  Effect.map(addServiceCharge),
+  Effect.map((finalAmount) => `Final amount to charge: ${finalAmount}`)
 )
 
-Effect.runPromise(program).then(console.log) // 出力: "Result is: 6"
+// プログラムを実行し、結果をログに出力する
+Effect.runPromise(program).then(console.log) // 出力: "Final amount to charge: 96"
 ```
 
 ## pipeメソッド
@@ -420,24 +499,28 @@ const result = pipe(effect, func1, func2, ..., funcN)
 ```ts twoslash
 import { Effect } from "effect"
 
-const increment = (x: number) => x + 1
+const addServiceCharge = (amount: number) => amount + 1
 
-const divide = (a: number, b: number): Effect.Effect<number, Error> =>
-  b === 0
-    ? Effect.fail(new Error("Cannot divide by zero"))
-    : Effect.succeed(a / b)
+const applyDiscount = (
+  total: number,
+  discountRate: number
+): Effect.Effect<number, Error> =>
+  discountRate === 0
+    ? Effect.fail(new Error("Discount rate cannot be zero"))
+    : Effect.succeed(total - (total * discountRate) / 100)
 
-const task1 = Effect.promise(() => Promise.resolve(10))
+const fetchTransactionAmount = Effect.promise(() => Promise.resolve(100))
 
-const task2 = Effect.promise(() => Promise.resolve(2))
+const fetchDiscountRate = Effect.promise(() => Promise.resolve(5))
 
-const program = Effect.all([task1, task2]).pipe(
-  Effect.andThen(([a, b]) => divide(a, b)),
-  Effect.andThen((n1) => increment(n1)),
-  Effect.andThen((n2) => `Result is: ${n2}`)
+// ---cut---
+const program = Effect.all([fetchTransactionAmount, fetchDiscountRate]).pipe(
+  Effect.flatMap(([transactionAmount, discountRate]) =>
+    applyDiscount(transactionAmount, discountRate)
+  ),
+  Effect.map(addServiceCharge),
+  Effect.map((finalAmount) => `Final amount to charge: ${finalAmount}`)
 )
-
-Effect.runPromise(program).then(console.log) // 出力: "Result is: 6"
 ```
 
 ## チートシート

@@ -53,19 +53,27 @@ In this example, `a` と `b` は同じ内容を持つ2つの別々のオブジ�
 import { Equal, Hash } from "effect"
 
 export class Person implements Equal.Equal {
-  constructor(readonly name: string, readonly age: number) {}
+  constructor(
+    readonly id: number,  // 各人物のユニーク識別子
+    readonly name: string,  // 名前
+    readonly age: number  // 年齢
+  ) {}
 
+  // id、名前、年齢に基づいて等価性を定義します
   [Equal.symbol](that: Equal.Equal): boolean {
     if (that instanceof Person) {
       return (
-        Equal.equals(this.name, that.name) && Equal.equals(this.age, that.age)
+        Equal.equals(this.id, that.id) &&
+        Equal.equals(this.name, that.name) &&
+        Equal.equals(this.age, that.age)
       )
     }
     return false
   }
 
+  // 主に一意のIDに基づいてハッシュコードを生成します
   [Hash.symbol](): number {
-    return this.name.length + this.age
+    return Hash.hash(this.id)
   }
 }
 ```
@@ -87,12 +95,10 @@ export class Person implements Equal.Equal {
 import { Equal } from "effect"
 import { Person } from "./Person"
 
-const alice = new Person("Alice", 30)
-const bob = new Person("Bob", 40)
+const alice = new Person(1, "Alice", 30)
+console.log(Equal.equals(alice, new Person(1, "Alice", 30))) // 出力: true
 
-console.log(Equal.equals(alice, alice)) // 出力: true
-console.log(Equal.equals(alice, new Person("Alice", 30))) // 出力: true
-
+const bob = new Person(2, "Bob", 40)
 console.log(Equal.equals(alice, bob)) // 出力: false
 ```
 

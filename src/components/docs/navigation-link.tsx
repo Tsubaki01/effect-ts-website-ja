@@ -12,7 +12,7 @@ export const NavigationLink: FC<{
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState<boolean>(
     element.collapsible
-      ? pathname.startsWith(element.urlPath)
+      ? pathname?.startsWith(element.urlPath)
         ? false
         : true
       : false
@@ -20,13 +20,13 @@ export const NavigationLink: FC<{
   const ref = useRef<HTMLLIElement>(null)
 
   useEffect(() => {
-    if (pathname.startsWith(element.urlPath)) {
+    if (pathname?.startsWith(element.urlPath)) {
       setCollapsed(false)
     }
     if (
       level === 0 &&
       element.children.length > 0 &&
-      pathname.startsWith(element.urlPath)
+      pathname?.startsWith(element.urlPath)
     ) {
       document
         .getElementById("docs-sidebar-navigation")
@@ -68,20 +68,12 @@ export const NavigationLink: FC<{
           {element.title}
         </span>
         {element.children.length > 0 && element.collapsible && (
-          <button
-            className="h-5 w-5 flex items-center justify-center"
-            onClick={(e) => {
-              e.preventDefault()
-              setCollapsed((collapsed) => !collapsed)
-            }}
-          >
-            <Icon
-              name="chevron-right"
-              className={`h-3 -mt-0.5 transition-transform duration-200 ${
-                collapsed ? "rotate-0" : "rotate-90"
-              }`}
-            />
-          </button>
+          <Icon
+            name="chevron-right"
+            className={`h-3 -mt-0.5 transition-transform duration-200 ${
+              collapsed ? "rotate-0" : "rotate-90"
+            }`}
+          />
         )}
       </Link>
       {element.children && !collapsed && (

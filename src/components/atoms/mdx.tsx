@@ -1,6 +1,5 @@
 "use client"
 
-import { FC } from "react"
 import { useMDXComponent } from "next-contentlayer/hooks"
 import { H2, H3, H4 } from "@/components/atoms/headings"
 import { Tab, Tabs } from "@/components/docs/components/tabs"
@@ -32,17 +31,17 @@ const Tweet = ({ id }: { id: string }) => (
 
 const TwitchClip = ({ clip }: { clip: string }) => (
   <div>
-    <ReactTwitchEmbed.TwitchClip clip={clip} />
+    <ReactTwitchEmbed.TwitchClip clip={clip} autoplay={false} />
   </div>
 )
 
 const TwitchPlayerNonInteractive = ({ video }: { video: string }) => (
   <div>
-    <ReactTwitchEmbed.TwitchPlayerNonInteractive video={video} />
+    <ReactTwitchEmbed.TwitchPlayerNonInteractive video={video} autoplay={false} />
   </div>
 )
 
-export const MDX: FC<{ content: string }> = ({ content }) => {
+export const MDX: React.FC<{ content: string }> = ({ content }) => {
   const Content = useMDXComponent(content)
 
   return (

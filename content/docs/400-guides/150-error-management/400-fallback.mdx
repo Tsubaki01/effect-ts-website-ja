@@ -60,7 +60,7 @@ const validate = (
 const program1 = Effect.orElseFail(validate(3), () => "invalid age")
 ```
 
-`Effect.orElseSucceed`は常に元の失敗を成功の値に置き換えるため、結果として得られるエフェクトは失敗することがありません。
+`Effect.orElseSucceed`関数は、常に元の失敗を成功値に置き換えるため、結果として得られるエフェクトは失敗することができません：
 
 ```ts twoslash
 // @include: validate

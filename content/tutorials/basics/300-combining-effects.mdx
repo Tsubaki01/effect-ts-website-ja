@@ -1,0 +1,34 @@
+---
+title: エフェクトの組み合わせ
+excerpt: Effectの基本を学ぶ
+---
+
+エフェクトを作成して実行できるようになったので、次はそれらを組み合わせる方法を見てみましょう。
+
+### Effect.andThen
+
+2つのエフェクトを組み合わせるには、`Effect.andThen`を使用できます。これは`pipe`の中で使用され、最初のエフェクトを実行し、それが成功した場合に別のエフェクトを実行します。以下は例です：
+
+```ts
+Effect.succeed(42).pipe(
+  Effect.andThen((value) => Effect.succeed(value * 2))
+)
+```
+
+このエフェクトの結果は `Effect.succeed(42 * 2)` と同等になります。
+
+### Effect.tap
+
+戻り値を変更せずに2つのエフェクトを組み合わせたい場合は、`Effect.tap` を使用できます。`Effect.andThen` と同様に、パイプラインで使用できます。以下は例です：
+
+```ts
+Effect.succeed(42).pipe(
+  Effect.tap((value) => Effect.log(value))
+)
+```
+
+このエフェクトの結果は `42` となり、さらにコンソールにログ出力されます。
+
+### 演習
+
+`Effect.andThen` と `Effect.tap` を使用して、エディタ内のTODOを完成させてください。

@@ -424,3 +424,36 @@ FrequencyState {
 }
 */
 ```
+
+## メトリクスのタグ付け
+
+メトリクスを作成する際、タグを追加することができます。タグはキーと値のペアで、追加のコンテキストを提供し、メトリクスの分類とフィルタリングを支援します。これにより、アプリケーションの特定の側面を分析し監視することがより簡単になります。
+
+### 複数のメトリクスにタグを付ける
+
+`Effect.tagMetrics`を使用して、同じコンテキストで作成されたすべてのメトリクスにタグを適用します。これは、複数のメトリクスに適用される共通のタグを追加する場合に便利です。
+
+```ts twoslash
+import { Metric, Effect } from "effect"
+
+const taskCount = Metric.counter("task_count")
+const task1 = Effect.succeed(1).pipe(Effect.delay("100 millis"))
+
+Effect.gen(function* () {
+  yield* taskCount(task1)
+}).pipe(Effect.tagMetrics("environment", "production"))
+```
+
+あるいは、`Effect.tagMetricsScoped`を使用して、特定のスコープ内にタグを適用することもできます。
+
+### 特定のメトリクスにタグを付ける
+
+個々のメトリクスに対しては、`Metric.tagged`を使用します。このメソッドを使用すると、特定のメトリクスにタグを適用できます。
+
+```ts twoslash
+import { Metric } from "effect"
+
+const counter = Metric.counter("request_count").pipe(
+  Metric.tagged("environment", "production")
+)
+```

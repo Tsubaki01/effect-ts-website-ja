@@ -58,23 +58,24 @@ Effect<never, HttpError, never>
 ```twoslash include error-tracking
 import { Effect, Random } from "effect"
 
-export class FooError {
-  readonly _tag = "FooError"
+export class HttpError {
+  readonly _tag = "HttpError"
 }
 
-export class BarError {
-  readonly _tag = "BarError"
+export class ValidationError {
+  readonly _tag = "ValidationError"
 }
 
 export const program = Effect.gen(function* () {
   const n1 = yield* Random.next
   const n2 = yield* Random.next
 
-  const foo = n1 > 0.5 ? "yay!" : yield* Effect.fail(new FooError())
+  const httpResult =
+    n1 > 0.5 ? "yay!" : yield* Effect.fail(new HttpError())
+  const validationResult =
+    n2 > 0.5 ? "yay!" : yield* Effect.fail(new ValidationError())
 
-  const bar = n2 > 0.5 ? "yay!" : yield* Effect.fail(new BarError())
-
-  return foo + bar
+  return httpResult + validationResult
 })
 ```
 
@@ -84,7 +85,7 @@ export const program = Effect.gen(function* () {
 Effect.runPromise(program).then(console.log, console.error)
 ```
 
-上記のプログラムでは、`foo`と`bar`という2つの値を計算しており、それぞれがエラーの潜在的な原因を表しています。
+上記のプログラムでは、`httpResult`と`validationResult`という2つの値を計算しています。それぞれがエラーの潜在的な原因を表しています。
 
 </Tab>
 <Tab>
@@ -92,46 +93,46 @@ Effect.runPromise(program).then(console.log, console.error)
 ```ts filename="error-tracking.ts" twoslash
 import { Effect, Random } from "effect"
 
-export class FooError {
-  readonly _tag = "FooError"
+export class HttpError {
+  readonly _tag = "HttpError"
 }
 
-export class BarError {
-  readonly _tag = "BarError"
+export class ValidationError {
+  readonly _tag = "ValidationError"
 }
 
-const flakyFoo = Random.next.pipe(
+const httpResult = Random.next.pipe(
   Effect.andThen((n1) =>
-    n1 > 0.5 ? Effect.succeed("yay!") : Effect.fail(new FooError())
+    n1 > 0.5 ? Effect.succeed("yay!") : Effect.fail(new HttpError())
   )
 )
 
-const flakyBar = Random.next.pipe(
+const validationResult = Random.next.pipe(
   Effect.andThen((n2) =>
-    n2 > 0.5 ? Effect.succeed("yay!") : Effect.fail(new BarError())
+    n2 > 0.5 ? Effect.succeed("yay!") : Effect.fail(new ValidationError())
   )
 )
 
-export const program = Effect.all([flakyFoo, flakyBar]).pipe(
-  Effect.andThen(([foo, bar]) => foo + bar)
+export const program = Effect.all([httpResult, validationResult]).pipe(
+  Effect.andThen(([http, validation]) => http + validation)
 )
 ```
 
-上記のプログラムでは、`flakyFoo`と`flakyBar`という2つの操作があり、それぞれがエラーの潜在的な原因を表しています。
-これらの操作は、Effectライブラリの`Effect.all(effects){:ts}`関数を使用して組み合わせることができ、これにより一連の操作として実行することができます。
+上記のプログラムでは、`httpResult`と`validationResult`という2つの操作があり、それぞれが潜在的なエラーの原因を表しています。
+これらの操作は、Effectライブラリの`Effect.all(effects)`関数を使用して組み合わされており、これによってそれらを順序付けて実行することができます。
 
 </Tab>
 </Tabs>
 
-Effectはプログラムの実行中に発生する可能性のあるエラーを自動的に追跡します。
-この場合、`FooError`と`BarError`が考えられるエラータイプです。
-プログラムのエラーチャンネルは次のように指定されています
+Effectは、プログラムの実行中に発生する可能性のあるエラーを自動的に追跡します。
+この場合、`HttpError`と`ValidationError`が可能なエラータイプとして存在します。
+`program`のエラーチャンネルは以下のように指定されます：
 
 ```ts
-Effect<string, FooError | BarError, never>
+Effect<string, HttpError | ValidationError, never>
 ```
 
-これは、`FooError`または`BarError`のいずれかで失敗する可能性があることを示しています。
+これは、`HttpError`または`ValidationError`のいずれかで潜在的に失敗する可能性があることを示しています。
 
 ## ショートサーキット
 
@@ -216,14 +217,16 @@ Executing task1...
 
 ### either
 
-`Effect.either`関数は、`Effect<A, E, R>`を、失敗（`E`）と成功（`A`）の両方のチャネルが[Either&lt;A, E&gt;](../../other/data-types/either)データ型に持ち上げられた別のエフェクトに変換します：
+`Effect.either` 関数は、`Effect<A, E, R>` を、[Either](../../other/data-types/either) データ型内に潜在的な失敗と成功の両方をカプセル化したエフェクトに変換します：
 
 ```ts
 Effect<A, E, R> -> Effect<Either<A, E>, never, R>
 ```
 
-[Either&lt;R, L&gt;](../../other/data-types/either) データ型は、`Right` 値 (`R`) または `Left` 値 (`L`) のいずれかを表す値です。
-`Either` を使用することで、この型に対して「パターンマッチ」を行い、ジェネレータ関数内で失敗と成功の両方のケースを処理する能力を得ることができます。
+結果として得られるエフェクトは失敗することができません。なぜなら、潜在的な失敗が`Either`の`Left`型の中で表現されているからです。
+返される`Effect`のエラー型は`never`と指定されており、このエフェクトが失敗しないように構造化されていることを確認しています。
+
+`Either`を生成することで、ジェネレーター関数内で失敗と成功の両方のケースを処理するために、この型に対して「パターンマッチング」を行う能力を得ることができます。
 
 ```ts twoslash
 // @filename: error-tracking.ts
@@ -289,7 +292,7 @@ const recovered = program.pipe(
 
 ## 特定のエラーをキャッチする
 
-例えば、`FooError` のような特定のエラーを処理したいとします。
+`HttpError` のような特定のエラーを処理したいとします。
 
 ```ts {8-10} twoslash
 // @filename: error-tracking.ts
@@ -304,8 +307,8 @@ const recovered = Effect.gen(function* () {
   const failureOrSuccess = yield* Effect.either(program)
   if (Either.isLeft(failureOrSuccess)) {
     const error = failureOrSuccess.left
-    if (error._tag === "FooError") {
-      return "Recovering from FooError"
+    if (error._tag === "HttpError") {
+      return "Recovering from HttpError"
     }
     return yield* Effect.fail(error)
   } else {
@@ -314,9 +317,10 @@ const recovered = Effect.gen(function* () {
 })
 ```
 
-プログラムのエラーチャンネルの型が `BarError` のみを示すように変わったことが確認できます。これは、`FooError` が処理されたことを示しています。
+プログラムのエラーチャンネルの型が `ValidationError` のみを表示するように変更されたことが確認できます。
+これは、`HttpError` が処理されたことを示しています。
 
-もし `BarError` も処理したい場合は、簡単に別のケースをコードに追加することができます。
+`ValidationError` も処理したい場合は、コードに別のケースを簡単に追加できます：
 
 ```ts {11} twoslash
 // @filename: error-tracking.ts
@@ -331,10 +335,10 @@ const recovered = Effect.gen(function* () {
   const failureOrSuccess = yield* Effect.either(program)
   if (Either.isLeft(failureOrSuccess)) {
     const error = failureOrSuccess.left
-    if (error._tag === "FooError") {
-      return "Recovering from FooError"
+    if (error._tag === "HttpError") {
+      return "Recovering from HttpError"
     } else {
-      return "Recovering from BarError"
+      return "Recovering from ValidationError"
     }
   } else {
     return failureOrSuccess.right
@@ -359,8 +363,8 @@ import { program } from "./error-tracking"
 
 const recovered = program.pipe(
   Effect.catchSome((error) => {
-    if (error._tag === "FooError") {
-      return Option.some(Effect.succeed("Recovering from FooError"))
+    if (error._tag === "HttpError") {
+      return Option.some(Effect.succeed("Recovering from HttpError"))
     }
     return Option.none()
   })
@@ -369,7 +373,7 @@ const recovered = program.pipe(
 
 上記のコードでは、`Effect.catchSome` はエラー (`error`) を調べて回復を試みるかどうかを決定する関数を受け取ります。エラーが特定の条件に一致する場合、`Option.some(effect)` を返すことで回復を試みることができます。回復が不可能な場合は、単に `Option.none()` を返すことができます。
 
-重要なのは、`Effect.catchSome` は特定のエラーをキャッチすることができる一方で、**エラーの型自体を変更しない**という点です。したがって、結果として得られるエフェクト（この場合は `recovered`）は、元のエフェクトと同じエラー型 (`FooError | BarError`) を持ち続けます。
+`Effect.catchSome`は特定のエラーをキャッチすることができますが、**エラーの型自体を変更しない**ことに注意することが重要です。したがって、結果として得られるエフェクト（この場合は`recovered`）は、元のエフェクトと同じエラー型（`HttpError | ValidationError`）を持ち続けます。
 
 ### catchIf
 
@@ -386,15 +390,15 @@ import { program } from "./error-tracking"
 
 const recovered = program.pipe(
   Effect.catchIf(
-    (error) => error._tag === "FooError",
-    () => Effect.succeed("Recovering from FooError")
+    (error) => error._tag === "HttpError",
+    () => Effect.succeed("Recovering from HttpError")
   )
 )
 ```
 
-`Effect.catchIf` は特定のエラーをキャッチすることができますが、**エラーの型自体を変更しない**ことに注意が必要です。したがって、結果として得られるエフェクト（この場合は `recovered`）は、元のエフェクトと同じエラー型 (`FooError | BarError`) を持ち続けます。
+TypeScriptのバージョン5.5未満では、`Effect.catchIf`は特定のエラーをキャッチできますが、エラーの型自体を**変更しない**ことに注意することが重要です。そのため、結果として得られるエフェクト（この場合は`recovered`）は、元のエフェクトと同じエラー型（`HttpError | ValidationError`）を持ち続けます。TypeScriptのバージョン5.5以降では、改善された型の絞り込みにより、結果のエラー型は`ValidationError`と推論されます。
 
-しかし、述語の代わりに[ユーザー定義の型ガード](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)を提供すると、結果のエラー型が絞り込まれ、`Effect<string, BarError, never>` が返されます：
+TypeScriptのバージョン5.5未満では、述語の代わりに[ユーザー定義型ガード](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)を提供すると、結果のエラー型が刈り込まれ、`Effect<string, ValidationError, never>`が返されます：
 
 ```ts {6} twoslash
 // @filename: error-tracking.ts
@@ -403,12 +407,12 @@ const recovered = program.pipe(
 // @filename: index.ts
 // ---cut---
 import { Effect } from "effect"
-import { program, FooError } from "./error-tracking"
+import { program, HttpError } from "./error-tracking"
 
 const recovered = program.pipe(
   Effect.catchIf(
-    (error): error is FooError => error._tag === "FooError",
-    () => Effect.succeed("Recovering from FooError")
+    (error): error is HttpError => error._tag === "HttpError",
+    () => Effect.succeed("Recovering from HttpError")
   )
 )
 ```
@@ -427,20 +431,20 @@ import { Effect } from "effect"
 import { program } from "./error-tracking"
 
 const recovered = program.pipe(
-  Effect.catchTag("FooError", (_fooError) =>
-    Effect.succeed("Recovering from FooError")
+  Effect.catchTag("HttpError", (_HttpError) =>
+    Effect.succeed("Recovering from HttpError")
   )
 )
 ```
 
-上記の例では、`Effect.catchTag` 関数を使用して `FooError` を特定して処理することができます。
-プログラムの実行中に `FooError` が発生した場合、提供されたエラーハンドラ関数が呼び出され、
-ハンドラ内で指定されたリカバリロジックに従ってプログラムが進行します。
+上記の例では、`Effect.catchTag`関数を使用して`HttpError`を特定的に処理することができます。
+プログラムの実行中に`HttpError`が発生した場合、提供されたエラーハンドラー関数が呼び出され、
+プログラムはハンドラー内で指定されたリカバリーロジックで進行します。
 
-プログラムのエラーチャンネルの型が `BarError` のみを示すように変わったことが観察できます。
-これは `FooError` が処理されたことを示しています。
+プログラムのエラーチャンネルの型が`ValidationError`のみを表示するように変更されたことが観察できます。
+これは`HttpError`が処理されたことを示しています。
 
-もし `BarError` も処理したい場合は、別の `catchTag` を追加するだけです：
+`ValidationError`も処理したい場合は、単に別の`catchTag`を追加するだけです：
 
 ```ts {8-10} twoslash
 // @filename: error-tracking.ts
@@ -452,11 +456,11 @@ import { Effect } from "effect"
 import { program } from "./error-tracking"
 
 const recovered = program.pipe(
-  Effect.catchTag("FooError", (_fooError) =>
-    Effect.succeed("Recovering from FooError")
+  Effect.catchTag("HttpError", (_HttpError) =>
+    Effect.succeed("Recovering from HttpError")
   ),
-  Effect.catchTag("BarError", (_barError) =>
-    Effect.succeed("Recovering from BarError")
+  Effect.catchTag("ValidationError", (_ValidationError) =>
+    Effect.succeed("Recovering from ValidationError")
   )
 )
 ```
@@ -488,15 +492,16 @@ import { program } from "./error-tracking"
 
 const recovered = program.pipe(
   Effect.catchTags({
-    FooError: (_fooError) => Effect.succeed(`Recovering from FooError`),
-    BarError: (_barError) => Effect.succeed(`Recovering from BarError`)
+    HttpError: (_HttpError) => Effect.succeed(`Recovering from HttpError`),
+    ValidationError: (_ValidationError) =>
+      Effect.succeed(`Recovering from ValidationError`)
   })
 )
 ```
 
 上記の例では、個々のエラーを処理するために `Effect.catchTag` を複数回使用する代わりに、`Effect.catchTags` コンビネータを利用しています。
-このコンビネータは、各プロパティが特定のエラー `_tag`（この場合は `"FooError"` と `"BarError"`）を表し、
-対応する値がその特定のエラーが発生したときに実行されるエラーハンドラ関数であるオブジェクトを受け取ります。
+このコンビネータは、各プロパティが特定のエラー `_tag`（この場合は `"HttpError"` と `"ValidationError"`）を表すオブジェクトを受け取り、
+対応する値はそのエラーが発生した際に実行されるエラーハンドラ関数となります。
 
 <Warning>
   `Effect.catchTags` で使用するすべてのエラータイプに `readonly _tag`

@@ -1,0 +1,106 @@
+---
+title: FAQ
+excerpt: Effectに関する一般的な質問を探求します。タイプ抽出、同期/非同期の動作、fp-tsとの比較、flatMapの理解、ZIOのような型エイリアスの欠如について学びます。レイヤーの設定と、レイヤー内のサービス構築に影響を与える引数の受け入れの柔軟性についても学びます。
+bottomNavigation: pagination
+---
+
+## Effect
+
+**Q: Effectから型を抽出することは可能ですか？**
+
+A: ユーティリティタイプ `Effect.Effect.Context`、`Effect.Effect.Error`、および `Effect.Effect.Success` を使用することで、`program` Effectから対応する型を抽出できます。この例では、コンテキスト型（`R`）、エラー型（`E`）、および成功型（`A`）を抽出します。
+
+```ts twoslash
+import { Effect, Context } from "effect"
+
+class Random extends Context.Tag("Random")<
+  Random,
+  {
+    readonly next: Effect.Effect<number>
+  }
+>() {}
+
+declare const program: Effect.Effect<number, string, Random>
+
+// type R = Random
+type R = Effect.Effect.Context<typeof program>
+
+// type E = string
+type E = Effect.Effect.Error<typeof program>
+
+// type A = number
+type A = Effect.Effect.Success<typeof program>
+```
+
+**Q: Effectが同期的か非同期的かを事前に判断する方法はありますか？**
+
+A: いいえ、Effectが同期的か非同期的かを静的に判断する簡単な方法はありません。このアイデアはEffectの初期バージョンで検討しましたが、いくつかの重要な理由から採用しませんでした。
+
+1. **複雑さ:** 型システムで同期/非同期の動作を追跡する機能を導入すると、Effectの使用がより複雑になり、合成性が制限されます。
+
+2. **安全性の懸念:** 非同期Effectを追跡するためのさまざまなアプローチを試みましたが、どれも安全性を大幅に向上させることなく、開発者の体験を悪化させる結果となりました。完全に同期的な型であっても、Continuation-Passing Style (CPS) を使用するAPIと連携するために `fromCallback` コンビネータをサポートする必要がありました。しかし、型レベルでは、そのような関数が常に即座に呼び出され、遅延されないことを保証することは不可能です。
+
+実際には、Effectは通常アプリケーションのエッジでのみ実行するべきです。アプリケーションが完全にEffectに基づいている場合、通常は `main` effect への単一の呼び出しが含まれます。このような場合、ほとんどの実行には `runPromise` または `runFork` を使用するのが最良のアプローチです。同期実行は特別なケースであり、非同期実行が不可能な場合にのみ考慮すべきです。したがって、可能な限り `runPromise` または `runFork` を使用し、絶対に必要な場合にのみ `runSync` を使用することをお勧めします。
+
+**Q: JavaScript/TypeScriptで `Array` プロトタイプの使用から `flatMap` に慣れています。なぜEffectが提供するモジュールに `flatMap` があるのですか？**
+
+A: 多くのJavaScript / TypeScriptエンジニアは、[`Array` プロトタイプのメソッドとしての `flatMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap) に慣れ親しんでいます。そのため、Effectが提供する多くのモジュールから `flatMap` メソッドがエクスポートされているのを見て混乱するかもしれません。
+
+`flatMap` 操作は、より一般的なデータ変換を説明するために使用できます。ここで、`F` と呼ばれる汎用データ型を考えてみましょう。`F` は要素のコンテナでもあるため、`F` の表現を `F<A>` にさらに洗練させることができます。これは、`F` が型 `A` のデータに関する情報を保持していることを示しています。
+
+もし `F<A>` を持っていて、それを `F<B>` に変換したい場合、`map` 操作を使用できます。
+
+```ts
+map: <A, B>(fa: F<A>, f: (a: A) => B) => F<B>
+```
+
+しかし、`B` ではなく `F<B>` を返す関数があったらどうでしょうか？この場合、`map` を使用すると `F<B>` の代わりに `F<F<B>>` になってしまいます。私たちが本当に欲しいのは、データを `map` してから結果を `flatten` するオペレーターです。
+
+この正確な状況を説明するのが `flatMap` 操作です：
+
+```ts
+flatMap: <A, B>(fa: F<A>, f: (a: A) => F<B>) => F<B>
+```
+
+汎用データ型 `F` を具体的なデータ型 `Array` に置き換えると、これが `Array` の `flatMap` にどのように直接適用されるかもわかります：
+
+```ts
+flatMap: <A, B>(fa: Array<A>, f: (a: A) => Array<B>) => Array<B>
+```
+
+**Q: Effectに型エイリアスが見当たりません。存在しますか？ZIOの `UIO` / `URIO` / `RIO` / `Task` / `IO` に似たものを探しています。もしない場合、追加を検討したことはありますか？**
+
+A: Effectには、ZIOのような `UIO`、`URIO`、`RIO`、`Task`、`IO` といった定義済みの型エイリアスは存在しません。
+
+その理由は、型エイリアスは一度合成すると失われてしまい、すべての関数に対して**複数**のシグネチャを維持しない限り、ほとんど役に立たないからです。Effectでは、この道を選ばず、未使用の型を示すために `never` 型を利用しています。
+
+型エイリアスが理解しやすいという認識は、しばしば錯覚に過ぎないことも指摘しておきます。Effectでは、明示的な表記 `Effect<A>` が、型 `A` のみが使用されていることを明確に伝えます。一方、`RIO<R, A>` のような型エイリアスを使用すると、型 `E` についての疑問が生じます。それは `unknown` ですか？`never` ですか？そのような詳細を覚えておくのは難しいです。
+
+## fp-tsとの比較
+
+**Q: Effectと[fp-ts](https://github.com/gcanti/fp-ts)の主な違いは何ですか？**
+
+A: Effectとfp-tsの主な違いは次の通りです：
+
+- Effectはより柔軟で強力な依存関係管理を提供します。
+- Effectは`Clock`、`Random`、`Tracer`などの組み込みサービスを提供しますが、fp-tsにはこれらがありません。
+- Effectは`TestClock`のような専用のテストツールを含んでいますが、fp-tsには特定のテストユーティリティがありません。
+- Effectは計算をキャンセルするための中断をサポートしていますが、fp-tsには組み込みの中断サポートがありません。
+- Effectには欠陥や予期しない障害を処理するための組み込みツールがありますが、fp-tsには特定の欠陥管理機能がありません。
+- Effectは効率的で軽量な並行計算のためにファイバーベースの並行性を活用していますが、fp-tsはこれを提供していません。
+- Effectには計算の再試行をカスタマイズするための組み込みサポートがありますが、fp-tsにはこの機能がありません。
+- Effectは組み込みのロギング、スケジューリング、キャッシングなどを提供していますが、fp-tsはこれらを提供していません。
+
+より詳細な比較については、[Effect vs fp-ts](fp-ts) ドキュメントを参照してください。
+
+### Effectとfp-tsのバンドルサイズの比較
+
+**Q: Effectとfp-tsを使用した2つのシンプルなプログラムのバンドルサイズを比較しました。なぜEffectの方がバンドルサイズが大きいのですか？**
+
+A: Effectとfp-tsは異なる目的のために設計されたシステムであるため、異なるバンドルサイズになるのは自然なことです。
+Effectのバンドルサイズが大きいのは、その機能に不可欠なファイバーランタイムが含まれているためです。
+初期のバンドルサイズは大きく見えるかもしれませんが、Effectを使用するにつれてそのオーバーヘッドは相殺されます。
+
+**Q: Effectとfp-tsのどちらを選ぶ際に、バンドルサイズの違いを気にするべきですか？**
+
+A: 必ずしもそうではありません。各ライブラリの特定の要件と利点を考慮してください。

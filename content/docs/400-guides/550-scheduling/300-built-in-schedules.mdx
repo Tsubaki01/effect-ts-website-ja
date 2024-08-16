@@ -17,19 +17,21 @@ export const log = <A, Out>(
   schedule: Schedule.Schedule<Out, void>
 ) => {
   Effect.gen(function* () {
-    const fiber = yield* Effect.gen(function* () {
-      yield* action
-      const now = yield* TestClock.currentTimeMillis
-      console.log(
-        i === 0
-          ? `delay: ${now - start}`
-          : i === 10
-            ? "..."
-            : `#${i} delay: ${now - start}`
-      )
-      i++
-      start = now
-    }).pipe(
+    const fiber: Fiber.RuntimeFiber<[Out, number]> = yield* Effect.gen(
+      function* () {
+        yield* action
+        const now = yield* TestClock.currentTimeMillis
+        console.log(
+          i === 0
+            ? `delay: ${now - start}`
+            : i === 10
+              ? "..."
+              : `#${i} delay: ${now - start}`
+        )
+        i++
+        start = now
+      }
+    ).pipe(
       Effect.repeat(schedule.pipe(Schedule.intersect(Schedule.recurs(10)))),
       Effect.fork
     )
@@ -57,6 +59,12 @@ declare const log: <A, Out>(
 </details>
 
 `log` ヘルパーは各実行間の遅延時間を記録します。このヘルパーを使用して、さまざまな組み込みスケジュールの動作を紹介します。
+
+<Warning>
+  `log` ヘルパーは [TestClock](../testing/testclock)
+  を使用して時間を加速させます。
+  これは、実際のアプリケーションで通常発生する時間の経過をシミュレートすることを意味します。
+</Warning>
 
 ## forever
 
@@ -218,7 +226,7 @@ delay: 100
 
 ## exponential
 
-指数バックオフを使用して再発するスケジュール
+指数関数的バックオフを使用して再発するスケジュール。
 
 ```ts twoslash
 // @filename: Delay.ts

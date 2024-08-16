@@ -95,6 +95,52 @@ Effectは、エフェクトの実行中に発生する予期しないエラー�
   診断や説明のために欠陥に関する情報を伝達するために使用するべきです。
 </Warning>
 
+### exit
+
+The `Effect.exit` function transforms an `Effect<A, E, R>` into an effect that encapsulates both potential failure and success within an [Exit](../../other/data-types/exit) data type:
+
+```ts
+Effect<A, E, R> -> Effect<Exit<A, E>, never, R>
+```
+
+The resulting effect cannot fail because the potential failure is now represented within the `Exit`'s `Failure` type.
+The error type of the returned `Effect` is specified as `never`, confirming that the effect is structured to not fail.
+
+By yielding an `Exit`, we gain the ability to "pattern match" on this type to handle both failure and success cases within the generator function.
+
+```ts twoslash
+import { Effect, Cause, Console, Exit } from "effect"
+
+// Simulating a runtime error
+const task = Effect.dieMessage("Boom!")
+
+const program = Effect.gen(function* () {
+  const exit = yield* Effect.exit(task)
+  if (Exit.isFailure(exit)) {
+    const cause = exit.cause
+    if (Cause.isDieType(cause) && Cause.isRuntimeException(cause.defect)) {
+      yield* Console.log(
+        `RuntimeException defect caught: ${cause.defect.message}`
+      )
+    } else {
+      yield* Console.log("Unknown defect caught.")
+    }
+  }
+})
+
+// We get an Exit.Success because we caught all defects
+Effect.runPromiseExit(program).then(console.log)
+/*
+Output:
+RuntimeException defect caught: Boom!
+{
+  _id: "Exit",
+  _tag: "Success",
+  value: undefined
+}
+*/
+```
+
 ### catchAllDefect
 
 `Effect.catchAllDefect`関数は、提供された関数を使用してすべての欠陥から回復することを可能にします。以下はその例です：
@@ -102,15 +148,15 @@ Effectは、エフェクトの実行中に発生する予期しないエラー�
 ```ts twoslash
 import { Effect, Cause, Console } from "effect"
 
-const program = Effect.catchAllDefect(
-  Effect.dieMessage("Boom!"), // ランタイムエラーをシミュレート
-  (defect) => {
-    if (Cause.isRuntimeException(defect)) {
-      return Console.log(`RuntimeException defect caught: ${defect.message}`)
-    }
-    return Console.log("Unknown defect caught.")
+// ランタイムエラーをシミュレート
+const task = Effect.dieMessage("Boom!")
+
+const program = Effect.catchAllDefect(task, (defect) => {
+  if (Cause.isRuntimeException(defect)) {
+    return Console.log(`RuntimeException defect caught: ${defect.message}`)
   }
-)
+  return Console.log("Unknown defect caught.")
+})
 
 // すべての欠陥をキャッチしたため、Exit.Successを取得します
 Effect.runPromiseExit(program).then(console.log)
@@ -138,19 +184,19 @@ Effect.runPromiseExit(program).then(console.log)
 ```ts twoslash
 import { Effect, Cause, Option, Console } from "effect"
 
-const program = Effect.catchSomeDefect(
-  Effect.dieMessage("ドカン！"), // ランタイムエラーをシミュレート
-  (defect) => {
-    if (Cause.isIllegalArgumentException(defect)) {
-      return Option.some(
-        Console.log(
-          `Caught an IllegalArgumentException defect: ${defect.message}`
-        )
+// ランタイムエラーをシミュレート
+const task = Effect.dieMessage("Boom!")
+
+const program = Effect.catchSomeDefect(task, (defect) => {
+  if (Cause.isIllegalArgumentException(defect)) {
+    return Option.some(
+      Console.log(
+        `Caught an IllegalArgumentException defect: ${defect.message}`
       )
-    }
-    return Option.none()
+    )
   }
-)
+  return Option.none()
+})
 
 // IllegalArgumentExceptionのみをキャッチしているため
 // ランタイムエラーをシミュレートした結果、Exit.Failureを取得します。
@@ -158,18 +204,9 @@ Effect.runPromiseExit(program).then(console.log)
 /*
 Output:
 {
-  _id: "Exit",
-  _tag: "Failure",
-  cause: {
-    _id: "Cause",
-    _tag: "Die",
-    defect: {
-      _tag: "RuntimeException",
-      message: "Boom!",
-      [Symbol(@effect/io/Cause/errors/RuntimeException)]: Symbol(@effect/io/Cause/errors/RuntimeException),
-      toString: [Function: toString]
-    }
-  }
+  _id: 'Exit',
+  _tag: 'Failure',
+  cause: { _id: 'Cause', _tag: 'Die', defect: { _tag: 'RuntimeException' } }
 }
 */
 ```

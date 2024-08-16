@@ -58,8 +58,6 @@ finalizer 1
 
 例えば、ネットワーク接続を開いてからリモートサーバー上のファイルにアクセスする場合、ネットワーク接続を閉じる前にファイルを閉じる必要があります。この順序は、リモートサーバーとやり取りする能力を維持するために重要です。
 
-`Scope`をEffectコンテキストと組み合わせることで、リソースを効果的に管理する強力な方法を得ることができます。
-
 ## addFinalizer
 
 次に、`Effect.addFinalizer`関数について詳しく見ていきましょう。これは、`Effect`値のスコープにファイナライザを追加するための高レベルAPIを提供します。これらのファイナライザは、関連するスコープが閉じられたときに確実に実行され、その動作はスコープが閉じられる際の`Exit`値に依存する場合があります。
@@ -432,7 +430,7 @@ finalizer after task 2
 
 ## リソースの定義
 
-`Effect.acquireRelease(acquire, release){:ts}` のようなオペレーターを使用して、`acquire` と `release` ワークフローからスコープ付きの値を作成することができます。
+`Effect.acquireRelease(acquire, release)`のようなオペレーターを使用してリソースを定義できます。これにより、`acquire`（取得）と`release`（解放）のワークフローからスコープ付きの値を作成することができます。
 
 すべてのアクワイアリリースには3つのアクションが必要です：
 
@@ -593,7 +591,7 @@ Resource released
 
 ## acquireUseRelease
 
-`Effect.acquireUseRelease(acquire, use, release){:ts}` 関数は、リソースのスコープを自動的に処理することで、リソース管理を簡素化する `Effect.acquireRelease` 関数の特殊なバージョンです。
+`Effect.acquireUseRelease(acquire, use, release)` 関数は、`Effect.acquireRelease` 関数の特殊バージョンで、リソースのスコープを自動的に処理することでリソース管理を簡素化します。
 
 主な違いは、`acquireUseRelease` がリソースのスコープを管理するために `Effect.scoped` を手動で呼び出す必要を排除する点です。これは、`acquire` ステップで作成されたリソースの使用が終了した時点を知っているためです。これを実現するために、取得したリソースで操作を行う関数を表す `use` 引数を提供します。その結果、`acquireUseRelease` はリリースステップを実行するタイミングを自動的に判断できます。
 

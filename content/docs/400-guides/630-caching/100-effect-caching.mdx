@@ -1,0 +1,187 @@
+---
+title: エフェクトのキャッシング
+excerpt: エフェクトのキャッシング
+bottomNavigation: pagination
+---
+
+このセクションでは、アプリケーションでのキャッシングとメモ化の管理を支援するライブラリが提供する複数の関数について概説します：
+
+| 関数名                      | 説明                                                                                                                                                                                            |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **cachedFunction**          | エフェクトを持つ関数のメモ化されたバージョンを返します。メモ化により、同じ入力に対する結果が保存され再利用されるため、再計算の必要性が減少します。                                              |
+| **once**                    | 呼び出される回数に関係なく、一度だけ実行されるエフェクトを返します。                                                                                                                            |
+| **cached**                  | 結果を遅延的に計算しキャッシュするエフェクトを返します。このエフェクトの後続の評価では、ロジックを再実行せずにキャッシュされた結果を返します。                                                  |
+| **cachedWithTTL**           | `timeToLive`として知られる指定された期間、結果をキャッシュするエフェクトを返します。キャッシュが期間後に期限切れになると、次の評価時にエフェクトが再計算されます。                              |
+| **cachedInvalidateWithTTL** | `cachedWithTTL`と同様に、この関数は指定された期間エフェクトの結果をキャッシュします。また、自然に期限切れになる前にキャッシュされた値を手動で無効化するための追加のエフェクトも含まれています。 |
+
+## cachedFunction
+
+エフェクトを持つ関数のメモ化されたバージョンを返します。メモ化により、同じ入力に対する結果が保存され再利用されるため、再計算の必要性が減少します。
+
+```ts twoslash
+import { Effect, Random } from "effect"
+
+const program = Effect.gen(function* () {
+  const randomNumber = (n: number) => Random.nextIntBetween(1, n)
+  console.log("non-memoized version:")
+  console.log(yield* randomNumber(10))
+  console.log(yield* randomNumber(10))
+
+  console.log("memoized version:")
+  const memoized = yield* Effect.cachedFunction(randomNumber)
+  console.log(yield* memoized(10))
+  console.log(yield* memoized(10))
+})
+
+Effect.runFork(program)
+/*
+出力の例:
+non-memoized version:
+2
+8
+memoized version:
+5
+5
+*/
+```
+
+## once
+
+呼び出される回数に関係なく、一度だけ実行されるエフェクトを返します。
+
+```ts twoslash
+import { Effect, Console } from "effect"
+
+const program = Effect.gen(function* () {
+  const task1 = Console.log("task1")
+  yield* Effect.repeatN(task1, 2)
+  const task2 = yield* Effect.once(Console.log("task2"))
+  yield* Effect.repeatN(task2, 2)
+})
+
+Effect.runFork(program)
+/*
+出力:
+task1
+task1
+task1
+task2
+*/
+```
+
+## cached
+
+結果を遅延的に計算し、キャッシュするエフェクトを返します。このエフェクトの後続の評価では、ロジックを再実行せずにキャッシュされた結果を返します。
+
+```ts twoslash
+import { Effect, Console } from "effect"
+
+let i = 1
+const expensiveTask = Effect.promise<string>(() => {
+  console.log("expensive task...")
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`result ${i++}`)
+    }, 100)
+  })
+})
+
+const program = Effect.gen(function* () {
+  console.log("non-cached version:")
+  yield* expensiveTask.pipe(Effect.andThen(Console.log))
+  yield* expensiveTask.pipe(Effect.andThen(Console.log))
+  console.log("cached version:")
+  const cached = yield* Effect.cached(expensiveTask)
+  yield* cached.pipe(Effect.andThen(Console.log))
+  yield* cached.pipe(Effect.andThen(Console.log))
+})
+
+Effect.runFork(program)
+/*
+出力:
+non-cached version:
+expensive task...
+result 1
+expensive task...
+result 2
+cached version:
+expensive task...
+result 3
+result 3
+*/
+```
+
+## cachedWithTTL
+
+指定された期間（`timeToLive`として知られる）の間、結果をキャッシュするエフェクトを返します。キャッシュが期間経過後に期限切れになると、次の評価時にエフェクトが再計算されます。
+
+```ts twoslash
+import { Effect, Console } from "effect"
+
+let i = 1
+const expensiveTask = Effect.promise<string>(() => {
+  console.log("expensive task...")
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`result ${i++}`)
+    }, 100)
+  })
+})
+
+const program = Effect.gen(function* () {
+  const cached = yield* Effect.cachedWithTTL(expensiveTask, "150 millis")
+  yield* cached.pipe(Effect.andThen(Console.log))
+  yield* cached.pipe(Effect.andThen(Console.log))
+  yield* Effect.sleep("100 millis")
+  yield* cached.pipe(Effect.andThen(Console.log))
+})
+
+Effect.runFork(program)
+/*
+出力:
+expensive task...
+result 1
+result 1
+expensive task...
+result 2
+*/
+```
+
+## cachedInvalidateWithTTL
+
+`cachedWithTTL`と同様に、この関数は指定された期間、エフェクトの結果をキャッシュします。また、キャッシュされた値が自然に期限切れになる前に手動で無効化するための追加のエフェクトも含まれています。
+
+```ts
+import { Effect, Console } from "effect"
+
+let i = 1
+const expensiveTask = Effect.promise<string>(() => {
+  console.log("expensive task...")
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`result ${i++}`)
+    }, 100)
+  })
+})
+
+const program = Effect.gen(function* () {
+  const [cached, invalidate] = yield* Effect.cachedInvalidateWithTTL(
+    expensiveTask,
+    "1 hour"
+  )
+  yield* cached.pipe(Effect.andThen(Console.log))
+  yield* cached.pipe(Effect.andThen(Console.log))
+  yield* invalidate
+  yield* cached.pipe(Effect.andThen(Console.log))
+})
+
+Effect.runFork(program)
+/*
+出力:
+expensive task...
+result 1
+result 1
+expensive task...
+result 2
+*/
+```

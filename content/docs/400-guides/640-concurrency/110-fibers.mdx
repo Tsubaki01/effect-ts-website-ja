@@ -37,97 +37,102 @@ fibersをフォークする場合、フォークの方法に応じて、子fiber
 
 Effectは**構造化された並行性**モデルを採用しており、fibersのライフタイムはきれいにネストされています。簡単に言えば、fiberの寿命は親fiberの寿命に依存します。
 
-この概念を明確にするために、次の例を見てみましょう。このシナリオでは、`foo` fiberが`bar` fiberを生成します。`bar` fiberは決して完了しない長時間実行のタスクに従事しています。ここで重要なのは、Effectが`bar` fiberが`foo` fiberを超えて生きることがないようにすることです。
+この概念をより明確にするために、以下の例を見てみましょう。
+このシナリオでは、`parent`ファイバーが`child`ファイバーを生成します。
+`child`ファイバーは決して完了しない長時間実行タスクに従事しています。
+ここで重要なのは、Effectが`child`ファイバーが`parent`ファイバーよりも長く生存しないことを保証していることです：
 
 ```ts twoslash
 import { Effect, Console, Schedule } from "effect"
 
-const barJob = Effect.repeat(
-  Console.log("Bar: still running!"),
+const child = Effect.repeat(
+  Console.log("child: still running!"),
   Schedule.fixed("1 second")
 )
 
-const fooJob = Effect.gen(function* () {
-  console.log("Foo: started!")
-  yield* Effect.fork(barJob)
+const parent = Effect.gen(function* () {
+  console.log("parent: started!")
+  yield* Effect.fork(child)
   yield* Effect.sleep("3 seconds")
-  console.log("Foo: finished!")
+  console.log("parent: finished!")
 })
 
-Effect.runPromise(fooJob)
+Effect.runPromise(parent)
 ```
 
 上記のプログラムを実行すると、次のような出力が表示されます：
 
-```
-Foo: started!
-Bar: still running!
-Bar: still running!
-Bar: still running!
-Foo: finished!
+```sh filename="Terminal"
+parent: started!
+child: still running!
+child: still running!
+child: still running!
+parent: finished!
 ```
 
 このパターンは、任意のレベルのネストされたfiberに拡張することができます。
 
 ### グローバルスコープでのフォーク（デーモン）
 
-`Effect.forkDaemon`を使用すると、エフェクトからデーモンfiberを作成できます。そのライフタイムはグローバルスコープに結び付けられます。したがって、親fiberが終了しても、デーモンfiberは終了しません。デーモンfiberはグローバルスコープが閉じられるか、そのライフが自然に終了するまで続きます。
+`Effect.forkDaemon`を使用して、エフェクトからデーモンファイバーを作成できます。そのライフタイムはグローバルスコープに結び付けられています。
+したがって、親ファイバーが終了しても、デーモンファイバーは終了しません。
+グローバルスコープが閉じられるか、自然にその寿命が終わった場合にのみ終了します。
 
 ```ts twoslash
 import { Effect, Console, Schedule } from "effect"
 
-const barJob = Effect.repeat(
-  Console.log("Bar: still running!"),
+const daemon = Effect.repeat(
+  Console.log("daemon: still running!"),
   Schedule.fixed("1 second")
 )
 
-const fooJob = Effect.gen(function* () {
-  console.log("Foo: started!")
-  yield* Effect.forkDaemon(barJob)
+const parent = Effect.gen(function* () {
+  console.log("parent: started!")
+  yield* Effect.forkDaemon(daemon)
   yield* Effect.sleep("3 seconds")
-  console.log("Foo: finished!")
+  console.log("parent: finished!")
 })
 
-Effect.runPromise(fooJob)
+Effect.runPromise(parent)
 ```
 
-上記のプログラムを実行すると、次のような出力が表示されます。これは、`foo` fiberのライフタイムが3秒後に終了しても、デーモンfiber（`bar`）がまだ実行中であることを示しています：
+上記のプログラムを実行すると、次のような出力が表示されます。これは、`parent` fiberの寿命が3秒後に終了しても、`daemon` fiberはまだ実行し続けていることを示しています：
 
-```
-Foo: started!
-Bar: still running!
-Bar: still running!
-Bar: still running!
-Foo: finished!
-Bar: still running!
-Bar: still running!
-Bar: still running!
-Bar: still running!
-Bar: still running!
+```sh filename="Terminal"
+parent: started!
+daemon: still running!
+daemon: still running!
+daemon: still running!
+parent: finished!
+daemon: still running!
+daemon: still running!
+daemon: still running!
+daemon: still running!
+daemon: still running!
 ...etc...
 ```
 
-たとえ`foo` fiberを中断しても、デーモンfiber（`bar`）は中断されません：
+`parent` fiberを中断しても、`daemon` fiberは中断されません：
 
 ```ts twoslash
 import { Effect, Console, Schedule, Fiber } from "effect"
 
-const barJob = Effect.repeat(
-  Console.log("Bar: still running!"),
+const daemon = Effect.repeat(
+  Console.log("daemon: still running!"),
   Schedule.fixed("1 second")
 )
 
-const fooJob = Effect.gen(function* () {
-  console.log("Foo: started!")
-  yield* Effect.forkDaemon(barJob)
+const parent = Effect.gen(function* () {
+  console.log("parent: started!")
+  yield* Effect.forkDaemon(daemon)
   yield* Effect.sleep("3 seconds")
-  console.log("Foo: finished!")
-}).pipe(Effect.onInterrupt(() => Console.log("Foo: interrupted!")))
+  console.log("parent: finished!")
+}).pipe(Effect.onInterrupt(() => Console.log("parent: interrupted!")))
 
 const program = Effect.gen(function* () {
-  const f = yield* Effect.fork(fooJob)
+  const fiber = yield* Effect.fork(parent)
   yield* Effect.sleep("2 seconds")
-  yield* Fiber.interrupt(f)
+  yield* Fiber.interrupt(fiber)
 })
 
 Effect.runPromise(program)
@@ -135,42 +140,43 @@ Effect.runPromise(program)
 
 The 出力:
 
-```
-Foo: started!
-Bar: still running!
-Bar: still running!
-Foo: interrupted!
-Bar: still running!
-Bar: still running!
-Bar: still running!
-Bar: still running!
-Bar: still running!
+```sh filename="Terminal"
+parent: started!
+daemon: still running!
+daemon: still running!
+parent: interrupted!
+daemon: still running!
+daemon: still running!
+daemon: still running!
+daemon: still running!
+daemon: still running!
 ...etc...
 ```
 
 ### ローカルスコープでのフォーク
 
-時々、fiberをローカルスコープにアタッチしたいことがあります。そのような場合には、`Effect.forkScoped`オペレーターを使用できます。このオペレーターを使用することで、フォークされたfiberのライフタイムは親fiberのライフタイムを超えることができ、ローカルスコープが閉じられるときに終了します。
+時にはファイバーをローカルスコープに紐付けたい場合があります。そのような場合、`Effect.forkScoped`オペレーターを使用できます。
+このオペレーターを使用することで、フォークされたファイバーの寿命は親ファイバーの寿命を超えることができ、ローカルスコープが閉じられたときに終了します：
 
 ```ts twoslash
 import { Effect, Console, Schedule } from "effect"
 
-const barJob = Effect.repeat(
-  Console.log("Bar: still running!"),
+const child = Effect.repeat(
+  Console.log("child: still running!"),
   Schedule.fixed("1 second")
 )
 
-const fooJob = Effect.gen(function* () {
-  console.log("Foo: started!")
-  yield* Effect.forkScoped(barJob)
+const parent = Effect.gen(function* () {
+  console.log("parent: started!")
+  yield* Effect.forkScoped(child)
   yield* Effect.sleep("3 seconds")
-  console.log("Foo: finished!")
+  console.log("parent: finished!")
 })
 
 const program = Effect.scoped(
   Effect.gen(function* () {
     console.log("Local scope started!")
-    yield* Effect.fork(fooJob)
+    yield* Effect.fork(parent)
     yield* Effect.sleep("5 seconds")
     console.log("Leaving the local scope!")
   })
@@ -179,66 +185,73 @@ const program = Effect.scoped(
 Effect.runPromise(program)
 ```
 
-上記の例では、ローカルスコープでフォークされた `bar` fiber は親fiber (`foo`) よりも長いライフタイムを持ちます。
-したがって、親fiber (`foo`) が終了しても、ローカルスコープが閉じられるまで `bar` fiber は実行され続けます。
+上記の例では、ローカルスコープでフォークされた`child`ファイバーは、その`parent`ファイバーよりも長い寿命を持っています。
+そのため、`parent`ファイバーが終了しても、`child`ファイバーはローカルスコープが閉じられるまで実行し続けます。
 出力を見てみましょう：
 
-```
+```sh filename="Terminal"
 Local scope started!
-Foo: started!
-Bar: still running!
-Bar: still running!
-Bar: still running!
-Foo: finished!
-Bar: still running!
-Bar: still running!
+parent: started!
+child: still running!
+child: still running!
+child: still running!
+parent: finished!
+child: still running!
+child: still running!
 Leaving the local scope!
 ```
 
 ### 特定のスコープでのフォーク
 
-より細かい制御が必要な場合、特定のスコープでfiberをフォークしたいことがあります。そのような場合には、ターゲットスコープを引数として取る`Effect.forkIn`オペレーターを使用できます：
+より細かい制御が必要な場合があり、特定のスコープでファイバーをフォークしたいことがあります。
+このような場合、ターゲットスコープを引数として受け取る`Effect.forkIn`オペレーターを使用できます：
 
 ```ts twoslash
-import { Effect, Console, Schedule } from "effect"
+import { Console, Effect, Schedule } from "effect"
 
-const barJob = Effect.repeat(
-  Console.log("Still running!"),
-  Schedule.fixed("1 second")
+const child = Console.log("child: still running!").pipe(
+  Effect.repeat(Schedule.fixed("1 second"))
 )
 
 const program = Effect.scoped(
   Effect.gen(function* () {
-    const scope = yield* Effect.scope
+    yield* Effect.addFinalizer(() =>
+      Console.log("The outer scope is about to be closed!")
+    )
+
+    const outerScope = yield* Effect.scope
+
     yield* Effect.scoped(
       Effect.gen(function* () {
-        yield* Effect.forkIn(barJob, scope)
+        yield* Effect.addFinalizer(() =>
+          Console.log("The inner scope is about to be closed!")
+        )
+        yield* Effect.forkIn(child, outerScope)
         yield* Effect.sleep("3 seconds")
-        console.log("The innermost scope is about to be closed.")
       })
     )
+
     yield* Effect.sleep("5 seconds")
-    console.log("The outer scope is about to be closed.")
   })
 )
 
 Effect.runPromise(program)
 ```
 
-The 出力:
+出力:
 
-```
-Still running!
-Still running!
-Still running!
-The innermost scope is about to be closed.
-Still running!
-Still running!
-Still running!
-Still running!
-Still running!
-Still running!
-The outer scope is about to be closed.
+```sh filename="Terminal"
+child: still running!
+child: still running!
+child: still running!
+The inner scope is about to be closed!
+child: still running!
+child: still running!
+child: still running!
+child: still running!
+child: still running!
+child: still running!
+The outer scope is about to be closed!
 ```
 
 ## Fiberはいつ実行されるのか？

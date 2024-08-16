@@ -28,7 +28,7 @@ Effectの`Deferred`は概念的にはJavaScriptの`Promise`に似ています。
 
 ### 作成
 
-`Deferred`は`Deferred.make<A, E>(){:ts}`を使用して作成できます。これにより、`Deferred`の作成を記述する`Effect<Deferred<A, E>>`が返されます。`Deferred`の作成には効果的なメモリ割り当てが含まれるため、安全に管理するために`Effect`内でのみ作成できます。
+`Deferred.make<A, E>()`を使用して`Deferred`を作成できます。これは`Effect<Deferred<A, E>>`を返し、`Deferred`の作成を記述します。`Deferred`の作成には効果的なメモリ割り当てが含まれるため、`Effect`内で安全に管理する必要があることに注意してください。そのため、`Deferred`は`Effect`内でのみ作成できます。
 
 ### 待機
 

@@ -8,7 +8,13 @@ bottomNavigation: pagination
 
 ## repeat
 
-`repeat`関数は、指定されたスケジュールに従って、または最初の失敗まで、指定されたエフェクトを繰り返す新しいエフェクトを返します。スケジュールされた再発は初回実行に加えて行われるため、`Effect.repeat(action, Schedule.once)`は最初に`action`を1回実行し、成功すればさらに1回繰り返します。
+`Effect.repeat`関数は、指定されたスケジュールに従って、または最初の失敗が発生するまで、与えられたエフェクトを繰り返す新しいエフェクトを返します。
+
+<Warning>
+  スケジュールされた再実行は初期実行に加えて行われます。そのため、
+  `Effect.repeat(action, Schedule.once)`は`action`を最初に1回実行し、
+  成功した場合、さらに1回追加で繰り返します。
+</Warning>
 
 **成功例**
 
@@ -153,3 +159,36 @@ orElse
 repetitions: 1
 */
 ```
+
+## 条件に基づく繰り返し
+
+`while` または `until` オプションを使用して、条件によってエフェクトの繰り返しを制御できます。これにより、実行時の結果に基づいて動的に制御することが可能になります。
+
+```ts twoslash
+import { Effect } from "effect"
+
+let count = 0
+
+// 各呼び出しで異なる結果をシミュレートするエフェクトを定義する
+const action = Effect.sync(() => {
+  console.log(`Action called ${++count} time(s)`)
+  return count
+})
+
+// 特定の条件が満たされるまでアクションを繰り返す
+const program = Effect.repeat(action, { until: (n) => n === 3 })
+
+Effect.runFork(program)
+/*
+出力:
+Action called 1 time(s)
+Action called 2 time(s)
+Action called 3 time(s)
+*/
+```
+
+<Info>
+  エラーに基づいて条件を設定する場合は、成功した結果ではなく
+  [Effect.retry](../error-management/retrying#retrying-based-on-a-condition)
+  の使用を検討してください。
+</Info>

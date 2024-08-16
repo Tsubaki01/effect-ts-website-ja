@@ -1,13 +1,12 @@
 "use client"
 
-import { getNodeText, sluggifyTitle } from "@/contentlayer/utils/sluggify"
 import Link from "next/link"
-import { FC, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Icon } from "../icons"
 import { Divider } from "../layout/divider"
 
-export const TableOfContents: FC<{
-  elements: { level: number; title: string }[]
+export const TableOfContents: React.FC<{
+  elements: DocHeading[]
   pageFilePath?: string
   pageTitle?: string
 }> = ({ elements, pageFilePath, pageTitle }) => {
@@ -18,8 +17,7 @@ export const TableOfContents: FC<{
   useEffect(() => {
     const handleScroll = () => {
       let current = ""
-      for (const { title } of elements) {
-        const slug = sluggifyTitle(getNodeText(title))
+      for (const { slug } of elements) {
         const element = document.getElementById(slug)
         if (element && element.getBoundingClientRect().top < 256)
           current = slug
@@ -34,36 +32,27 @@ export const TableOfContents: FC<{
     }
   }, [elements])
 
-  const scrollTo = (slug: string) => {
-    const element = document.getElementById(slug)
-    window.scrollTo({
-      top: element!.getBoundingClientRect().top + window.scrollY - 128,
-      behavior: "smooth"
-    })
-  }
-
   return (
-    <aside className="toc flex-none sticky top-32 sm:top-40 mb-16 w-40 overflow-y-auto hidden xl:block">
+    <aside className="toc flex-none sticky top-32 sm:top-40 mb-16 w-52 overflow-y-auto hidden xl:block">
       <div>
         {elements.length > 1 && (
           <h2 className="text-black dark:text-white uppercase text-sm font-semibold h-8 flex items-end">
             On this page
           </h2>
         )}
-        <ul className="relative grow overflow-y-auto py-9 text-sm">
+        <ul className="relative grow overflow-hidden py-9 text-sm">
           {elements
             .slice(1, elements.length)
-            .map(({ level, title }, index) => {
-              const slug = sluggifyTitle(getNodeText(title))
+            .map(({ level, title, slug }, index) => {
               return (
                 <li
                   key={index}
                   className="mt-2.5"
                   style={{ paddingLeft: `${level > 1 ? level - 2 : 0}rem` }}
                 >
-                  <button
-                    onClick={() => scrollTo(slug)}
-                    className={`flex items-center pb-1 hover:text-black dark:hover:text-white leading-snug text-left ${
+                  <Link
+                    href={`#${slug}`}
+                    className={`flex items-center pb-1 break-words hover:text-black dark:hover:text-white leading-snug text-left ${
                       slug === activeHeading
                         ? "text-black font-normal dark:text-white dark:font-light"
                         : ""

@@ -4,6 +4,11 @@ excerpt: Effectとfp-tsライブラリの主要な機能の詳細な比較。型
 bottomNavigation: pagination
 ---
 
+## Key Developments
+
+- **Project Merger**: The fp-ts project is officially merging with the Effect-TS ecosystem. Giulio Canti, the author of fp-ts, is being welcomed into the Effect organization. For more details, see the [announcement here](https://dev.to/effect/a-bright-future-for-effect-455m).
+- **Continuity and Evolution**: Effect can be seen as the successor to fp-ts v2 and is effectively fp-ts v3, marking a significant evolution in the library's capabilities.
+
 ## FAQ
 
 ### Effectとfp-tsのバンドルサイズの比較
@@ -18,39 +23,45 @@ Effectのバンドルサイズが大きいのは、ファイバランタイム�
 
 A: 必ずしもそうではありません。プロジェクトの特定の要件と各ライブラリの利点を考慮してください。
 
+Effectの**Micro**モジュールは、標準の`Effect`モジュールの軽量な代替として設計されており、特にバンドルサイズの削減が重要なシナリオ向けです。
+このモジュールは自己完結型で、`Layer`、`Ref`、`Queue`、`Deferred`などのより複雑な機能は含まれていません。
+基本的なデータモジュール（`Option`、`Either`、`Array`など）以外の主要なEffectモジュールが使用される場合、effectランタイムがバンドルに追加され、Microの利点が失われます。
+これにより、Microはバンドルサイズへの影響を最小限に抑えつつEffectの機能を実装することを目指すライブラリに理想的です。特に`Promise`ベースのAPIを公開する予定のライブラリに適しています。
+また、クライアントがMicroを使用し、サーバーがEffectの全機能を使用するようなシナリオもサポートし、アプリケーションの異なる部分間で互換性と共有ロジックを維持します。
+
 ## 比較表
 
 以下の表は、Effectと[fp-ts](https://github.com/gcanti/fp-ts)ライブラリの機能を比較したものです。
 
-| 機能                      | fp-ts | Effect |
-| ------------------------- | ----- | ------ |
-| Typed Services            | ❌    | ✅     |
-| Built-in Services         | ❌    | ✅     |
-| Typed errors              | ✅    | ✅     |
-| Pipeable APIs             | ✅    | ✅     |
-| Dual APIs                 | ❌    | ✅     |
-| Testability               | ❌    | ✅     |
-| Resource Management       | ❌    | ✅     |
-| Interruptions             | ❌    | ✅     |
-| Defects                   | ❌    | ✅     |
-| Fiber-Based Concurrency   | ❌    | ✅     |
-| Fiber Supervision         | ❌    | ✅     |
-| Retry and Retry Policies  | ❌    | ✅     |
-| Built-in Logging          | ❌    | ✅     |
-| Built-in Scheduling       | ❌    | ✅     |
-| Built-in Caching          | ❌    | ✅     |
-| Built-in Batching         | ❌    | ✅     |
-| Metrics                   | ❌    | ✅     |
-| Tracing                   | ❌    | ✅     |
-| Configuration             | ❌    | ✅     |
-| Immutable Data Structures | ❌    | ✅     |
-| Stream Processing         | ❌    | ✅     |
+| 機能                       | fp-ts | Effect |
+| -------------------------- | ----- | ------ |
+| 型付きサービス             | ❌    | ✅     |
+| ビルトインサービス         | ❌    | ✅     |
+| 型付きエラー               | ✅    | ✅     |
+| パイプ可能なAPI            | ✅    | ✅     |
+| デュアルAPI                | ❌    | ✅     |
+| テスト可能性               | ❌    | ✅     |
+| リソース管理               | ❌    | ✅     |
+| 中断                       | ❌    | ✅     |
+| 欠陥                       | ❌    | ✅     |
+| ファイバーベースの並行処理 | ❌    | ✅     |
+| ファイバー監視             | ❌    | ✅     |
+| リトライとリトライポリシー | ❌    | ✅     |
+| ビルトインロギング         | ❌    | ✅     |
+| ビルトインスケジューリング | ❌    | ✅     |
+| ビルトインキャッシング     | ❌    | ✅     |
+| ビルトインバッチ処理       | ❌    | ✅     |
+| メトリクス                 | ❌    | ✅     |
+| トレーシング               | ❌    | ✅     |
+| 設定                       | ❌    | ✅     |
+| イミュータブルデータ構造   | ❌    | ✅     |
+| ストリーム処理             | ❌    | ✅     |
 
 各機能の説明は以下の通りです：
 
 ### Typed Services
 
-fp-tsとEffectの両方のライブラリは、型レベルで要件を追跡する機能を提供し、特定の型を持つサービスを定義して使用することができます。fp-tsでは`Reader<R, E, A>`型を利用でき、Effectでは`Effect<A, E, R>`型が利用可能です。fp-tsでは`R`型パラメータが反変であるため、競合を避ける保証がなく、依存関係管理のための基本的なツールしか提供されていないことに注意が必要です。
+fp-tsとEffectの両ライブラリは、型レベルで要件を追跡する機能を提供し、特定の型を持つサービスを定義して使用することができます。fp-tsでは`ReaderTaskEither<R, E, A>`型を利用でき、Effectでは`Effect<A, E, R>`型が利用可能です。fp-tsでは`R`型パラメータが反変であることに注意が必要で、これは競合を避ける保証がないことを意味し、ライブラリは依存関係管理のための基本的なツールのみを提供しています。
 
 一方、Effectでは`R`型パラメータが共変であり、複数のエフェクトが関与する場合に型レベルで依存関係をマージする能力を持つAPIがすべて提供されています。Effectはまた、依存関係の管理を簡素化するために特別に設計された`Tag`、`Context`、`Layer`などのツールを提供しています。これらのツールは、コード内での依存関係の取り扱いを容易かつ柔軟にし、複雑なアプリケーションの構成と管理を容易にします。
 
@@ -183,7 +194,7 @@ Effectライブラリのビルトイン構成サポートを活用すること�
 
 ### Immutable Data Structures
 
-Effectライブラリは、`Chunk`、`HashSet`、`HashMap`などのimmutableデータ構造をビルトインでサポートしています。これらのデータ構造は、一度作成されるとその値を変更できないため、より安全で予測可能なコードを促進します。対照的に、fp-tsにはこれらのデータ構造のビルトインサポートはなく、標準データ型（`Set`や`Map`）に追加のAPIを提供するモジュールのみが含まれています。
+Effectライブラリは、`Chunk`、`HashSet`、`HashMap`などの不変データ構造のビルトインサポートを提供しています。これらのデータ構造は、一度作成されると値を変更できないことを保証し、より安全で予測可能なコードを促進します。対照的に、fp-tsにはこのようなデータ構造のビルトインサポートはなく、`Set`や`Map`などの標準データ型に追加のAPIを提供するモジュールのみを提供しています。これらのモジュールは有用ですが、Effectライブラリが提供するビルトインの不変データ構造と同レベルのパフォーマンス最適化や特殊な操作は提供していません。
 
 immutableデータ構造には以下の利点があります：
 
@@ -193,8 +204,6 @@ immutableデータ構造には以下の利点があります：
 
 - 共有と再利用: immutableデータ構造はプログラムの異なる部分間で安全に共有できます。変更できないため、防御的なコピーを作成する必要がなくなり、メモリ使用効率が向上し、パフォーマンスが改善されます。
 
-一方、fp-tsにはこれらの特定のimmutableデータ構造のビルトインサポートはありません。代わりに、標準のJavaScriptデータ型（`Set`や`Map`）の機能を拡張するモジュールを提供しています。これらのモジュールは有用ですが、Effectライブラリが提供するビルトインのimmutableデータ構造と同じレベルのパフォーマンス最適化や専門的な操作は提供しません。
-
-### Stream Processing
+### ストリーム処理
 
 Effectエコシステムは、ストリーム処理をビルトインでサポートしており、データのストリームを扱うことができます。ストリーム処理は、連続的なデータストリームを効率的に処理および変換するための強力な概念であり、リアクティブかつ非同期的な方法で行われます。しかし、fp-tsにはこの機能がビルトインされておらず、ストリーム処理を扱うためにはRxJSのような外部ライブラリに依存しています。

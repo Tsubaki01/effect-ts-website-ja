@@ -502,3 +502,82 @@ console.log(person)
 { _id: 'Option', _tag: 'None' }
 */
 ```
+
+## 等価性を用いたOptionの値の比較
+
+`Option.getEquivalence`関数を使用して`Option`の値を比較することができます。
+この関数を使用すると、`Option`型の内容を比較するためのルールを定義できます。これは、含まれる可能性のある値の型に対する`Equivalence`を提供することで実現します。
+
+**例：オプショナルな数値の等価性チェック**
+
+オプショナルな数値があり、それらが等価かどうかを確認したいとします。以下のように行うことができます：
+
+```ts twoslash
+import { Option, Equivalence } from "effect"
+
+const myEquivalence = Option.getEquivalence(Equivalence.number)
+
+console.log(myEquivalence(Option.some(1), Option.some(1))) // 出力: true、両方のオプションが数値1を含むため
+console.log(myEquivalence(Option.some(1), Option.some(2))) // 出力: false、数値が異なるため
+console.log(myEquivalence(Option.some(1), Option.none())) // 出力: false、一方は数値で他方は空であるため
+```
+
+## Orderを用いたOptionの値のソート
+
+`Option`の値のコレクションをソートするには、`Option.getOrder`関数を使用します。
+この関数は、含まれる可能性のある値の型に対してカスタムソートルールを提供することで、`Option`の値をソートするのに役立ちます。
+
+**例：オプショナルな数値のソート**
+
+オプショナルな数値のリストがあり、空の値を最小として昇順でソートしたいとします：
+
+```ts twoslash
+import { Option, Array, Order } from "effect"
+
+const items = [Option.some(1), Option.none(), Option.some(2)]
+
+const myOrder = Option.getOrder(Order.number)
+
+console.log(Array.sort(myOrder)(items))
+/*
+出力:
+[
+  { _id: 'Option', _tag: 'None' },           // Noneは最小値とみなされるため最初に表示されます
+  { _id: 'Option', _tag: 'Some', value: 1 }, // 昇順でソートされています
+  { _id: 'Option', _tag: 'Some', value: 2 }
+]
+*/
+```
+
+この例では、`Option.none()`が最小値として扱われ、`Option.some(1)`と`Option.some(2)`が数値に基づいて昇順でソートされることを可能にしています。この方法により、すべての`Option`値がその内容に応じて論理的にソートされ、空の値（`Option.none()`）が非空の値（`Option.some()`）の前に配置されます。
+
+**高度な例：オプショナルな日付の逆順ソート**
+
+次に、オプショナルな日付を含むオブジェクトのリストがあり、それらを降順でソートし、空のオプショナル値を最後に配置したい、というより複雑なシナリオを考えてみましょう：
+
+```ts
+import { Option, Array, Order } from "effect"
+
+const items = [
+  { data: Option.some(new Date(10)) },
+  { data: Option.some(new Date(20)) },
+  { data: Option.none() }
+]
+
+// Option値内の日付を逆順でソートするための順序を定義
+const sorted = Array.sortWith(
+  items,
+  (item) => item.data,
+  Order.reverse(Option.getOrder(Order.Date))
+)
+
+console.log(sorted)
+/*
+出力:
+[
+  { data: { _id: 'Option', _tag: 'Some', value: '1970-01-01T00:00:00.020Z' } },
+  { data: { _id: 'Option', _tag: 'Some', value: '1970-01-01T00:00:00.010Z' } },
+  { data: { _id: 'Option', _tag: 'None' } } // Noneは最後に配置されます
+]
+*/
+```

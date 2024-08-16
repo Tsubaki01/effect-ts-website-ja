@@ -30,10 +30,7 @@ before mapping: 2
 after mapping: 4
 before mapping: 3
 after mapping: 6
-{
-  _id: "Chunk",
-  values: [ 2, 4, 6 ]
-}
+{ _id: 'Chunk', values: [ 2, 4, 6 ] }
 */
 ```
 
@@ -56,10 +53,7 @@ const s1 = Stream.take(stream, 5)
 Effect.runPromise(Stream.runCollect(s1)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 0, 1, 2, 3, 4 ]
-}
+{ _id: 'Chunk', values: [ 0, 1, 2, 3, 4 ] }
 */
 
 // `takeWhile`を使用して特定の条件が満たされるまで要素を抽出する：
@@ -67,10 +61,7 @@ const s2 = Stream.takeWhile(stream, (n) => n < 5)
 Effect.runPromise(Stream.runCollect(s2)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 0, 1, 2, 3, 4 ]
-}
+{ _id: 'Chunk', values: [ 0, 1, 2, 3, 4 ] }
 */
 
 // 特定の条件が満たされるまで要素を抽出するために `takeUntil` を使用する：
@@ -78,10 +69,7 @@ const s3 = Stream.takeUntil(stream, (n) => n === 5)
 Effect.runPromise(Stream.runCollect(s3)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 0, 1, 2, 3, 4, 5 ]
-}
+{ _id: 'Chunk', values: [ 0, 1, 2, 3, 4, 5 ] }
 */
 
 // `takeRight`を使用して末尾から指定された数の要素を抽出する：
@@ -89,10 +77,7 @@ const s4 = Stream.takeRight(s3, 3)
 Effect.runPromise(Stream.runCollect(s4)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 3, 4, 5 ]
-}
+{ _id: 'Chunk', values: [ 3, 4, 5 ] }
 */
 ```
 
@@ -131,7 +116,7 @@ Effect.runPromise(Effect.scoped(program)).then(console.log, console.error)
 { _id: 'Chunk', values: [ 1, 2 ] }
 { _id: 'Chunk', values: [ 3, 4 ] }
 { _id: 'Chunk', values: [ 5 ] }
-(FiberFailure) {
+(FiberFailure) Error: {
   "_id": "Option",
   "_tag": "None"
 }
@@ -156,10 +141,7 @@ const stream = Stream.make(1, 2, 3).pipe(Stream.map((n) => n + 1))
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 2, 3, 4 ]
-}
+{ _id: 'Chunk', values: [ 2, 3, 4 ] }
 */
 ```
 
@@ -176,11 +158,8 @@ const stream = Stream.make(10, 20, 30).pipe(
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-出力:
-{
-  _id: "Chunk",
-  values: [ 6, 13, 5 ]
-}
+Example 出力:
+{ _id: 'Chunk', values: [ 5, 9, 22 ] }
 */
 ```
 
@@ -208,10 +187,11 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
+  _id: 'Chunk',
   values: [
-    [ "Resource 0-url0", "Resource 1-url0", "Resource 2-url0" ], [ "Resource 0-url1", "Resource 1-url1",
-      "Resource 2-url1" ], [ "Resource 0-url2", "Resource 1-url2", "Resource 2-url2" ]
+    [ 'Resource 0-url0', 'Resource 1-url0', 'Resource 2-url0' ],
+    [ 'Resource 0-url1', 'Resource 1-url1', 'Resource 2-url1' ],
+    [ 'Resource 0-url2', 'Resource 1-url2', 'Resource 2-url2' ]
   ]
 }
 */
@@ -227,16 +207,12 @@ import { Stream, Effect } from "effect"
 const runningTotal = (stream: Stream.Stream<number>): Stream.Stream<number> =>
   stream.pipe(Stream.mapAccum(0, (s, a) => [s + a, s + a]))
 
-// 入力:  0, 1, 2, 3, 4, 5
-Effect.runPromise(Stream.runCollect(runningTotal(Stream.range(0, 6)))).then(
+Effect.runPromise(Stream.runCollect(runningTotal(Stream.range(0, 5)))).then(
   console.log
 )
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 0, 1, 3, 6, 10, 15 ]
-}
+{ _id: 'Chunk', values: [ 0, 1, 3, 6, 10, 15 ] }
 */
 ```
 
@@ -255,10 +231,7 @@ const numbers = Stream.make("1-2-3", "4-5", "6").pipe(
 Effect.runPromise(Stream.runCollect(numbers)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 1, 2, 3, 4, 5, 6 ]
-}
+{ _id: 'Chunk', values: [ 1, 2, 3, 4, 5, 6 ] }
 */
 ```
 
@@ -276,10 +249,7 @@ const stream = Stream.range(1, 5).pipe(Stream.as(null))
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ null, null, null, null ]
-}
+{ _id: 'Chunk', values: [ null, null, null, null, null ] }
 */
 ```
 
@@ -297,10 +267,7 @@ const stream = Stream.range(1, 11).pipe(Stream.filter((n) => n % 2 === 0))
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 2, 4, 6, 8, 10 ]
-}
+{ _id: 'Chunk', values: [ 2, 4, 6, 8, 10 ] }
 */
 ```
 
@@ -313,15 +280,12 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 ```ts twoslash
 import { Stream, Effect } from "effect"
 
-const stream = Stream.range(1, 6).pipe(Stream.scan(0, (a, b) => a + b))
+const stream = Stream.range(1, 5).pipe(Stream.scan(0, (a, b) => a + b))
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 0, 1, 3, 6, 10, 15 ]
-}
+{ _id: 'Chunk', values: [ 0, 1, 3, 6, 10, 15 ] }
 */
 ```
 
@@ -334,7 +298,7 @@ Stream.scanは、ストリーム変換の履歴を保持する方法を提供し
 ```ts twoslash
 import { Stream, Effect } from "effect"
 
-const fold = Stream.range(1, 6).pipe(Stream.runFold(0, (a, b) => a + b))
+const fold = Stream.range(1, 5).pipe(Stream.runFold(0, (a, b) => a + b))
 
 Effect.runPromise(fold).then(console.log) // 出力: 15
 ```
@@ -353,15 +317,12 @@ Effect.runPromise(fold).then(console.log) // 出力: 15
 import { Stream, Effect } from "effect"
 
 // ストリームを作成し、すぐにドレインします。
-const s1 = Stream.range(1, 6).pipe(Stream.drain)
+const s1 = Stream.range(1, 5).pipe(Stream.drain)
 
 Effect.runPromise(Stream.runCollect(s1)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: []
-}
+{ _id: 'Chunk', values: [] }
 */
 ```
 
@@ -383,28 +344,22 @@ const s2 = Stream.repeatEffect(
 
 Effect.runPromise(Stream.runCollect(s2)).then(console.log)
 /*
-出力:
-random number: 4
-random number: 2
+出力の例:
 random number: 7
-{
-  _id: "Chunk",
-  values: [ 4, 2, 7 ]
-}
+random number: 5
+random number: 0
+{ _id: 'Chunk', values: [ 7, 5, 0 ] }
 */
 
 const s3 = Stream.drain(s2)
 
 Effect.runPromise(Stream.runCollect(s3)).then(console.log)
 /*
-random number: 1
-random number: 6
+Example 出力:
 random number: 0
-出力:
-{
-  _id: "Chunk",
-  values: []
-}
+random number: 1
+random number: 7
+{ _id: 'Chunk', values: [] }
 */
 ```
 
@@ -424,10 +379,7 @@ const stream = Stream.make(1, 1, 1, 2, 2, 3, 4).pipe(Stream.changes)
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 1, 2, 3, 4 ]
-}
+{ _id: 'Chunk', values: [ 1, 2, 3, 4 ] }
 */
 ```
 
@@ -447,12 +399,7 @@ const s1 = Stream.zip(
 Effect.runPromise(Stream.runCollect(s1)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [
-    [ 1, "a" ], [ 2, "b" ], [ 3, "c" ]
-  ]
-}
+{ _id: 'Chunk', values: [ [ 1, 'a' ], [ 2, 'b' ], [ 3, 'c' ] ] }
 */
 
 // 2つのストリームを作成し、カスタムロジックでzipします。
@@ -465,12 +412,7 @@ const s2 = Stream.zipWith(
 Effect.runPromise(Stream.runCollect(s2)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [
-    [ 0, "a" ], [ 1, "b" ], [ 2, "c" ]
-  ]
-}
+{ _id: 'Chunk', values: [ [ 0, 'a' ], [ 1, 'b' ], [ 2, 'c' ] ] }
 */
 ```
 
@@ -493,9 +435,14 @@ Effect.runPromise(Stream.runCollect(s1)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
+  _id: 'Chunk',
   values: [
-    [ 1, "a" ], [ 2, "b" ], [ 3, "c" ], [ 4, "x" ], [ 5, "x" ], [ 6, "x" ]
+    [ 1, 'a' ],
+    [ 2, 'b' ],
+    [ 3, 'c' ],
+    [ 4, 'x' ],
+    [ 5, 'x' ],
+    [ 6, 'x' ]
   ]
 }
 */
@@ -511,9 +458,14 @@ Effect.runPromise(Stream.runCollect(s2)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
+  _id: 'Chunk',
   values: [
-    [ 0, "a" ], [ 1, "b" ], [ 2, "c" ], [ 4, "x" ], [ 5, "x" ], [ 6, "x" ]
+    [ 0, 'a' ],
+    [ 1, 'b' ],
+    [ 2, 'c' ],
+    [ 4, 'x' ],
+    [ 5, 'x' ],
+    [ 6, 'x' ]
   ]
 }
 */
@@ -542,9 +494,14 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
+  _id: 'Chunk',
   values: [
-    [ 1, "a" ], [ 1, "b" ], [ 2, "b" ], [ 2, "c" ], [ 2, "d" ], [ 3, "d" ]
+    [ 1, 'a' ],
+    [ 1, 'b' ],
+    [ 2, 'b' ],
+    [ 2, 'c' ],
+    [ 2, 'd' ],
+    [ 3, 'd' ]
   ]
 }
 */
@@ -563,7 +520,7 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 これらの操作を示す例を見てみましょう：
 
 ```ts twoslash
-import { Stream } from "effect"
+import { Stream, Effect } from "effect"
 
 const stream = Stream.make(1, 2, 3, 4)
 
@@ -572,6 +529,77 @@ const s1 = Stream.zipWithPrevious(stream)
 const s2 = Stream.zipWithNext(stream)
 
 const s3 = Stream.zipWithPreviousAndNext(stream)
+
+Effect.runPromise(Stream.runCollect(s1)).then((chunks) =>
+  console.log("%o", chunks)
+)
+/*
+出力:
+{
+  _id: 'Chunk',
+  values: [
+    [ { _id: 'Option', _tag: 'None' }, 1, [length]: 2 ],
+    [ { _id: 'Option', _tag: 'Some', value: 1 }, 2, [length]: 2 ],
+    [ { _id: 'Option', _tag: 'Some', value: 2 }, 3, [length]: 2 ],
+    [ { _id: 'Option', _tag: 'Some', value: 3 }, 4, [length]: 2 ],
+    [length]: 4
+  ]
+}
+*/
+
+Effect.runPromise(Stream.runCollect(s2)).then((chunks) =>
+  console.log("%o", chunks)
+)
+/*
+出力:
+{
+  _id: 'Chunk',
+  values: [
+    [ 1, { _id: 'Option', _tag: 'Some', value: 2 }, [length]: 2 ],
+    [ 2, { _id: 'Option', _tag: 'Some', value: 3 }, [length]: 2 ],
+    [ 3, { _id: 'Option', _tag: 'Some', value: 4 }, [length]: 2 ],
+    [ 4, { _id: 'Option', _tag: 'None' }, [length]: 2 ],
+    [length]: 4
+  ]
+}
+*/
+
+Effect.runPromise(Stream.runCollect(s3)).then((chunks) =>
+  console.log("%o", chunks)
+)
+/*
+出力:
+{
+  _id: 'Chunk',
+  values: [
+    [
+      { _id: 'Option', _tag: 'None' },
+      1,
+      { _id: 'Option', _tag: 'Some', value: 2 },
+      [length]: 3
+    ],
+    [
+      { _id: 'Option', _tag: 'Some', value: 1 },
+      2,
+      { _id: 'Option', _tag: 'Some', value: 3 },
+      [length]: 3
+    ],
+    [
+      { _id: 'Option', _tag: 'Some', value: 2 },
+      3,
+      { _id: 'Option', _tag: 'Some', value: 4 },
+      [length]: 3
+    ],
+    [
+      { _id: 'Option', _tag: 'Some', value: 3 },
+      4,
+      { _id: 'Option', _tag: 'None' },
+      [length]: 3
+    ],
+    [length]: 4
+  ]
+}
+*/
 ```
 
 ### ストリーム要素のインデックス付け
@@ -591,10 +619,8 @@ Effect.runPromise(Stream.runCollect(indexedStream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
-  values: [
-    [ "Mary", 0 ], [ "James", 1 ], [ "Robert", 2 ], [ "Patricia", 3 ]
-  ]
+  _id: 'Chunk',
+  values: [ [ 'Mary', 0 ], [ 'James', 1 ], [ 'Robert', 2 ], [ 'Patricia', 3 ] ]
 }
 */
 ```
@@ -621,9 +647,14 @@ Effect.runPromise(Stream.runCollect(product)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
+  _id: 'Chunk',
   values: [
-    [ 1, "a" ], [ 1, "b" ], [ 2, "a" ], [ 2, "b" ], [ 3, "a" ], [ 3, "b" ]
+    [ 1, 'a' ],
+    [ 1, 'b' ],
+    [ 2, 'a' ],
+    [ 2, 'b' ],
+    [ 3, 'a' ],
+    [ 3, 'b' ]
   ]
 }
 */
@@ -644,7 +675,7 @@ Effect.runPromise(Stream.runCollect(product)).then(console.log)
 ```ts twoslash
 import { Stream, Effect } from "effect"
 
-const partition = Stream.range(1, 10).pipe(
+const partition = Stream.range(1, 9).pipe(
   Stream.partition((n) => n % 2 === 0, { bufferSize: 5 })
 )
 
@@ -659,14 +690,8 @@ Effect.runPromise(
 )
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 2, 4, 6, 8 ]
-}
-{
-  _id: "Chunk",
-  values: [ 1, 3, 5, 7, 9 ]
-}
+{ _id: 'Chunk', values: [ 2, 4, 6, 8 ] }
+{ _id: 'Chunk', values: [ 1, 3, 5, 7, 9 ] }
 */
 ```
 
@@ -681,9 +706,9 @@ Effect.runPromise(
 ```ts twoslash
 import { Stream, Effect, Either } from "effect"
 
-const partition = Stream.range(1, 10).pipe(
+const partition = Stream.range(1, 9).pipe(
   Stream.partitionEither(
-    (n) => Effect.succeed(n < 5 ? Either.left(n * 2) : Either.right(n)),
+    (n) => Effect.succeed(n % 2 === 0 ? Either.left(n) : Either.right(n)),
     { bufferSize: 5 }
   )
 )
@@ -699,14 +724,8 @@ Effect.runPromise(
 )
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 2, 4, 6, 8 ]
-}
-{
-  _id: "Chunk",
-  values: [ 5, 6, 7, 8, 9 ]
-}
+{ _id: 'Chunk', values: [ 2, 4, 6, 8 ] }
+{ _id: 'Chunk', values: [ 1, 3, 5, 7, 9 ] }
 */
 ```
 
@@ -760,12 +779,7 @@ const stream = GroupBy.evaluate(groupByKeyResult, (key, stream) =>
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [
-    [ 60, 1 ], [ 90, 1 ], [ 70, 3 ]
-  ]
-}
+{ _id: 'Chunk', values: [ [ 60, 1 ], [ 90, 1 ], [ 70, 3 ] ] }
 */
 ```
 
@@ -805,10 +819,8 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
-  values: [
-    [ "M", 1 ], [ "J", 3 ], [ "R", 2 ], [ "P", 2 ]
-  ]
+  _id: 'Chunk',
+  values: [ [ 'M', 1 ], [ 'J', 3 ], [ 'R', 2 ], [ 'P', 2 ] ]
 }
 */
 ```
@@ -828,22 +840,18 @@ import { Stream, Effect } from "effect"
 
 const stream = Stream.range(0, 8).pipe(Stream.grouped(3))
 
-Effect.runPromise(Stream.runCollect(stream)).then(console.log)
+Effect.runPromise(Stream.runCollect(stream)).then((chunks) =>
+  console.log("%o", chunks)
+)
 /*
 出力:
 {
-  _id: "Chunk",
+  _id: 'Chunk',
   values: [
-    {
-      _id: "Chunk",
-      values: [ 0, 1, 2 ]
-    }, {
-      _id: "Chunk",
-      values: [ 3, 4, 5 ]
-    }, {
-      _id: "Chunk",
-      values: [ 6, 7 ]
-    }
+    { _id: 'Chunk', values: [ 0, 1, 2, [length]: 3 ] },
+    { _id: 'Chunk', values: [ 3, 4, 5, [length]: 3 ] },
+    { _id: 'Chunk', values: [ 6, 7, 8, [length]: 3 ] },
+    [length]: 3
   ]
 }
 */
@@ -856,32 +864,45 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 `Stream.groupedWithin` 関数は、時間間隔またはチャンクサイズに基づいてイベントをグループ化する柔軟性を提供します。どちらの条件が先に満たされてもグループ化が行われます。これは、時間制約に基づいてデータをグループ化したい場合に特に便利です。
 
 ```ts twoslash
-import { Stream, Schedule, Effect } from "effect"
+import { Stream, Schedule, Effect, Chunk } from "effect"
 
-const stream = Stream.range(0, 10).pipe(
+const stream = Stream.range(0, 9).pipe(
   Stream.repeat(Schedule.spaced("1 second")),
   Stream.groupedWithin(18, "1.5 seconds"),
   Stream.take(3)
 )
 
-Effect.runPromise(Stream.runCollect(stream)).then(console.log)
+Effect.runPromise(Stream.runCollect(stream)).then((chunks) =>
+  console.log(Chunk.toArray(chunks))
+)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [
-    {
-      _id: "Chunk",
-      values: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7 ]
-    }, {
-      _id: "Chunk",
-      values: [ 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
-    }, {
-      _id: "Chunk",
-      values: [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7 ]
-    }
-  ]
-}
+[
+  {
+    _id: 'Chunk',
+    values: [
+      0, 1, 2, 3, 4, 5, 6,
+      7, 8, 9, 0, 1, 2, 3,
+      4, 5, 6, 7
+    ]
+  },
+  {
+    _id: 'Chunk',
+    values: [
+      8, 9, 0, 1, 2,
+      3, 4, 5, 6, 7,
+      8, 9
+    ]
+  },
+  {
+    _id: 'Chunk',
+    values: [
+      0, 1, 2, 3, 4, 5, 6,
+      7, 8, 9, 0, 1, 2, 3,
+      4, 5, 6, 7
+    ]
+  }
+]
 */
 ```
 
@@ -908,10 +929,7 @@ const stream = Stream.concat(s1, s2)
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 1, 2, 3, 4, 5 ]
-}
+{ _id: 'Chunk', values: [ 1, 2, 3, 4, 5 ] }
 */
 ```
 
@@ -934,8 +952,11 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
-  values: [ 1, 2, 3, 4, 5, 6, 7, 8 ]
+  _id: 'Chunk',
+  values: [
+    1, 2, 3, 4,
+    5, 6, 7, 8
+  ]
 }
 */
 ```
@@ -957,8 +978,12 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
-  values: [ 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3 ]
+  _id: 'Chunk',
+  values: [
+    1, 1, 1, 1, 2,
+    2, 2, 2, 3, 3,
+    3, 3
+  ]
 }
 */
 ```
@@ -990,10 +1015,7 @@ const stream = Stream.merge(s1, s2)
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 1, 4, 2, 3, 5, 6 ]
-}
+{ _id: 'Chunk', values: [ 1, 4, 2, 3, 5, 6 ] }
 */
 ```
 
@@ -1013,7 +1035,7 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 ```ts twoslash
 import { Stream, Schedule, Effect } from "effect"
 
-const s1 = Stream.range(1, 6).pipe(
+const s1 = Stream.range(1, 5).pipe(
   Stream.schedule(Schedule.spaced("100 millis"))
 )
 const s2 = Stream.repeatValue(0).pipe(
@@ -1026,8 +1048,11 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
-  values: [ 1, 0, 2, 3, 0, 4, 5 ]
+  _id: 'Chunk',
+  values: [
+    1, 0, 2, 3,
+    0, 4, 5
+  ]
 }
 */
 ```
@@ -1058,10 +1083,7 @@ const stream = Stream.mergeWith(s1, s2, {
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 1, 4, 2, 3, 5, 6 ]
-}
+{ _id: 'Chunk', values: [ 1, 4, 2, 3, 5, 6 ] }
 */
 ```
 
@@ -1084,10 +1106,7 @@ const stream = Stream.interleave(s1, s2)
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
-{
-  _id: "Chunk",
-  values: [ 1, 4, 2, 5, 3, 6 ]
-}
+{ _id: 'Chunk', values: [ 1, 4, 2, 5, 3, 6 ] }
 */
 ```
 
@@ -1109,8 +1128,11 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
-  values: [ 1, 2, 4, 3, 6, 8, 5, 10, 7, 9 ]
+  _id: 'Chunk',
+  values: [
+    1, 2,  4, 3, 6,
+    8, 5, 10, 7, 9
+  ]
 }
 */
 ```
@@ -1136,8 +1158,11 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
-  values: [ 1, 0, 2, 0, 3, 0, 4, 0, 5 ]
+  _id: 'Chunk',
+  values: [
+    1, 0, 2, 0, 3,
+    0, 4, 0, 5
+  ]
 }
 */
 ```
@@ -1165,8 +1190,12 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
 出力:
 {
-  _id: "Chunk",
-  values: [ "[", 1, "-", 2, "-", 3, "-", 4, "-", 5, "]" ]
+  _id: 'Chunk',
+  values: [
+    '[', 1,   '-', 2,   '-',
+    3,   '-', 4,   '-', 5,
+    ']'
+  ]
 }
 */
 ```
@@ -1183,7 +1212,7 @@ Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 import { Effect, Stream, Console, Schedule, Fiber } from "effect"
 
 const numbers = Effect.scoped(
-  Stream.range(1, 21).pipe(
+  Stream.range(1, 20).pipe(
     Stream.tap((n) => Console.log(`Emit ${n} element before broadcasting`)),
     Stream.broadcast(2, 5),
     Stream.flatMap(([first, second]) =>
@@ -1254,10 +1283,7 @@ Logging to the Console: 17
 Logging to the Console: 18
 Logging to the Console: 19
 Logging to the Console: 20
-{
-  _id: "Chunk",
-  values: [ undefined ]
-}
+{ _id: 'Chunk', values: [ undefined ] }
 */
 ```
 
@@ -1274,7 +1300,7 @@ Effect streamsはプルベースの方法で動作します。つまり、下流
 ```ts twoslash
 import { Stream, Console, Schedule, Effect } from "effect"
 
-const stream = Stream.range(1, 11).pipe(
+const stream = Stream.range(1, 10).pipe(
   Stream.tap((n) => Console.log(`before buffering: ${n}`)),
   Stream.buffer({ capacity: 4 }),
   Stream.tap((n) => Console.log(`after buffering: ${n}`)),
@@ -1314,29 +1340,245 @@ before buffering: 10
 
 ## Debouncing
 
-`Stream.debounce`関数は、要素がエミットされる速度を制御する上で重要な役割を果たします。各要素のエミッション間に最小時間間隔を導入します。これにより、特に急速または頻繁なエミッションを扱う場合に、要素がより制御されたペースでエミットされることが保証されます。
+プログラミングにおけるデバウンシングは、関数が頻繁に実行されすぎないようにするために使用されます。
+これは特に、ストリームが急速に連続して値を発行するが、活動の一時停止後にのみ反応する必要があるシナリオで非常に有用です。
+
+Effect ライブラリの `Stream.debounce` 関数は、ストリーム値の発行を遅延させることでこれを例示しています。
+新しい値が発生せずに指定された期間が経過するのを待ってから、最新の値を発行します。
+この待機期間中に新しい値が到着した場合、現在の値は破棄され、タイマーは新しい値でリセットされます。
 
 ```ts twoslash
 import { Stream, Effect } from "effect"
 
+let last = Date.now()
+const log = (message: string) =>
+  Effect.sync(() => {
+    const end = Date.now()
+    console.log(`${message} after ${end - last}ms`)
+    last = end
+  })
+
 const stream = Stream.make(1, 2, 3).pipe(
-  Stream.concat(Stream.fromEffect(Effect.sleep("500 millis"))),
-  Stream.concat(Stream.make(4, 5)),
-  Stream.concat(Stream.fromEffect(Effect.sleep("10 millis"))),
-  Stream.concat(Stream.make(6)),
-  Stream.debounce("100 millis") // Emit only after a pause of at least 100 ms
+  Stream.concat(
+    Stream.fromEffect(Effect.sleep("200 millis").pipe(Effect.as(4))) // 200ミリ秒後に4を発行
+  ),
+  Stream.concat(Stream.make(5, 6)), // より速いペースで値を続ける
+  Stream.concat(
+    Stream.fromEffect(Effect.sleep("150 millis").pipe(Effect.as(7))) // 150ミリ秒後に7を発行
+  ),
+  Stream.concat(Stream.make(8)),
+  Stream.tap((n) => log(`Recoived: ${n}`)),
+  Stream.debounce("100 millis"), // 少なくとも100ミリ秒の間隔後にのみ値を発行
+  Stream.tap((n) => log(`> Emitted ${n}`))
 )
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-出力:
+出力の例:
+Received 1 after 5ms
+Received 2 after 2ms
+Received 3 after 0ms
+> Emitted 3 after 104ms
+Received 4 after 99ms
+Received 5 after 1ms
+Received 6 after 0ms
+> Emitted 6 after 101ms
+Received 7 after 50ms
+Received 8 after 1ms
+> Emitted 8 after 101ms
+{ _id: 'Chunk', values: [ 3, 6, 8 ] }
+*/
+```
+
+## スロットリング
+
+スロットリングは、ストリームから要素が発行される速度を制御するために使用される技術です。
+これは、データ出力の一定のペースを維持するのに役立ち、特にデータ処理が一貫したレートで行われる必要があるシナリオで非常に価値があります。
+
+`Stream.throttle` 関数は、[トークンバケットアルゴリズム](https://en.wikipedia.org/wiki/Token_bucket)を利用して、このストリームのチャンクの速度を制御します。
+
+**スロットル設定の例**
+
+```ts
+Stream.throttle({
+  cost: () => 1,
+  duration: "100 millis",
+  units: 1
+})
+```
+
+この設定では：
+
+- 処理される各チャンクは1トークンを使用します（`cost = () => 1`）。
+- トークンは100ミリ秒ごとに1トークンの割合で補充されます（`duration: "100 millis"`、`units: 1`）。
+
+<Info>
+  スロットリングは個々の要素ではなくチャンクに対して動作することに注意することが重要です。`cost`関数は各チャンクのトークンコストを決定します。
+</Info>
+
+### シェイプ戦略（デフォルト）
+
+「シェイプ」戦略は、指定された帯域幅の制約に適合するまでチャンクの発行を遅らせることでデータフローを調整します。
+この戦略は、データのスループットが定義された制限を超えないようにし、安定した制御されたデータ発行を可能にします。
+
+```ts twoslash
+import { Stream, Effect, Schedule, Chunk } from "effect"
+
+let last = Date.now()
+const log = (message: string) =>
+  Effect.sync(() => {
+    const end = Date.now()
+    console.log(`${message} after ${end - last}ms`)
+    last = end
+  })
+
+const stream = Stream.fromSchedule(Schedule.spaced("50 millis")).pipe(
+  Stream.take(6),
+  Stream.tap((n) => log(`Received ${n}`)),
+  Stream.throttle({
+    cost: Chunk.size,
+    duration: "100 millis",
+    units: 1
+  }),
+  Stream.tap((n) => log(`> Emitted ${n}`))
+)
+
+Effect.runPromise(Stream.runCollect(stream)).then(console.log)
+/*
+出力の例:
+Received 0 after 56ms
+> Emitted 0 after 0ms
+Received 1 after 52ms
+> Emitted 1 after 48ms
+Received 2 after 52ms
+> Emitted 2 after 49ms
+Received 3 after 52ms
+> Emitted 3 after 48ms
+Received 4 after 52ms
+> Emitted 4 after 47ms
+Received 5 after 52ms
+> Emitted 5 after 49ms
+{ _id: 'Chunk', values: [ 0, 1, 2, 3, 4, 5 ] }
+*/
+```
+
+### 強制戦略
+
+「強制」戦略は、帯域幅の制約を超えるチャンクを破棄することで、データフローを厳密に規制します。
+
+```ts twoslash
+import { Stream, Effect, Schedule, Chunk } from "effect"
+
+let last = Date.now()
+const log = (message: string) =>
+  Effect.sync(() => {
+    const end = Date.now()
+    console.log(`${message} after ${end - last}ms`)
+    last = end
+  })
+
+const stream = Stream.make(1, 2, 3, 4, 5, 6).pipe(
+  Stream.schedule(Schedule.exponential("100 millis")),
+  Stream.tap((n) => log(`Received ${n}`)),
+  Stream.throttle({
+    cost: Chunk.size,
+    duration: "1 second",
+    units: 1,
+    strategy: "enforce"
+  }),
+  Stream.tap((n) => log(`> Emitted ${n}`))
+)
+
+Effect.runPromise(Stream.runCollect(stream)).then(console.log)
+/*
+出力の例:
+Received 1 after 106ms
+> Emitted 1 after 1ms
+Received 2 after 200ms
+Received 3 after 402ms
+Received 4 after 801ms
+> Emitted 4 after 1ms
+Received 5 after 1601ms
+> Emitted 5 after 1ms
+Received 6 after 3201ms
+> Emitted 6 after 0ms
+{ _id: 'Chunk', values: [ 1, 4, 5, 6 ] }
+*/
+```
+
+### バーストオプション
+
+`Stream.throttle`関数は、設定されたレート制限を超えて一時的にデータスループットを増加させることができるバーストオプションを提供します。
+このオプションは、バースト機能を有効にするために0より大きい値に設定されます（デフォルトは0で、バーストサポートがないことを示します）。
+バースト容量は、トークンバケットに追加のトークンを提供し、データのバーストが発生したときにストリームが一時的に設定されたレートを超えることを可能にします。
+
+```ts twoslash
+import { Effect, Schedule, Stream, Chunk } from "effect"
+
+let last = Date.now()
+const log = (message: string) =>
+  Effect.sync(() => {
+    const end = Date.now()
+    console.log(`${message} after ${end - last}ms`)
+    last = end
+  })
+
+const stream = Stream.fromSchedule(Schedule.spaced("10 millis")).pipe(
+  Stream.take(20),
+  Stream.tap((n) => log(`Received ${n}`)),
+  Stream.throttle({
+    cost: Chunk.size,
+    duration: "200 millis",
+    units: 5,
+    strategy: "enforce",
+    burst: 2
+  }),
+  Stream.tap((n) => log(`> Emitted ${n}`))
+)
+
+Effect.runPromise(Stream.runCollect(stream)).then(console.log)
+/*
+出力の例:
+Received 0 after 16ms
+> Emitted 0 after 0ms
+Received 1 after 12ms
+> Emitted 1 after 0ms
+Received 2 after 11ms
+> Emitted 2 after 0ms
+Received 3 after 11ms
+> Emitted 3 after 0ms
+Received 4 after 11ms
+> Emitted 4 after 1ms
+Received 5 after 11ms
+> Emitted 5 after 0ms
+Received 6 after 12ms
+> Emitted 6 after 0ms
+Received 7 after 11ms
+Received 8 after 12ms
+Received 9 after 11ms
+Received 10 after 11ms
+> Emitted 10 after 0ms
+Received 11 after 11ms
+Received 12 after 11ms
+Received 13 after 12ms
+> Emitted 13 after 0ms
+Received 14 after 11ms
+Received 15 after 12ms
+Received 16 after 11ms
+Received 17 after 11ms
+> Emitted 17 after 0ms
+Received 18 after 12ms
+Received 19 after 10ms
 {
-  _id: "Chunk",
-  values: [ 3, 6 ]
+  _id: 'Chunk',
+  values: [
+    0, 1,  2,  3,  4,
+    5, 6, 10, 13, 17
+  ]
 }
 */
 ```
 
-この例では、要素が異なる間隔でエミットされるストリームがあります。いくつかの要素は急速にエミットされ、他の要素は異なる長さのポーズを挟んでエミットされます。`Stream.debounce("100 millis")`を使用して、最小100ミリ秒のポーズ要件を適用します。
-
-その結果、少なくとも100ミリ秒のポーズの後に続く要素のみがエミットされます。つまり、要素1、2、4、および5は、エミットされる間隔が短すぎるため、実質的にスキップされます。100ミリ秒以上のポーズが前にある要素3と6のみがエミットされます。
+このセットアップでは、ストリームは5つのトークンを含むバケットから始まり、最初の5つのチャンクを即座に発行することができます。
+追加の2つのバースト容量により、一時的にさらなる発行が可能となり、後続のデータをより柔軟に処理できます。
+時間の経過とともに、スロットル設定に従ってバケットが補充されると、追加の要素が発行され、バースト機能が不均一なデータフローを効果的に管理できることを示しています。

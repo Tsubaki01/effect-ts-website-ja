@@ -171,179 +171,100 @@ timestamp=... level=INFO fiber=#0 message="Application is about to exit!"
 
 ## トップレベルのランタイム設定
 
-Effectアプリケーションを開発し、`Effect.run*`関数を使用して実行する際、アプリケーションはデフォルトのランタイムを使用して自動的に実行されます。`Effect.provide`操作を使用してローカルにスコープされた設定レイヤーを提供することで、Effectアプリケーションの特定の側面を調整およびカスタマイズすることができますが、アプリケーション全体のランタイム設定をトップレベルからカスタマイズする必要があるシナリオもあります。
+Effectアプリケーションを開発し、`Effect.run*`関数を使用して実行する際、アプリケーションは裏側でデフォルトのランタイムを使用して自動的に実行されます。
+`Effect.provide`操作を使用してローカルにスコープされた設定レイヤーを提供することで、Effectアプリケーションの特定の側面を調整およびカスタマイズできますが、
+アプリケーション全体のランタイム設定をトップレベルからカスタマイズする必要があるシナリオもあります。
 
-そのような場合には、`Layer.toRuntime`オペレーターを使用して設定レイヤーをランタイムに変換することで、トップレベルのランタイムを作成することができます。
+このような状況では、`ManagedRuntime.make`コンストラクタを使用して設定レイヤーをランタイムに変換することで、トップレベルのランタイムを作成できます。
+
+### ManagedRuntime
 
 ```ts twoslash
-// @module: esnext
-// @target: es2017
-import { Logger, Scope, Layer, Effect, Runtime, Exit } from "effect"
+import { Effect, ManagedRuntime, Logger } from "effect"
 
-// Define a configuration layer
+// 設定レイヤーを定義する
 const appLayer = Logger.replace(
   Logger.defaultLogger,
   Logger.make(({ message }) => console.log(message))
 )
 
-// 設定レイヤーで使用されるリソースのスコープを作成する
-const scope = Effect.runSync(Scope.make())
-
 // 設定レイヤーをランタイムに変換する
-const runtime = await Effect.runPromise(
-  Layer.toRuntime(appLayer).pipe(Scope.extend(scope))
-)
-
-// カスタム実行関数を定義する
-const runSync = Runtime.runSync(runtime)
+const runtime = ManagedRuntime.make(appLayer)
 
 const program = Effect.log("Application started!")
 
-// カスタムランタイムを使用してプログラムを実行する
-runSync(program)
+// カスタムランタイムを使用してプログラムを実行
+runtime.runSync(program)
+
+// 設定レイヤーで使用されたリソースをクリーンアップ
+Effect.runFork(runtime.disposeEffect)
 /*
 出力:
 Application started!
 */
-
-// 設定レイヤーで使用されたリソースをクリーンアップする
-Effect.runFork(Scope.close(scope, Exit.void))
 ```
 
-この例では、まずロガーの設定を変更したカスタム設定レイヤー`appLayer`を作成します。次に、この設定レイヤーを`Layer.toRuntime`を使用してランタイムに変換します。これにより、Effectアプリケーション全体の望ましい設定をカプセル化したトップレベルのランタイムが得られます。
-
-次に、`Runtime.runSync(runtime)`を使用して`myrunSync`というカスタムランタイム関数を定義します。最後に、Effectプログラムを作成し、トップレベルの設定を適用するカスタムランタイムを使用して実行します。
+この例では、まず`appLayer`というカスタム設定レイヤーを作成し、ロガーの設定を変更しています。
+次に、この設定レイヤーを`ManagedRuntime.make`を使用してランタイムに変換します。
+これにより、Effectアプリケーション全体に対して望ましい設定をカプセル化したトップレベルのランタイムが生成されます。
 
 トップレベルのランタイム設定をカスタマイズすることで、Effectアプリケーション全体の動作を特定のニーズや要件に合わせて調整することができます。
 
-## ランタイムシステムへのコンテキストの提供
+### Effect.Tag
 
-カスタムランタイムは、同じ環境を必要とする複数のエフェクトの実行を簡素化できます。これにより、各エフェクトを実行する前に`Effect.provide*`を使用する必要がなくなります。
+渡し回るランタイムを使用する場合、`Effect.Tag`を使用して新しいタグを定義し、サービスへのアクセスを簡素化できます。これにより、サービスの形状がタグクラスの静的側に直接組み込まれます。
 
-この概念を例で説明しましょう。サービスが実際の外部APIとやり取りしないテスト目的のためにカスタマイズされた`Runtime`を作成したいと考えてみてください。このような場合、特にテスト用にカスタムランタイムを設計することができます。
-
-例えば、`LoggingService`と`EmailService`という2つのサービスを定義したとしましょう。
+以下のように`Effect.Tag`を使用して新しいタグを定義できます：
 
 ```ts twoslash
-import { Effect, Context } from "effect"
+import { Effect } from "effect"
 
-class LoggingService extends Context.Tag("LoggingService")<
-  LoggingService,
-  { log: (line: string) => Effect.Effect<void> }
->() {}
-
-class EmailService extends Context.Tag("EmailService")<
-  EmailService,
-  { send: (user: string, content: string) => Effect.Effect<void> }
+class Notifications extends Effect.Tag("Notifications")<
+  Notifications,
+  { readonly notify: (message: string) => Effect.Effect<void> }
 >() {}
 ```
 
-`LoggingService`のライブバージョンと、テスト用の`EmailService`のフェイクバージョンを実装する予定です：
+このセットアップでは、サービスの形状の各フィールドが`Notifications`クラスの静的プロパティに変換されます。
+
+これにより、サービスの形状に直接アクセスできるようになります：
 
 ```ts twoslash
-import { Effect, Context } from "effect"
+import { Effect } from "effect"
 
-class LoggingService extends Context.Tag("LoggingService")<
-  LoggingService,
-  { log: (line: string) => Effect.Effect<void> }
+class Notifications extends Effect.Tag("Notifications")<
+  Notifications,
+  { readonly notify: (message: string) => Effect.Effect<void> }
 >() {}
-
-class EmailService extends Context.Tag("EmailService")<
-  EmailService,
-  { send: (user: string, content: string) => Effect.Effect<void> }
->() {}
-// ---cut---
-import { Console } from "effect"
-
-const LoggingServiceLive = LoggingService.of({
-  log: Console.log
-})
-
-const EmailServiceFake = EmailService.of({
-  send: (user, content) => Console.log(`sending email to ${user}: ${content}`)
-})
-```
-
-これら2つのサービス実装をコンテキストに含むカスタムランタイムを作成しましょう：
-
-```ts twoslash
-import { Effect, Context, Console } from "effect"
-
-class LoggingService extends Context.Tag("LoggingService")<
-  LoggingService,
-  { log: (line: string) => Effect.Effect<void> }
->() {}
-
-class EmailService extends Context.Tag("EmailService")<
-  EmailService,
-  { send: (user: string, content: string) => Effect.Effect<void> }
->() {}
-
-const LoggingServiceLive = LoggingService.of({
-  log: Console.log
-})
-
-const EmailServiceFake = EmailService.of({
-  send: (user, content) => Console.log(`sending email to ${user}: ${content}`)
-})
 
 // ---cut---
-import { Runtime, FiberRefs } from "effect"
-
-const testableRuntime = Runtime.make({
-  context: Context.make(LoggingService, LoggingServiceLive).pipe(
-    Context.add(EmailService, EmailServiceFake)
-  ),
-  fiberRefs: FiberRefs.empty(),
-  runtimeFlags: Runtime.defaultRuntimeFlags
-})
+const action = Notifications.notify("Hello, world!")
 ```
 
-これで、このカスタム `Runtime<LoggingService | EmailService>` を使用してエフェクトを実行できます。
+ご覧のとおり、`action`は`Notifications`に依存していますが、これは問題ではありません。後で`Notifications`を提供する`Layer`を構築し、それを使って`ManagedRuntime`を作成することができるからです。
+
+### 統合
+
+`ManagedRuntime`は、Effectが主要なフレームワークではなく、メインエントリーポイントへのアクセスが制限されている環境で、特にサービスやレイヤーを他のフレームワークやツールと統合することを簡素化します。
+
+例えば、`ManagedRuntime`は、Reactやその他のフレームワークのように、アプリケーションのメインエントリーポイントの制御が限られている環境で特に有用です。以下は、外部フレームワーク内でサービスのライフサイクルを管理するために`ManagedRuntime`を使用する方法です：
 
 ```ts twoslash
-import { Effect, Context, Console, Runtime, FiberRefs } from "effect"
+import { Effect, ManagedRuntime, Layer, Console } from "effect"
 
-class LoggingService extends Context.Tag("LoggingService")<
-  LoggingService,
-  { log: (line: string) => Effect.Effect<void> }
->() {}
+class Notifications extends Effect.Tag("Notifications")<
+  Notifications,
+  { readonly notify: (message: string) => Effect.Effect<void> }
+>() {
+  static Live = Layer.succeed(this, {
+    notify: (message) => Console.log(message)
+  })
+}
 
-class EmailService extends Context.Tag("EmailService")<
-  EmailService,
-  { send: (user: string, content: string) => Effect.Effect<void> }
->() {}
-
-const LoggingServiceLive = LoggingService.of({
-  log: Console.log
-})
-
-const EmailServiceFake = EmailService.of({
-  send: (user, content) => Console.log(`sending email to ${user}: ${content}`)
-})
-
-const testableRuntime = Runtime.make({
-  context: Context.make(LoggingService, LoggingServiceLive).pipe(
-    Context.add(EmailService, EmailServiceFake)
-  ),
-  fiberRefs: FiberRefs.empty(),
-  runtimeFlags: Runtime.defaultRuntimeFlags
-})
-
-// ---cut---
-const program = Effect.gen(function* () {
-  const { log } = yield* LoggingService
-  const { send } = yield* EmailService
-  yield* log("sending newsletter")
-  yield* send("David", "Hi! Here is today's newsletter.")
-})
-
-Runtime.runPromise(testableRuntime)(program)
-/*
-出力:
-sending newsletter
-sending email to David: Hi! Here is today's newsletter.
-*/
+// 外部フレームワークのエントリーポイントの例
+async function main() {
+  const runtime = ManagedRuntime.make(Notifications.Live)
+  await runtime.runPromise(Notifications.notify("Hello, world!"))
+  await runtime.dispose()
+}
 ```
-
-コンテキストをRuntimeシステムに提供することで、エフェクトのための特化された環境を作成し、テストや動作の制御を容易にします。

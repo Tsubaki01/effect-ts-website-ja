@@ -1,0 +1,327 @@
+---
+title: Effect ユーザーのための Micro
+excerpt: "Effect ユーザーのための Micro: 主な違いと利点"
+bottomNavigation: pagination
+---
+
+<Info>
+  Micro モジュールは現在実験段階にあります。機能をさらに改善するために、
+  皆様からのフィードバックをお待ちしております。
+</Info>
+
+Effect の `Micro` モジュールは、標準の `Effect` モジュールの軽量版として設計されており、バンドルサイズを削減することが有益な状況に適しています。
+
+このモジュールは独立しており、`Layer`、`Ref`、`Queue`、`Deferred` などのより複雑な機能は含まれていません。この機能セットにより、Micro は特に `Promise` ベースの API を提供することを目指すライブラリにとって、Effect の機能を利用しながらバンドルサイズを最小限に抑えたい場合に適しています。
+
+また、Micro はクライアントアプリケーションが Micro を使用し、サーバーが Effect の全機能を使用するようなユースケースもサポートしており、さまざまなアプリケーションコンポーネント間で互換性と論理的一貫性を維持します。
+
+Micro を統合すると、バンドルに最小限のフットプリントが追加されます。**5kb gzip 圧縮**から始まり、使用する機能に応じて増加する可能性があります。
+
+<Warning>
+  `Option`、`Either`、`Array` などの基本的なデータモジュール以外の主要な
+  Effect モジュールを使用すると、Effect ランタイムがバンドルに組み込まれ、
+  Micro の利点が失われます。
+</Warning>
+
+## Micro のインポート
+
+Micro は Effect ライブラリの一部であり、他のモジュールと同様にインポートできます：
+
+```ts twoslash
+import * as Micro from "effect/Micro"
+```
+
+## メインの型
+
+### Micro
+
+`Micro`型は3つの型パラメータを使用します：
+
+```ts
+Micro<Success, Error, Requirements>
+```
+
+これらは `Effect` 型のものを反映しています。
+
+### MicroExit
+
+`MicroExit` 型は [Exit](../data-types/exit) 型の簡略化されたバージョンで、`Micro` 計算の結果を捕捉するように設計されています。成功した結果と失敗を区別するために [Either](./data-types/either) データ型を使用しています：
+
+```ts
+type MicroExit<A, E = never> = Either<A, MicroCause<E>>
+```
+
+### MicroCause
+
+`MicroCause`型は[Cause](../data-types/cause)型の簡略化されたバージョンです。
+
+`Cause`が型の合併であるのと同様に、`MicroCause`は3つの特定の型で構成されています：
+
+```ts
+type MicroCause<E> = Die | Fail<E> | Interrupt
+```
+
+| **失敗タイプ** | **説明**                                                                   |
+| -------------- | -------------------------------------------------------------------------- |
+| `Die`          | システムのロジックで計画されていなかった予期せぬ欠陥を示します。           |
+| `Fail<E>`      | アプリケーション内で認識され、通常処理される予想される誤りをカバーします。 |
+| `Interrupt`    | 意図的に停止された操作を意味します。                                       |
+
+### MicroSchedule
+
+`MicroSchedule`型は[Schedule](../../guides/scheduling/introduction)型の簡略化されたバージョンです。
+
+```ts
+type MicroSchedule = (attempt: number, elapsed: number) => Option<number>
+```
+
+繰り返し間の遅延を計算するために使用できる関数を表します。
+
+この関数は、現在の試行回数と最初の試行からの経過時間を受け取り、次の試行までの遅延を返します。関数が`None`を返す場合、繰り返しは停止します。
+
+## このガイドの使い方
+
+以下に、`Effect`と`Micro`の機能を比較した一連の表があります。各表は、`Effect`の機能とそれに対応する`Micro`の機能を列挙しています。使用されているアイコンの意味は以下の通りです：
+
+- ⚠️: この機能は`Micro`で利用可能ですが、`Effect`とは若干の違いがあります。
+- ❌: この機能は`Effect`では利用できません。
+
+## エフェクトの作成
+
+| Effect                 | Micro                   |                                     |
+| ---------------------- | ----------------------- | ----------------------------------- |
+| `Effect.try`           | ⚠️ `Micro.try`          | `try`ブロックが必要                 |
+| `Effect.tryPromise`    | ⚠️ `Micro.tryPromise`   | `try`ブロックが必要                 |
+| `Effect.sleep`         | ⚠️ `Micro.sleep`        | ミリ秒のみ扱う                      |
+| `Effect.failCause`     | ⚠️ `Micro.failWith`     | `Cause`の代わりに`MicroCause`を使用 |
+| `Effect.failCauseSync` | ⚠️ `Micro.failWithSync` | `Cause`の代わりに`MicroCause`を使用 |
+| ❌                     | `Micro.make`            |                                     |
+| ❌                     | `Micro.fromOption`      |                                     |
+| ❌                     | `Micro.fromEither`      |                                     |
+
+## エフェクトの実行
+
+| Effect                  | Micro                     |                                        |
+| ----------------------- | ------------------------- | -------------------------------------- |
+| `Effect.runSyncExit`    | ⚠️ `Micro.runSyncExit`    | `Exit`の代わりに`MicroExit`を返す      |
+| `Effect.runPromiseExit` | ⚠️ `Micro.runPromiseExit` | `Exit`の代わりに`MicroExit`を返す      |
+| `Effect.runFork`        | ⚠️ `Micro.runFork`        | `RuntimeFiber`の代わりに`Handle`を返す |
+
+### runSyncExit
+
+`Micro.runSyncExit`関数は、エフェクトを同期的に実行するために使用されます。つまり、即座に実行され、結果を[MicroExit](#microexit)として返します。
+
+```ts twoslash
+import * as Micro from "effect/Micro"
+
+const result1 = Micro.runSyncExit(Micro.succeed(1))
+console.log(result1)
+/*
+出力:
+{ _id: 'Either', _tag: 'Right', right: 1 }
+*/
+
+const result2 = Micro.runSyncExit(Micro.fail("my error"))
+console.log(result2)
+/*
+出力:
+{ _id: 'Either', _tag: 'Left', left: MicroCause.Fail: my error }
+*/
+```
+
+### runPromiseExit
+
+`Micro.runPromiseExit`関数は、エフェクトを実行し、結果を[MicroExit](#microexit)に解決される`Promise`として取得するために使用されます。
+
+```ts twoslash
+import * as Micro from "effect/Micro"
+
+Micro.runPromiseExit(Micro.succeed(1)).then(console.log)
+/*
+出力:
+{ _id: 'Either', _tag: 'Right', right: 1 }
+*/
+
+Micro.runPromiseExit(Micro.fail("my error")).then(console.log)
+/*
+出力:
+{ _id: 'Either', _tag: 'Left', left: MicroCause.Fail: my error }
+*/
+```
+
+### runFork
+
+`Micro.runFork`関数はエフェクトを実行し、待機、結合、または中断できる`Handle`を返します。
+
+ハンドルの`addObserver`メソッドを使用してオブザーバーを追加することで、結果をリッスンできます。
+
+```ts twoslash
+import * as Micro from "effect/Micro"
+
+const handle = Micro.succeed(42).pipe(Micro.delay(1000), Micro.runFork)
+
+handle.addObserver((result) => {
+  console.log(result)
+})
+console.log("observing...")
+/*
+出力:
+observing...
+{ _id: 'Either', _tag: 'Right', right: 42 }
+*/
+```
+
+## パイプラインの構築
+
+| Effect             | Micro                |                                                  |
+| ------------------ | -------------------- | ------------------------------------------------ |
+| `Effect.andThen`   | ⚠️ `Micro.andThen`   | `Promise`や`() => Promise`を引数として扱えません |
+| `Effect.tap`       | ⚠️ `Micro.tap`       | `() => Promise`を引数として扱えません            |
+| `Effect.all`       | ⚠️ `Micro.all`       | `batching`と`mode`オプションがありません         |
+| `Effect.forEach`   | ⚠️ `Micro.forEach`   | `batching`オプションがありません                 |
+| `Effect.filter`    | ⚠️ `Micro.filter`    | `batching`オプションがありません                 |
+| `Effect.filterMap` | ⚠️ `Micro.filterMap` | エフェクトフルです                               |
+
+## 予期されるエラー
+
+| Effect        | Micro           |                                       |
+| ------------- | --------------- | ------------------------------------- |
+| `Effect.exit` | ⚠️ `Micro.exit` | `Exit`の代わりに`MicroExit`を返します |
+
+## 予期せぬエラー
+
+| Effect | Micro                |     |
+| ------ | -------------------- | --- |
+| ❌     | `Micro.catchCauseIf` |     |
+
+## タイムアウト
+
+| Effect | Micro                 |     |
+| ------ | --------------------- | --- |
+| ❌     | `Micro.timeoutOrElse` |     |
+
+## 要件管理
+
+`Micro.gen`を使用する際にサービスにアクセスするには、`Micro.service`関数を使用してサービスタグをラップする必要があります：
+
+```ts twoslash
+import * as Context from "effect/Context"
+import * as Micro from "effect/Micro"
+
+class Random extends Context.Tag("MyRandomService")<
+  Random,
+  { readonly next: Micro.Micro<number> }
+>() {}
+
+const program = Micro.gen(function* () {
+  // const random = yield* Random // これは機能しません
+  const random = yield* Micro.service(Random)
+  const randomNumber = yield* random.next
+  console.log(`random number: ${randomNumber}`)
+})
+
+const runnable = Micro.provideService(program, Random, {
+  next: Micro.sync(() => Math.random())
+})
+
+Micro.runPromise(runnable)
+/*
+出力の例:
+random number: 0.8241872233134417
+*/
+```
+
+## スコープ
+
+| Effect       | Micro                |                                         |
+| ------------ | -------------------- | --------------------------------------- |
+| `Scope`      | ⚠️ `MicroScope`      | `Scope`の代わりに`MicroScope`を返します |
+| `Scope.make` | ⚠️ `Micro.scopeMake` | `Scope`の代わりに`MicroScope`を返します |
+
+```ts twoslash
+import * as Micro from "effect/Micro"
+
+const consoleLog = (message: string) => Micro.sync(() => console.log(message))
+
+const program =
+  // 新しいスコープを作成
+  Micro.scopeMake.pipe(
+    // ファイナライザー1を追加
+    Micro.tap((scope) => scope.addFinalizer(() => consoleLog("finalizer 1"))),
+    // ファイナライザー2を追加
+    Micro.tap((scope) => scope.addFinalizer(() => consoleLog("finalizer 2"))),
+    // スコープを閉じる
+    Micro.andThen((scope) =>
+      scope.close(Micro.exitSucceed("scope closed successfully"))
+    )
+  )
+
+Micro.runPromise(program)
+/*
+出力:
+finalizer 2 <-- finalizers are closed in reverse order
+finalizer 1
+*/
+```
+
+## リトライ
+
+| Effect         | Micro            |                  |
+| -------------- | ---------------- | ---------------- |
+| `Effect.retry` | ⚠️ `Micro.retry` | 異なる `options` |
+
+## 繰り返し
+
+| Effect                               | Micro                 |                  |
+| ------------------------------------ | --------------------- | ---------------- |
+| `Effect.repeat`                      | ⚠️ `Micro.repeat`     | 異なる `options` |
+| ❌ (`Effect.exit` + `Effect.repeat`) | ⚠️ `Micro.repeatExit` |                  |
+
+## タイムアウト
+
+| Effect | Micro                 |     |
+| ------ | --------------------- | --- |
+| ❌     | `Micro.timeoutOrElse` |     |
+
+## サンドボックス化
+
+| Effect           | Micro              |                                              |
+| ---------------- | ------------------ | -------------------------------------------- |
+| `Effect.sandbox` | ⚠️ `Micro.sandbox` | `Cause<E>` の代わりに `MicroCause<E>` を使用 |
+
+## エラーチャンネル操作
+
+| Effect                 | Micro                    |                                              |
+| ---------------------- | ------------------------ | -------------------------------------------- |
+| ❌                     | `Micro.filterOrFailWith` |                                              |
+| `Effect.tapErrorCause` | ⚠️ `Micro.tapErrorCause` | `Cause<E>` の代わりに `MicroCause<E>` を使用 |
+| ❌                     | `Micro.tapCauseIf`       |                                              |
+| `Effect.tapDefect`     | ⚠️ `Micro.tapDefect`     | `Cause<never>` の代わりに `unknown` を使用   |
+
+## 要件管理
+
+| Effect           | Micro                     |                          |
+| ---------------- | ------------------------- | ------------------------ |
+| `Effect.provide` | ⚠️ `Micro.provideContext` | `Context` のみを扱います |
+| ❌               | `Micro.provideScope`      |                          |
+| ❌               | `Micro.service`           |                          |
+
+## スコープ、リソース、およびファイナライゼーション
+
+| Effect                     | Micro                        |                                                  |
+| -------------------------- | ---------------------------- | ------------------------------------------------ |
+| `Effect.addFinalizer`      | ⚠️ `Micro.addFinalizer`      | `Exit` の代わりに `MicroExit` を使用し、`R` なし |
+| `Effect.acquireRelease`    | ⚠️ `Micro.acquireRelease`    | `Exit` の代わりに `MicroExit` を使用             |
+| `Effect.acquireUseRelease` | ⚠️ `Micro.acquireUseRelease` | `Exit` の代わりに `MicroExit` を使用             |
+| `Effect.onExit`            | ⚠️ `Micro.onExit`            | `Exit` の代わりに `MicroExit` を使用             |
+| `Effect.onError`           | ⚠️ `Micro.onError`           | `Cause` の代わりに `MicroCause` を使用           |
+| ❌                         | `Micro.onExitIf`             |                                                  |
+
+## 並行性
+
+| Effect              | Micro                 |                                           |
+| ------------------- | --------------------- | ----------------------------------------- |
+| `Effect.fork`       | ⚠️ `Micro.fork`       | `RuntimeFiber` の代わりに `Handle` を使用 |
+| `Effect.forkDaemon` | ⚠️ `Micro.forkDaemon` | `RuntimeFiber` の代わりに `Handle` を使用 |
+| `Effect.forkIn`     | ⚠️ `Micro.forkIn`     | `RuntimeFiber` の代わりに `Handle` を使用 |
+| `Effect.forkScoped` | ⚠️ `Micro.forkScoped` | `RuntimeFiber` の代わりに `Handle` を使用 |

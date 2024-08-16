@@ -466,7 +466,7 @@ Effect.runPromise(Effect.either(runnable)).then(console.log)
 
 `FailureCase` が `undefined` に設定されているシナリオ（ハッピーパス）のテスト結果を見てみましょう：
 
-```
+```bash
 [S3] creating bucket
 [ElasticSearch] creating index
 [Database] creating entry for bucket <bucket.name> and index <index.id>
@@ -486,13 +486,13 @@ Effect.runPromise(Effect.either(runnable)).then(console.log)
 ```ts
 const runnable = Workspace.make.pipe(
   Effect.provide(layer),
-  Effect.provideService(Failure, "Database")
+  Effect.provideService(FailureCase, "Database")
 )
 ```
 
 The console output will be:
 
-```
+```bash
 [S3] creating bucket
 [ElasticSearch] creating index
 [Database] creating entry for bucket <bucket.name> and index <index.id>
@@ -514,13 +514,13 @@ The console output will be:
 ```ts
 const runnable = Workspace.make.pipe(
   Effect.provide(layer),
-  Effect.provideService(Failure, "ElasticSearch")
+  Effect.provideService(FailureCase, "ElasticSearch")
 )
 ```
 
 この場合、コンソール出力は次のようになります：
 
-```
+```bash
 [S3] creating bucket
 [ElasticSearch] creating index
 [S3] delete bucket <bucket.name>

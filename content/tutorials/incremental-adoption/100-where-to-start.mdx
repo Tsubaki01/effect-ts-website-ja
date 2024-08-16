@@ -1,0 +1,47 @@
+---
+title: どこから始めるか
+excerpt: アプリケーションにEffectを段階的に導入する方法を学ぶ
+section: 段階的な導入
+workspace: express
+---
+
+### どこから始めるか
+
+既存のコードベースにEffectを導入する際、離散的で自己完結した部分のコードから始めるのが最適です。その後、Effectの機能を使用して既存のコードと簡単に相互運用し、自分のペースでEffectの採用を徐々に進めることができます。
+
+始めるための最も簡単な方法の1つは、`Promise`ベースのコードをEffectで置き換えることです。これにより、詳細なエラー追跡や中断などのEffectの機能から即座に恩恵を受けることができます。
+
+<Idea>
+  EffectとPromiseの比較についてさらに学ぶには、ドキュメントの対応するFAQページをチェックしてください<br/>
+  <a href="/docs/other/effect-vs-promise" target="_blank">Effect vs. Promise</a>
+</Idea>
+
+### Promiseからのリファクタリング
+
+アプリケーションに、数値の`id`をパラメータとして受け取り、`Promise<string>`を返す`getMessage`関数があるとします。`getMessage`内のすべてのロジックをEffectで再実装したいと考えています。
+
+```ts twoslash
+declare function getMessage(id: number): Promise<string>
+
+async function main() {
+  const result = await getMessage(1)
+}
+```
+
+Effectは`Promise`ベースのコードと優れた相互運用性があるため、`getMessage`を自由にEffectを使用するようにリファクタリングし、アプリケーションの他の場所で`getMessage`が`await`されている箇所では`Effect.runPromise`を使用することができます。
+
+```ts twoslash
+import { Effect } from "effect"
+
+declare function getMessage(id: number): Effect.Effect<string>
+
+async function main() {
+  const result = await Effect.runPromise(getMessage(1))
+}
+```
+
+### 演習
+
+`TodoRepository`を担当するチームが、`create`メソッドをPromiseからEffectにリファクタリングしました。このメソッドは現在、`Promise<Todo>`の代わりに`Effect<Todo>`を返すようになっています。
+
+あなたの仕事は、Express APIの`POST /todos`ルートを修正することです。右側のエディタで、サーバーの機能を復元するようにコードを修正してください。

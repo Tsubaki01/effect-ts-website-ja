@@ -4,6 +4,59 @@ excerpt: Hash trait documentation
 bottomNavigation: pagination
 ---
 
-**このページは未完成です。貢献して拡張するのを手伝ってください！**
+Effectの`Hash`トレイトは、[Equal](equal)トレイトと密接に関連しており、ハッシュ化のメカニズムを提供することで等価性チェックの最適化をサポートする役割を果たします。ハッシュ化は、特にハッシュテーブルのようなデータ構造で使用される場合、2つの値の等価性を効率的に判断する上で重要なステップです。
 
-ドキュメントに貢献するには、[Docsチャンネル](https://discord.com/channels/795981131316985866/848185224356691978)でDiscordコミュニティに参加し、どの部分に貢献したいかを教えてください。ライブラリのドキュメントを改善するためのご協力に感謝します。ありがとうございます！
+## 等価性チェックにおけるHashの役割
+
+`Hash`トレイトの主な機能は、2つの値が確実に等しくないかどうかを素早く効率的に判断する方法を提供し、[Equal](equal)トレイトを補完することです。[Equal](equal)トレイトを実装する2つの値がある場合、まずそれらのハッシュ値（`Hash`トレイトを使用して計算される）が比較されます：
+
+- **異なるハッシュ値**: ハッシュ値が異なる場合、値自体が異なることが保証されます。この迅速なチェックにより、システムは潜在的に高コストな等価性チェックを回避できます。
+- **同じハッシュ値**: ハッシュ値が同じ場合、値が等しいことを保証するものではなく、等しい可能性があるだけです。この場合、実際の等価性を判断するために[Equal](equal)トレイトを使用してより詳細な比較が行われます。
+
+この方法は、特にハッシュセットやハッシュマップなど、高速な検索と挿入時間が重要なコレクションにおいて、等価性チェックのプロセスを劇的に高速化します。
+
+## 実践的な例と説明
+
+カスタムの`Person`クラスがあり、2つのインスタンスがそのプロパティに基づいて等しいかどうかをチェックしたい場合を考えてみましょう。
+`Equal`と`Hash`の両方のトレイトを実装することで、これらのチェックを効率的に管理できます：
+
+```ts twoslash
+import { Equal, Hash } from "effect"
+
+class Person implements Equal.Equal {
+  constructor(
+    readonly id: number, // 各人物の一意の識別子
+    readonly name: string,
+    readonly age: number
+  ) {}
+
+  // id、name、ageに基づいて等価性を定義
+  [Equal.symbol](that: Equal.Equal): boolean {
+    if (that instanceof Person) {
+      return (
+        Equal.equals(this.id, that.id) &&
+        Equal.equals(this.name, that.name) &&
+        Equal.equals(this.age, that.age)
+      )
+    }
+    return false
+  }
+
+  // 主に一意のIDに基づいてハッシュコードを生成します
+  [Hash.symbol](): number {
+    return Hash.hash(this.id)
+  }
+}
+
+const alice = new Person(1, "Alice", 30)
+console.log(Equal.equals(alice, new Person(1, "Alice", 30))) // 出力: true
+
+const bob = new Person(2, "Bob", 40)
+console.log(Equal.equals(alice, bob)) // 出力: false
+```
+
+このコードスニペットでは：
+
+- `[Equal.symbol]`メソッドは、`Person`インスタンスの`id`、`name`、`age`フィールドを比較することで等価性を判断します。このアプローチにより、等価性チェックが包括的であり、すべての関連属性を考慮していることが保証されます。
+- `[Hash.symbol]`メソッドは、人物の`id`を使用してハッシュコードを計算します。この値は、ハッシュ操作においてインスタンス間を素早く区別するために使用され、ハッシングを利用するデータ構造のパフォーマンスを最適化します。
+- 等価性チェックは、`alice`を同一のプロパティ値を持つ新しい`Person`オブジェクトと比較した場合に`true`を返し、`alice`を`bob`と比較した場合にはプロパティ値が異なるため`false`を返します。

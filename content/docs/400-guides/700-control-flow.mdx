@@ -126,7 +126,96 @@ Effect.runPromise(flipTheCoin)
 
 この例では、`Random.nextBoolean`を使用してランダムなブール値を生成します。値が`true`の場合、`onTrue`エフェクトが実行され、「Head」がログに記録されます。逆に、値が`false`の場合、`onFalse`エフェクトが実行され、「Tail」がログに記録されます。
 
-## ループオペレーター
+## ジッピング
+
+### zip
+
+`Effect.zip`関数を使用すると、2つのエフェクトを1つのエフェクトに結合することができます。
+この結合されたエフェクトは、両方の入力エフェクトが成功すると、それらの結果を含むタプルを生成します：
+
+```ts twoslash
+import { Effect } from "effect"
+
+const task1 = Effect.succeed(1).pipe(
+  Effect.delay("200 millis"),
+  Effect.tap(Effect.log("task1 done"))
+)
+const task2 = Effect.succeed("hello").pipe(
+  Effect.delay("100 millis"),
+  Effect.tap(Effect.log("task2 done"))
+)
+
+const task3 = Effect.zip(task1, task2)
+
+Effect.runPromise(task3).then(console.log)
+/*
+出力:
+timestamp=... level=INFO fiber=#0 message="task1 done"
+timestamp=... level=INFO fiber=#0 message="task2 done"
+[ 1, 'hello' ]
+*/
+```
+
+`Effect.zip`はエフェクトを順次処理することに注意してください：まず左側のエフェクトを完了させ、その後右側のエフェクトを処理します。
+
+エフェクトを並行して実行したい場合は、`concurrent`オプションを使用できます：
+
+```ts twoslash
+import { Effect } from "effect"
+
+const task1 = Effect.succeed(1).pipe(
+  Effect.delay("200 millis"),
+  Effect.tap(Effect.log("task1 done"))
+)
+const task2 = Effect.succeed("hello").pipe(
+  Effect.delay("100 millis"),
+  Effect.tap(Effect.log("task2 done"))
+)
+// ---cut---
+const task3 = Effect.zip(task1, task2, { concurrent: true })
+
+Effect.runPromise(task3).then(console.log)
+/*
+出力:
+timestamp=... level=INFO fiber=#3 message="task2 done"
+timestamp=... level=INFO fiber=#2 message="task1 done"
+[ 1, 'hello' ]
+*/
+```
+
+### zipWith
+
+`Effect.zipWith`関数は、[Effect.zip](#zip)と同様に2つのエフェクトを組み合わせます。
+ただし、タプルを返す代わりに、組み合わされたエフェクトの結果に関数を適用し、それらを単一の値に変換することができます：
+
+```ts twoslash
+import { Effect } from "effect"
+
+const task1 = Effect.succeed(1).pipe(
+  Effect.delay("200 millis"),
+  Effect.tap(Effect.log("task1 done"))
+)
+const task2 = Effect.succeed("hello").pipe(
+  Effect.delay("100 millis"),
+  Effect.tap(Effect.log("task2 done"))
+)
+
+const task3 = Effect.zipWith(
+  task1,
+  task2,
+  (number, string) => number + string.length
+)
+
+Effect.runPromise(task3).then(console.log)
+/*
+出力:
+timestamp=... level=INFO fiber=#3 message="task1 done"
+timestamp=... level=INFO fiber=#2 message="task2 done"
+6
+*/
+```
+
+## Loop Operators
 
 ### loop
 
@@ -324,7 +413,7 @@ const combinedEffect = Effect.all(effects, options)
 
 サポートされている各形状（タプル、イテラブル、構造体、レコード）の例を見てみましょう。
 
-#### タプル
+**Tuples**
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -345,7 +434,7 @@ Hello
 */
 ```
 
-#### イテラブル
+**Iterables**
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -366,7 +455,7 @@ Effect.runPromise(combinedEffect).then(console.log)
 */
 ```
 
-#### 構造体
+**Structs**
 
 ```ts twoslash
 import { Effect, Console } from "effect"
@@ -387,7 +476,7 @@ Hello
 */
 ```
 
-#### レコード
+**Records**
 
 ```ts twoslash
 import { Effect, Console } from "effect"
