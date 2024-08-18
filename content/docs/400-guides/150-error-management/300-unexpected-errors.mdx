@@ -97,21 +97,21 @@ Effectは、エフェクトの実行中に発生する予期しないエラー�
 
 ### exit
 
-The `Effect.exit` function transforms an `Effect<A, E, R>` into an effect that encapsulates both potential failure and success within an [Exit](../../other/data-types/exit) data type:
+`Effect.exit`関数は、`Effect<A, E, R>`を[Exit](../../other/data-types/exit)データ型内に潜在的な失敗と成功の両方をカプセル化したエフェクトに変換します：
 
 ```ts
 Effect<A, E, R> -> Effect<Exit<A, E>, never, R>
 ```
 
-The resulting effect cannot fail because the potential failure is now represented within the `Exit`'s `Failure` type.
-The error type of the returned `Effect` is specified as `never`, confirming that the effect is structured to not fail.
+結果として得られるエフェクトは失敗することができません。なぜなら、潜在的な失敗が`Exit`の`Failure`型の中で表現されているからです。
+返される`Effect`のエラー型は`never`と指定されており、このエフェクトが失敗しないように構造化されていることを確認しています。
 
-By yielding an `Exit`, we gain the ability to "pattern match" on this type to handle both failure and success cases within the generator function.
+`Exit`を生成することで、ジェネレータ関数内で失敗と成功の両方のケースを処理するために、このタイプに対して「パターンマッチング」を行う能力を得ることができます。
 
 ```ts twoslash
 import { Effect, Cause, Console, Exit } from "effect"
 
-// Simulating a runtime error
+// ランタイムエラーをシミュレート
 const task = Effect.dieMessage("Boom!")
 
 const program = Effect.gen(function* () {
@@ -128,10 +128,10 @@ const program = Effect.gen(function* () {
   }
 })
 
-// We get an Exit.Success because we caught all defects
+// すべての欠陥をキャッチしたため、Exit.Successを取得します
 Effect.runPromiseExit(program).then(console.log)
 /*
-Output:
+出力:
 RuntimeException defect caught: Boom!
 {
   _id: "Exit",
