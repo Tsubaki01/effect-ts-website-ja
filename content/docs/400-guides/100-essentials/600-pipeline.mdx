@@ -421,15 +421,14 @@ const checkDatabaseConnectivity = Effect.promise(() =>
 const startupChecks = Effect.all([webConfig, checkDatabaseConnectivity])
 
 Effect.runPromise(startupChecks).then(([config, dbStatus]) => {
-console.log(
-`Configuration: ${JSON.stringify(config)}, DB Status: ${dbStatus}`
-)
+  console.log(
+    `Configuration: ${JSON.stringify(config)}, DB Status: ${dbStatus}`
+  )
 })
-/_
+/*
 出力:
 Configuration: {"dbConnection":"localhost","port":8080}, DB Status: Connected to Database
-_/
-
+*/
 ```
 
 <Info>

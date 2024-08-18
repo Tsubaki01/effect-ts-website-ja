@@ -158,7 +158,7 @@ const stream = Stream.make(10, 20, 30).pipe(
 
 Effect.runPromise(Stream.runCollect(stream)).then(console.log)
 /*
-Example 出力:
+出力の例:
 { _id: 'Chunk', values: [ 5, 9, 22 ] }
 */
 ```
@@ -355,7 +355,7 @@ const s3 = Stream.drain(s2)
 
 Effect.runPromise(Stream.runCollect(s3)).then(console.log)
 /*
-Example 出力:
+出力の例:
 random number: 0
 random number: 1
 random number: 7

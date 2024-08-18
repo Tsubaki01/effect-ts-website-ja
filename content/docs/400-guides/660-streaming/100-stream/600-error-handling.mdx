@@ -1,7 +1,7 @@
 ---
 title: Streamにおけるエラーハンドリング
 navTitle: エラーハンドリング
-excerpt: `orElse`のような関数を使用してシームレスにリカバリーし、`catchAll`で高度なエラーハンドリングを行い、一時的な失敗を処理するために`retry`を使用して、ストリーム内のエラーを効果的に処理します。エラーを洗練し、さまざまなオペレーターでタイムアウトを設定し、欠陥から優雅に回復する方法を学び、アプリケーションの堅牢なストリーム処理を確保します。
+excerpt: "`orElse`のような関数を使用してシームレスにリカバリーし、`catchAll`で高度なエラーハンドリングを行い、一時的な失敗を処理するために`retry`を使用して、ストリーム内のエラーを効果的に処理します。エラーを洗練し、さまざまなオペレーターでタイムアウトを設定し、欠陥から優雅に回復する方法を学び、アプリケーションの堅牢なストリーム処理を確保します。"
 bottomNavigation: pagination
 ---
 
@@ -286,7 +286,7 @@ const readLine = (message: string): Effect.Effect<string> =>
       new Promise((resolve) => {
         const rl = NodeReadLine.createInterface({
           input: process.stdin,
-          出力: process.stdout
+          output: process.stdout
         })
         rl.question(message, (answer) => {
           rl.close()

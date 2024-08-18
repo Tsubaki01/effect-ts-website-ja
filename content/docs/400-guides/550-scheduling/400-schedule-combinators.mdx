@@ -232,7 +232,7 @@ delay: 0
 import { Schedule, Effect } from "effect"
 import { log } from "./Delay"
 
-const schedule = Schedule.while出力(Schedule.recurs(5), (n) => n <= 2)
+const schedule = Schedule.whileOutput(Schedule.recurs(5), (n) => n <= 2)
 const action = Effect.void
 log(action, schedule)
 /*
@@ -241,7 +241,7 @@ delay: 0
 #1 delay: 0 < recurs
 #2 delay: 0
 #3 delay: 0
-(end)       < while出力
+(end)       < whileOutput
 */
 ```
 
@@ -297,7 +297,7 @@ delay: 0
 import { Schedule, Effect, Console } from "effect"
 import { log } from "./Delay"
 
-const schedule = Schedule.tap出力(Schedule.recurs(2), (n) =>
+const schedule = Schedule.tapOutput(Schedule.recurs(2), (n) =>
   Console.log(`repeating ${n}`)
 )
 const action = Effect.void
